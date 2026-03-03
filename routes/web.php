@@ -30,6 +30,8 @@ Route::middleware(['auth', 'verified', '2fa'])->group(function () {
     Route::post('/password/change', [PasswordChangeController::class, 'update'])->name('password.change.update');
 });
 
+
+
 // =====================
 // AUTHENTICATED ROUTES (terproteksi penuh)
 // =====================

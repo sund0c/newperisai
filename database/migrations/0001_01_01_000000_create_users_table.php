@@ -23,8 +23,10 @@ return new class extends Migration {
             $table->boolean('must_change_password')->default(false);
 
             // ── 2FA Google Authenticator (default: TIDAK aktif) ────────────
-            $table->string('google2fa_secret')->nullable();        // enkripsi di aplikasi
+            $table->text('google2fa_secret')->nullable();        // enkripsi di aplikasi
             $table->boolean('google2fa_enabled')->default(false);  // user aktifkan sendiri
+
+
 
             // ── Status akun ────────────────────────────────────────────────
             $table->boolean('is_active')->default(true);

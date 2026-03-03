@@ -8,6 +8,11 @@ use Illuminate\Support\Facades\Auth;
 use PragmaRX\Google2FA\Google2FA;
 use App\Models\AuditLog;
 
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
+
 class TwoFactorController extends Controller
 {
     // Tampilkan form setup 2FA
@@ -28,7 +33,15 @@ class TwoFactorController extends Controller
             $secret
         );
 
-        return view('auth.2fa-setup', compact('qrCodeUrl', 'secret'));
+        // Generate QR code sebagai SVG di server
+        $renderer = new ImageRenderer(
+            new RendererStyle(200),
+            new SvgImageBackEnd()
+        );
+        $writer = new Writer($renderer);
+        $qrCodeSvg = base64_encode($writer->writeString($qrCodeUrl));
+
+        return view('auth.2fa-setup', compact('qrCodeSvg', 'secret'));
     }
 
     // Aktifkan 2FA setelah verifikasi OTP

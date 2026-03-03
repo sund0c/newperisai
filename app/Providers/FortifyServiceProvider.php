@@ -43,9 +43,9 @@ class FortifyServiceProvider extends ServiceProvider
                 if (!$user->is_active) {
                     return null; // akun dinonaktifkan
                 }
-                if (!$user->hasVerifiedEmail()) {
-                    return null; // email belum diverifikasi
-                }
+                // if (!$user->hasVerifiedEmail()) {
+                //     return null; // email belum diverifikasi
+                // }
                 return $user;
             }
         });
