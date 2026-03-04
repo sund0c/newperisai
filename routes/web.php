@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Public\ReportController;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -109,7 +110,14 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
     });
 
     // PUBLIC USER AREA
-    Route::prefix('laporan')->name('public.')->middleware('role:public')->group(function () {
-        Route::get('/', fn() => view('public.dashboard'))->name('dashboard');
+    Route::middleware('role:public')->group(function () {
+        Route::get('/laporan', fn() => view('public.dashboard'))->name('public.dashboard');
+        Route::resource('laporan', ReportController::class)
+            ->only(['index', 'create', 'store', 'show'])
+            ->names('public.reports')
+            ->parameters(['laporan' => 'report']);
+
+        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Public\AttachmentController::class, 'show'])
+            ->name('public.attachments.show');
     });
 });

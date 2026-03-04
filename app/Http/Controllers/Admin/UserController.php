@@ -59,6 +59,7 @@ class UserController extends Controller
             'organization'      => strip_tags($validated['organization']),
             'email_verified_at' => now(),
             'is_active'         => true,
+            'must_change_password' => true, // ← tambahkan ini
         ]);
 
         $user->assignRole($validated['role']);
