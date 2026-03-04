@@ -11,11 +11,9 @@
 
     <div class="w-full max-w-md">
         <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-4">
-                <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-            </div>
+           <div class="inline-flex items-center justify-center w-16 h-16 ">
+<img src="{{ asset('images/logo.png') }}" alt="CSIRT Bali" class="h-16 w-auto object-contain mb-4">
+ </div>
             <h1 class="text-2xl font-bold text-white">Verifikasi Email Anda</h1>
             <p class="text-blue-300 text-sm mt-1">CSIRT Provinsi Bali</p>
         </div>

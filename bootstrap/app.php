@@ -21,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.or.perm'    => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             '2fa'             => \App\Http\Middleware\TwoFactorMiddleware::class,
             'password.expiry' => \App\Http\Middleware\PasswordExpiryMiddleware::class,
+            'verify.auto-auth' => \App\Http\Middleware\EnsureUserIsAuthenticatedForVerification::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

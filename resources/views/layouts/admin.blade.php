@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'CSIRT Bali') - Sistem Aduan</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -30,14 +31,17 @@
         <!-- Logo -->
         <div class="flex items-center justify-between h-16 px-6 bg-slate-800 shrink-0">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
+                {{-- <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
                     <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                     </svg>
-                </div>
+                </div> --}}
+                           <div class="inline-flex items-center justify-center w-8 h-8 ">
+<img src="{{ asset('images/logo.png') }}" alt="CSIRT Bali" class="h-8 w-auto object-contain mb-4">
+ </div>
                 <div>
-                    <p class="text-white font-semibold text-sm">CSIRT Bali</p>
-                    <p class="text-slate-400 text-xs">Sistem Aduan</p>
+                    <p class="text-white font-semibold text-sm">Aduan CSIRT</p>
+                    <p class="text-slate-400 text-xs">Pemprov Bali</p>
                 </div>
             </div>
             <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-white">

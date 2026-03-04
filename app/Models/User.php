@@ -19,7 +19,7 @@ class User extends Authenticatable implements MustVerifyEmail
     const PASSWORD_EXPIRY_MONTHS = 2;
 
     // ── Jumlah password lama yang tidak boleh digunakan kembali ─────────
-    const PASSWORD_HISTORY_LIMIT = 5;
+    const PASSWORD_HISTORY_LIMIT = 2;
 
     protected $fillable = [
         'name',

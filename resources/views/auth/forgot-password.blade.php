@@ -10,11 +10,9 @@
 <body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center p-4 font-[Inter]">
     <div class="w-full max-w-md">
         <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl shadow-lg mb-4">
-                <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
-                </svg>
-            </div>
+                       <div class="inline-flex items-center justify-center w-16 h-16 ">
+<img src="{{ asset('images/logo.png') }}" alt="CSIRT Bali" class="h-16 w-auto object-contain mb-4">
+ </div>
             <h1 class="text-2xl font-bold text-white">Lupa Password</h1>
             <p class="text-blue-300 text-sm mt-1">CSIRT Provinsi Bali</p>
         </div>
