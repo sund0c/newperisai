@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ReportAttachment;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Models\Report;
 
 class AttachmentController extends Controller
 {
@@ -48,6 +49,25 @@ class AttachmentController extends Controller
                 'Cache-Control'          => 'private, no-store, no-cache',
                 'X-Content-Type-Options' => 'nosniff',
                 'X-Frame-Options'        => 'SAMEORIGIN',
+            ]
+        );
+    }
+
+    public function downloadCertificate(Report $report): StreamedResponse
+    {
+        abort_if($report->user_id !== auth()->id(), 403);
+        abort_if(!$report->certificate_file, 404, 'e-Sertifikat belum tersedia.');
+        abort_unless(Storage::disk('local')->exists($report->certificate_file), 404);
+
+        $filename = $report->certificate_file_original ?? 'e-sertifikat.pdf';
+
+        return Storage::disk('local')->response(
+            $report->certificate_file,
+            $filename,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                'Cache-Control'       => 'private, no-store, no-cache',
             ]
         );
     }

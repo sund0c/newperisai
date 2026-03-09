@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Auth;
 
 class Report extends Model
@@ -21,17 +24,25 @@ class Report extends Model
         'severity_reporter',
         'severity_verified',
         'status',
+        'validation_result',
+        'closed_reason',
+        'certificate_file',
+        'certificate_file_original',
         'admin_notes',
         'handled_by',
         'handled_at',
+        'validated_at',
+        'certificated_at',
         'closed_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'handled_at' => 'datetime',
-            'closed_at'  => 'datetime',
+            'handled_at'      => 'datetime',
+            'validated_at'    => 'datetime',
+            'certificated_at' => 'datetime',
+            'closed_at'       => 'datetime',
         ];
     }
 
@@ -88,39 +99,44 @@ class Report extends Model
     // RELASI
     // ════════════════════════════════════════════════════════════════
 
-    public function reporter()
+    public function reporter(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id')->withTrashed();
     }
 
-    public function handler()
+    public function handler(): BelongsTo
     {
         return $this->belongsTo(User::class, 'handled_by')->withTrashed();
     }
 
-    public function attachments()
+    public function attachments(): HasMany
     {
         return $this->hasMany(ReportAttachment::class);
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ReportAttachment::class)->where('type', 'image');
     }
 
-    public function documents()
+    public function documents(): HasMany
     {
         return $this->hasMany(ReportAttachment::class)->where('type', 'document');
     }
 
-    public function statusLogs()
+    public function statusLogs(): HasMany
     {
         return $this->hasMany(ReportStatusLog::class)->orderBy('created_at');
     }
 
-    public function latestStatusLog()
+    public function latestStatusLog(): HasOne
     {
         return $this->hasOne(ReportStatusLog::class)->latestOfMany('created_at');
+    }
+
+    public function csirtProcess(): HasOne
+    {
+        return $this->hasOne(CsirtProcess::class);
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -163,6 +179,55 @@ class Report extends Model
     }
 
     // ════════════════════════════════════════════════════════════════
+    // VALIDATION RESULT HELPERS
+    // ════════════════════════════════════════════════════════════════
+
+    public static function validationResultLabel(): array
+    {
+        return [
+            'valid'     => 'Valid',
+            'invalid'   => 'Tidak Valid',
+            'duplicate' => 'Duplikat',
+        ];
+    }
+
+    public static function validationResultColor(): array
+    {
+        return [
+            'valid'     => 'green',
+            'invalid'   => 'red',
+            'duplicate' => 'yellow',
+        ];
+    }
+
+    public function getValidationResultLabelAttribute(): ?string
+    {
+        return $this->validation_result
+            ? (self::validationResultLabel()[$this->validation_result] ?? $this->validation_result)
+            : null;
+    }
+
+    public function getValidationResultColorAttribute(): string
+    {
+        return self::validationResultColor()[$this->validation_result] ?? 'gray';
+    }
+
+    public function isValid(): bool
+    {
+        return $this->validation_result === 'valid';
+    }
+
+    public function isClosed(): bool
+    {
+        return $this->status === 'closed';
+    }
+
+    public function hasCertificate(): bool
+    {
+        return !empty($this->certificate_file);
+    }
+
+    // ════════════════════════════════════════════════════════════════
     // SEVERITY HELPERS
     // ════════════════════════════════════════════════════════════════
 
@@ -189,6 +254,11 @@ class Report extends Model
     public function getEffectiveSeverityAttribute(): string
     {
         return $this->severity_verified ?? $this->severity_reporter;
+    }
+
+    public function getEffectiveSeverityLabelAttribute(): string
+    {
+        return self::severityLabel()[$this->effective_severity] ?? $this->effective_severity;
     }
 
     public function getStatusStepAttribute(): int

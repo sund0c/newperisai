@@ -107,6 +107,29 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
     // SUPPORT PANEL
     Route::prefix('support')->name('support.')->middleware('role:support|admin')->group(function () {
         Route::get('/dashboard', fn() => view('support.dashboard'))->name('dashboard');
+
+        // Tiket
+        Route::get('/tiket', [\App\Http\Controllers\Support\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/tiket/{report}', [\App\Http\Controllers\Support\ReportController::class, 'show'])->name('reports.show');
+        Route::post('/tiket/{report}/validate', [\App\Http\Controllers\Support\ReportController::class, 'startValidation'])->name('reports.validate');
+        Route::post('/tiket/{report}/result', [\App\Http\Controllers\Support\ReportController::class, 'setResult'])->name('reports.result');
+        Route::post('/tiket/{report}/certificate', [\App\Http\Controllers\Support\ReportController::class, 'uploadCertificate'])->name('reports.certificate');
+
+        // File downloads
+        Route::get('/tiket/{report}/certificate/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadCertificate'])->name('certificate.download');
+        Route::get('/csirt/{csirtProcess}/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadMitigation'])->name('csirt.download');
+        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
+    });
+
+    // CSIRT PANEL
+    Route::prefix('csirt')->name('csirt.')->middleware('role:csirt')->group(function () {
+        Route::get('/dashboard', fn() => view('csirt.dashboard'))->name('dashboard');
+        Route::get('/tiket', [\App\Http\Controllers\Csirt\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/tiket/{csirtProcess}', [\App\Http\Controllers\Csirt\ReportController::class, 'show'])->name('reports.show');
+        Route::post('/tiket/{csirtProcess}/start', [\App\Http\Controllers\Csirt\ReportController::class, 'start'])->name('reports.start');
+        Route::post('/tiket/{csirtProcess}/close', [\App\Http\Controllers\Csirt\ReportController::class, 'close'])->name('reports.close');
+        Route::get('/tiket/{csirtProcess}/download', [\App\Http\Controllers\Csirt\ReportController::class, 'download'])->name('reports.download');
+        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
     });
 
     // PUBLIC USER AREA
@@ -119,5 +142,8 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
 
         Route::get('/attachments/{attachment}', [\App\Http\Controllers\Public\AttachmentController::class, 'show'])
             ->name('public.attachments.show');
+        // Di dalam blok role:public
+        Route::get('/laporan/{report}/certificate', [\App\Http\Controllers\Public\AttachmentController::class, 'downloadCertificate'])
+            ->name('public.certificate.download');
     });
 });
