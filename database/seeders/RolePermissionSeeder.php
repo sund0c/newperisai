@@ -30,6 +30,9 @@ class RolePermissionSeeder extends Seeder
             // Reports
             'report.view',
             'report.export',
+            // CSIRT mitigasi
+            'csirt.view',
+            'csirt.process',
             // System
             'system.settings',
             'audit.view',
@@ -39,21 +42,32 @@ class RolePermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $perm]);
         }
 
-        // Roles & assign permissions
+        // PUBLIC — hanya bisa buat dan lihat tiket sendiri
         $publicRole = Role::firstOrCreate(['name' => 'public']);
         $publicRole->syncPermissions([
             'ticket.create',
             'ticket.view.own',
         ]);
 
+        // SUPPORT — validasi tiket, lihat semua tiket
         $supportRole = Role::firstOrCreate(['name' => 'support']);
         $supportRole->syncPermissions([
             'ticket.view.all',
             'ticket.update.status',
             'ticket.assign',
             'report.view',
+            'csirt.view', // bisa lihat progress CSIRT di detail tiket
         ]);
 
+        // CSIRT — hanya akses proses mitigasi, tidak terhubung ke ticketing public
+        $csirtRole = Role::firstOrCreate(['name' => 'csirt']);
+        $csirtRole->syncPermissions([
+            'csirt.view',
+            'csirt.process',
+            'ticket.view.all', // baca detail tiket untuk keperluan mitigasi
+        ]);
+
+        // ADMIN — akses penuh
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $adminRole->syncPermissions(Permission::all());
     }

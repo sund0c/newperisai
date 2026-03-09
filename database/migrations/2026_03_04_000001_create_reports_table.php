@@ -18,9 +18,9 @@ return new class extends Migration {
 
             // Informasi laporan
             $table->string('title');
-            $table->text('description');                    // Deskripsi aduan (mandatory)
-            $table->string('affected_system')->nullable();  // Sistem/URL yang terdampak
-            $table->string('poc_video_url');                // Link video PoC (mandatory)
+            $table->text('description');
+            $table->string('affected_system')->nullable();
+            $table->string('poc_video_url');
 
             // Severity: pelapor pilih, support/admin bisa override
             $table->enum('severity_reporter', ['critical', 'high', 'medium', 'low']);
@@ -29,25 +29,39 @@ return new class extends Migration {
             // Status alur
             $table->enum('status', [
                 'submitted',    // Diterima
-                'processing',   // Diproses Kelengkapan
                 'validated',    // Divalidasi
                 'certificate',  // Penerbitan e-Sertifikat
                 'closed',       // Selesai
             ])->default('submitted');
 
-            // Catatan dari support/admin per status
+            // Hasil validasi oleh support
+            $table->enum('validation_result', ['valid', 'invalid', 'duplicate'])->nullable();
+
+            // Alasan jika invalid atau duplicate
+            $table->text('closed_reason')->nullable();
+
+            // Path file e-certificate (PDF) di private storage
+            $table->string('certificate_file')->nullable();
+            $table->string('certificate_file_original')->nullable();
+
+            // Catatan dari support/admin
             $table->text('admin_notes')->nullable();
 
             // Handler (support/admin yang menangani)
             $table->foreignId('handled_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->timestamp('handled_at')->nullable();
-            $table->timestamp('closed_at')->nullable();
+
+            // Timestamp per tahap
+            $table->timestamp('handled_at')->nullable();      // mulai ditangani
+            $table->timestamp('validated_at')->nullable();    // saat divalidasi
+            $table->timestamp('certificated_at')->nullable(); // saat e-cert diterbitkan
+            $table->timestamp('closed_at')->nullable();       // saat selesai
 
             $table->timestamps();
             $table->softDeletes();
 
             // Index untuk performa
             $table->index(['user_id', 'status']);
+            $table->index(['status', 'validation_result']);
             $table->index('ticket_number');
         });
 
@@ -55,15 +69,14 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('report_id')->constrained('reports')->cascadeOnDelete();
 
-            // Tipe attachment
-            $table->enum('type', ['image', 'document']); // image = JPG/PNG, document = PDF
+            $table->enum('type', ['image', 'document']);
 
-            $table->string('original_name');   // nama file asli
-            $table->string('stored_name');     // nama file di storage (UUID)
-            $table->string('disk')->default('local'); // storage disk
-            $table->string('path');            // path di storage
+            $table->string('original_name');
+            $table->string('stored_name');
+            $table->string('disk')->default('local');
+            $table->string('path');
             $table->string('mime_type', 100);
-            $table->unsignedBigInteger('size'); // bytes
+            $table->unsignedBigInteger('size');
 
             $table->timestamps();
         });

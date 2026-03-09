@@ -115,7 +115,11 @@
 
             <div>
                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tanggal Laporan</p>
-                <p class="text-sm text-gray-900">{{ $report->created_at->format('d M Y, H:i') }} WIB</p>
+                <p class="text-sm text-gray-900">
+    {{ $report->created_at->format('d M Y, H:i') }} WITA
+    <span class="text-gray-400 mx-1">|</span>
+    {{ $report->created_at->utc()->format('d M Y, H:i') }} UTC (UTC+8)
+</p>
             </div>
         </div>
     </div>

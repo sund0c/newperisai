@@ -58,7 +58,7 @@
                 </label>
                 <textarea name="description" rows="6" required
                           class="w-full px-4 py-2.5 border @error('description') border-red-400 bg-red-50 @else border-gray-300 @enderror rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-                          placeholder="Jelaskan secara detail: apa yang ditemukan, bagaimana cara mereproduksi, dampak yang mungkin terjadi, dan langkah-langkah eksploitasi.">{{ old('description') }}</textarea>
+                          placeholder="Jelaskan laporan Anda secara umum.">{{ old('description') }}</textarea>
                 <div class="flex justify-between mt-1">
                     @error('description')
                     <p class="text-xs text-red-600">{{ $message }}</p>
