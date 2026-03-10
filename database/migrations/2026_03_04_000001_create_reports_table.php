@@ -56,6 +56,8 @@ return new class extends Migration {
             $table->timestamp('certificated_at')->nullable(); // saat e-cert diterbitkan
             $table->timestamp('closed_at')->nullable();       // saat selesai
 
+            $table->boolean('is_historical')->default(false);
+
             $table->timestamps();
             $table->softDeletes();
 

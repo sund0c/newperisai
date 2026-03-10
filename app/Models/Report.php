@@ -34,6 +34,8 @@ class Report extends Model
         'validated_at',
         'certificated_at',
         'closed_at',
+        'is_historical',
+
     ];
 
     protected function casts(): array
@@ -93,6 +95,20 @@ class Report extends Model
             : 1;
 
         return $prefix . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+    }
+
+    public static function generateHistoricalTicketNumber(): string
+    {
+        $prefix = 'BALIPROV-CSIRT-HIST-';
+        $last = static::withTrashed()
+            ->where('ticket_number', 'like', $prefix . '%')
+            ->lockForUpdate()
+            ->orderByDesc('ticket_number')
+            ->first();
+        $nextNumber = $last
+            ? (int) substr($last->ticket_number, -8) + 1
+            : 1;
+        return $prefix . str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
     }
 
     // ════════════════════════════════════════════════════════════════

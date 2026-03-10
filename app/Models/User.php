@@ -211,4 +211,9 @@ class User extends Authenticatable implements MustVerifyEmail
             return null;
         }
     }
+
+    public function reports(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\Report::class, 'user_id');
+    }
 }

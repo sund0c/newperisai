@@ -8,6 +8,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\ReportController;
 
+
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -119,6 +120,15 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
         Route::get('/tiket/{report}/certificate/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadCertificate'])->name('certificate.download');
         Route::get('/csirt/{csirtProcess}/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadMitigation'])->name('csirt.download');
         Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
+
+        Route::get('/users', [\App\Http\Controllers\Support\UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [\App\Http\Controllers\Support\UserController::class, 'create'])->name('users.create');
+        Route::get('/users/{user}', [\App\Http\Controllers\Support\UserController::class, 'show'])->name('users.show');
+        Route::post('/users', [\App\Http\Controllers\Support\UserController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/historical/create', [\App\Http\Controllers\Support\HistoricalReportController::class, 'create'])->name('users.historical.create');
+        Route::post('/users/{user}/historical', [\App\Http\Controllers\Support\HistoricalReportController::class, 'store'])->name('users.historical.store');
+
+        Route::post('/users/{user}/reset-password', [\App\Http\Controllers\Support\UserController::class, 'resetPassword'])->name('users.reset-password');
     });
 
     // CSIRT PANEL
