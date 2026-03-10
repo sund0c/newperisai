@@ -89,10 +89,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-
         abort_unless($user->hasRole('public'), 403);
-
-        $user->load('reports');
 
         $totalTickets      = $user->reports()->count();
         $totalHistorical   = $user->reports()->where('is_historical', true)->count();
@@ -102,8 +99,14 @@ class UserController extends Controller
             ->count();
         $totalAll = $totalTickets;
 
+        $reports = $user->reports()
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
+
         return view('support.users.show', compact(
             'user',
+            'reports',
             'totalTickets',
             'totalHistorical',
             'totalCertificates',

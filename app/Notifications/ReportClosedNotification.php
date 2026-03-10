@@ -25,19 +25,19 @@ class ReportClosedNotification extends Notification implements ShouldQueue
         $isDuplicate = $this->report->validation_result === 'duplicate';
 
         if ($isDuplicate) {
-            $subject     = "[CSIRT Bali] Laporan Duplikat — {$this->report->ticket_number}";
+            $subject     = "Laporan Duplikat — {$this->report->ticket_number}";
             $headline    = "Laporan Anda Tercatat sebagai Duplikat";
             $explanation = "Setelah dilakukan pengecekan oleh tim kami, laporan yang Anda kirimkan memiliki kesamaan dengan laporan yang telah kami terima sebelumnya.";
         } else {
-            $subject     = "[CSIRT Bali] Laporan Tidak Dapat Diproses — {$this->report->ticket_number}";
-            $headline    = "Laporan Anda Tidak Dapat Diproses";
-            $explanation = "Setelah dilakukan pengecekan oleh tim kami, laporan yang Anda kirimkan tidak memenuhi kriteria untuk diproses lebih lanjut.";
+            $subject     = "Laporan Tidak Valid — {$this->report->ticket_number}";
+            $headline    = "Laporan Anda Tidak Valid";
+            $explanation = "Setelah dilakukan pengecekan oleh tim kami, laporan Anda tidak valid.";
         }
 
         $mail = (new MailMessage)
             ->subject($subject)
-            ->greeting("Yth. {$notifiable->name},")
-            ->line("Terima kasih telah melaporkan kerentanan kepada CSIRT Provinsi Bali.")
+            ->greeting('Om Suastiastu, Yth. ' . $notifiable->name . '!')
+            ->line("Terima kasih telah melaporkan kerentanan/insiden kepada CSIRT Provinsi Bali.")
             ->line("**{$headline}**")
             ->line("**Nomor Tiket:** {$this->report->ticket_number}")
             ->line("**Judul:** {$this->report->title}")
@@ -51,6 +51,6 @@ class ReportClosedNotification extends Notification implements ShouldQueue
             ->line("Jika Anda memiliki pertanyaan, silakan hubungi tim kami melalui halaman laporan.")
             ->action('Lihat Status Laporan', route('public.reports.index'))
             ->line("Kami menghargai kontribusi Anda dalam menjaga keamanan siber Provinsi Bali.")
-            ->salutation("Hormat kami,\nTim CSIRT Provinsi Bali");
+            ->salutation('Om Santih, Santih, Santih Om — hormat kami, BALIPROV-CSIRT #jagaRuangSiber');
     }
 }

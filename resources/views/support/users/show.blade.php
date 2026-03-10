@@ -113,11 +113,11 @@
                 <h3 class="text-sm font-semibold text-gray-700">Riwayat Tiket Laporan</h3>
             </div>
 
-            @if($user->reports->isEmpty())
-            <p class="text-sm text-gray-400 text-center py-8">Belum ada tiket.</p>
+@if($reports->isEmpty())
+<p class="text-sm text-gray-400 text-center py-8">Belum ada tiket.</p>
             @else
             <div class="divide-y divide-gray-100">
-                @foreach($user->reports->sortByDesc('created_at') as $report)
+               @foreach($reports as $report)
                 @php
                     $stc = \App\Models\Report::statusColor()[$report->status] ?? 'gray';
                     $vrc = $report->validation_result
@@ -163,6 +163,13 @@
                 </div>
                 @endforeach
             </div>
+
+            @if($reports->hasPages())
+<div class="px-5 py-4 border-t border-gray-100">
+    {{ $reports->links() }}
+</div>
+@endif
+
             @endif
         </div>
     </div>

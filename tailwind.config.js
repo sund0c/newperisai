@@ -32,6 +32,10 @@ safelist: [
     'bg-yellow-50',  'hover:bg-yellow-100', 'text-yellow-700','border-yellow-200',
     'bg-indigo-600', 'hover:bg-indigo-700',
     'bg-indigo-50',  'hover:bg-indigo-100', 'text-indigo-700','border-indigo-200',
+        'border-blue-400', 'ring-2', 'ring-blue-100',
+    'border-green-400', 'ring-green-100',
+    'border-red-400', 'ring-red-100',
+    'border-yellow-400', 'ring-yellow-100',
     ],
 
 }

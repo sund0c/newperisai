@@ -37,11 +37,11 @@ class ReportStatusChanged extends Notification implements ShouldQueue
 
         // Pesan kontekstual per status
         match ($this->report->status) {
-            'processing'  => $message->line("Laporan Anda sedang dalam proses verifikasi kelengkapan oleh tim CSIRT Bali."),
+            'processing'  => $message->line("Laporan Anda sedang dalam proses validasi PoC oleh Tim CSIRT Provinsi Bali."),
             'validated'   => $message->line("Laporan Anda telah divalidasi. Tim CSIRT Bali akan segera menindaklanjuti."),
             'certificate' => $message->line("Selamat! Laporan Anda telah diverifikasi dan e-Sertifikat sedang dalam proses penerbitan."),
             'closed'      => $message->line("Laporan Anda telah selesai ditangani. Terima kasih atas kontribusi Anda dalam menjaga keamanan siber Provinsi Bali."),
-            default       => $message->line("Tim CSIRT Bali akan segera menindaklanjuti laporan Anda."),
+            default       => $message->line("Tim CSIRT Provinsi Bali akan segera menindaklanjuti laporan Anda."),
         };
 
         if ($this->report->admin_notes) {

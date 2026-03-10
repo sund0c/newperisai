@@ -6,6 +6,83 @@
 
 @section('content')
 
+{{-- Cards Statistik Hasil --}}
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    {{-- Total --}}
+    <a href="{{ route('support.reports.index', request()->except('result','page')) }}"
+       class="bg-white rounded-xl p-5 shadow-sm border transition-all
+              {{ !request('result') ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-100 hover:border-blue-200 hover:shadow-md' }}">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Total Laporan</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalAll }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </div>
+        </div>
+    </a>
+
+    {{-- Valid --}}
+    <a href="{{ route('support.reports.index', array_merge(request()->except('result','page'), ['result' => 'valid'])) }}"
+       class="bg-white rounded-xl p-5 shadow-sm border transition-all
+              {{ request('result') === 'valid' ? 'border-green-400 ring-2 ring-green-100' : 'border-gray-100 hover:border-green-200 hover:shadow-md' }}">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Valid</p>
+                <p class="text-2xl font-bold text-green-700 mt-1">{{ $totalValid }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                </svg>
+            </div>
+        </div>
+    </a>
+
+    {{-- Tidak Valid --}}
+    <a href="{{ route('support.reports.index', array_merge(request()->except('result','page'), ['result' => 'invalid'])) }}"
+       class="bg-white rounded-xl p-5 shadow-sm border transition-all
+              {{ request('result') === 'invalid' ? 'border-red-400 ring-2 ring-red-100' : 'border-gray-100 hover:border-red-200 hover:shadow-md' }}">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Tidak Valid</p>
+                <p class="text-2xl font-bold text-red-700 mt-1">{{ $totalInvalid }}</p>
+            </div>
+            <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+        </div>
+    </a>
+
+    {{-- Duplikat --}}
+    <a href="{{ route('support.reports.index', array_merge(request()->except('result','page'), ['result' => 'duplicate'])) }}"
+       class="bg-white rounded-xl p-5 shadow-sm border transition-all
+              {{ request('result') === 'duplicate' ? 'border-yellow-400 ring-2 ring-yellow-100' : 'border-gray-100 hover:border-yellow-200 hover:shadow-md' }}">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500">Duplikat</p>
+                <p class="text-2xl font-bold text-yellow-700 mt-1">{{ $totalDuplicate }}</p>
+            </div>
+            <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center shrink-0">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                </svg>
+            </div>
+        </div>
+    </a>
+
+</div>
+
     {{-- Filter & Search --}}
     <div class="mb-4 flex flex-wrap items-center gap-3">
         <form method="GET" action="{{ route('support.reports.index') }}" class="flex flex-wrap items-center gap-2 flex-1">
@@ -143,8 +220,15 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
-                                    <p class="text-sm text-gray-700">{{ $report->reporter?->name }}</p>
-                                    <p class="text-xs text-gray-400">{{ $report->reporter?->organization }}</p>
+                                  @if($report->reporter)
+<a href="{{ route('support.users.show', $report->reporter) }}"
+   class="text-sm font-medium text-blue-600 hover:underline">
+    {{ $report->reporter->name }}
+</a>
+<p class="text-xs text-gray-400">{{ $report->reporter->organization }}</p>
+@else
+<p class="text-sm text-gray-400">—</p>
+@endif
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap">
                                     <span

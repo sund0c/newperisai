@@ -48,9 +48,25 @@ class ReportController extends Controller
         // Tiket aktif (belum closed) di atas, closed di bawah
         $query->orderByRaw("FIELD(status, 'submitted', 'validated', 'certificate', 'closed')");
 
+        if ($request->filled('result')) {
+            $query->where('validation_result', $request->result);
+        }
+
         $reports = $query->paginate(20)->withQueryString();
 
-        return view('support.reports.index', compact('reports'));
+
+        $totalAll       = Report::count();
+        $totalValid     = Report::where('validation_result', 'valid')->count();
+        $totalInvalid   = Report::where('validation_result', 'invalid')->count();
+        $totalDuplicate = Report::where('validation_result', 'duplicate')->count();
+
+        return view('support.reports.index', compact(
+            'reports',
+            'totalAll',
+            'totalValid',
+            'totalInvalid',
+            'totalDuplicate'
+        ));
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -87,6 +103,10 @@ class ReportController extends Controller
             'validated_at' => now(),
             'admin_notes'  => 'Tiket mulai divalidasi oleh support.',
         ]);
+
+        $report->reporter->notify(
+            new \App\Notifications\ReportStatusChangedNotification($report, 'validated')
+        );
 
         return back()->with('success', 'Tiket berhasil divalidasi.');
     }

@@ -127,7 +127,7 @@
                     <div class="grid grid-cols-2 gap-4 text-xs text-gray-500">
                         <div>
                             <p class="font-semibold uppercase tracking-wider mb-1">Tanggal Laporan</p>
-                            <p>{{ $report->created_at->format('d M Y, H:i') }} WITA</p>
+                            <p>{{ $report->created_at->format('d M Y') }} WITA</p>
                             {{-- <p class="text-gray-400">{{ $report->created_at->utc()->format('d M Y, H:i') }} UTC (UTC+8)</p> --}}
                         </div>
                         @if ($report->validated_at)
@@ -149,7 +149,11 @@
                         @if ($report->closed_at)
                             <div>
                                 <p class="font-semibold uppercase tracking-wider mb-1">Tanggal Selesai</p>
-                                <p>{{ $report->closed_at->format('d M Y, H:i') }} WITA</p>
+                                <p>{{ $report->closed_at->format('d M Y, H:i') }} WITA
+
+
+
+                                </p>
                                 {{-- <p class="text-gray-400">{{ $report->closed_at->utc()->format('d M Y, H:i') }} UTC
                                     (UTC+8)</p> --}}
                             </div>
@@ -507,7 +511,10 @@
                             <path fill-rule="evenodd"
                                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
                         </svg>
-                        <h3 class="text-sm font-semibold text-gray-700">Tiket Selesai</h3>
+                        <h3 class="text-sm font-semibold text-gray-700">Tiket Selesai
+                              dalam waktu {{ (int) $report->created_at->diffInDays($report->closed_at) }} hari
+
+                        </h3>
                     </div>
                     <p class="text-xs text-gray-500">
                         Tiket ini telah ditutup pada

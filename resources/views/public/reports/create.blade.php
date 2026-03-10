@@ -16,8 +16,7 @@
                 <div>
                     <p class="text-sm font-semibold text-blue-800">Panduan Pengisian Laporan</p>
                     <p class="text-xs text-blue-700 mt-0.5">
-                        Laporan wajib disertai Proof of Concept (PoC): link video dan minimal 1 screenshot.
-                        Dokumen PDF opsional namun sangat dianjurkan.
+                        Laporan wajib disertai video Proof of Concept (PoC)
                     </p>
                 </div>
             </div>
@@ -74,7 +73,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">
                     Seberapa besar dampak yang Anda perkirakan? <span class="text-red-500">*</span>
                 </label>
-                <p class="text-xs text-gray-400 mb-3">Tim CSIRT akan melakukan verifikasi severity secara resmi.</p>
+                <p class="text-xs text-gray-400 mb-3">Ini tidak mempengaruhi kualitas laporan Anda. Kami tetap akan melakukan verifikasi ulang sesuai dengan video PoC Anda.</p>
                 <div class="space-y-2">
                    {{-- Sangat Berbahaya --}}
 <label class="relative cursor-pointer block">
@@ -152,8 +151,8 @@
                 <p class="text-sm font-semibold text-gray-700 mb-1">Proof of Concept (PoC)</p>
                 <p class="text-xs text-gray-500 mb-4">
                     Laporan akan diproses lebih lanjut jika PoC dinyatakan valid.
-                    PoC yang valid adalah jika (video, screenshot, laporan PDF) dapat diujicoba dengan langkah yang persis sama dengan PoC dan menghasilkan hasil yang sama dengan temuan laporan.
-                    Untuk itu PoC harus menunjukkan langkah detil dan jelas.
+                    PoC yang valid adalah jika link memang berisikan video PoC yang dapat diakses dan video dapat ditonton dengan baik, serta dapat diujicoba kembali dengan langkah yang persis sama dalam video PoC dan menghasilkan hasil yang sama dengan temuan laporan.
+                    Untuk itu video PoC harus menunjukkan langkah detil dan jelas. Video PoC tidak boleh dihapus sebelum proses dinyatakan Selesai.
                 </p>
 
                 {{-- Link Video --}}
@@ -168,49 +167,9 @@
                     @error('poc_video_url')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
-                {{-- Upload Gambar min 1 maks 3 --}}
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Screenshot PoC <span class="text-red-500">*</span>
-                        <span class="text-xs font-normal text-gray-400 ml-1">Min. 1, maks. 3 gambar</span>
-                    </label>
-                    <div class="border-2 border-dashed @error('poc_images.0') border-red-400 bg-red-50 @else border-gray-300 @enderror rounded-xl p-5 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                         onclick="document.getElementById('poc_images').click()">
-                        <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        <p class="text-sm text-gray-500" id="images-label">Klik untuk pilih gambar</p>
-                        <p class="text-xs text-gray-400 mt-1">JPG, PNG — Maks. 5MB per file</p>
-                        <input type="file" id="poc_images" name="poc_images[]"
-                               accept=".jpg,.jpeg,.png" multiple
-                               class="hidden" onchange="handleImages(this)">
-                    </div>
-                    <div id="image-preview" class="mt-3 grid grid-cols-3 gap-2 hidden"></div>
-                    @error('poc_images.0')<p class="mt-1 text-xs text-red-600">Minimal 1 screenshot wajib diunggah.</p>@enderror
-                </div>
 
-                {{-- Upload PDF (opsional) --}}
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
-                        Dokumen Laporan (PDF)
-                        <span class="ml-1 px-1.5 py-0.5 bg-blue-100 text-blue-600 text-xs rounded font-medium">Opsional</span>
-                    </label>
-                    <div class="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center hover:border-blue-400 transition-colors cursor-pointer"
-                         onclick="document.getElementById('poc_document').click()">
-                        <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <p class="text-sm text-gray-500" id="doc-label">Klik untuk pilih file PDF</p>
-                        <p class="text-xs text-gray-400 mt-1">PDF — Maks. 10MB</p>
-                        <input type="file" id="poc_document" name="poc_document" accept=".pdf"
-                               class="hidden" onchange="updateLabel(this, 'doc-label')">
-                    </div>
-                    {{-- <p class="mt-1 text-xs text-gray-400">
-                        Laporan dengan dokumen PDF mendapat badge
-                        <span class="text-blue-600 font-medium">✓ Laporan Lengkap</span>.
-                    </p> --}}
-                    @error('poc_document')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                </div>
+
+
             </div>
 
             {{-- Submit --}}

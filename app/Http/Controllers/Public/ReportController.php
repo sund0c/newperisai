@@ -15,11 +15,18 @@ class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Report::where('user_id', auth()->id())
+        $userId = auth()->id();
+
+        // Statistik hasil validasi
+        $totalAll    = Report::where('user_id', $userId)->count();
+        $totalValid  = Report::where('user_id', $userId)->where('validation_result', 'valid')->count();
+        $totalInvalid   = Report::where('user_id', $userId)->where('validation_result', 'invalid')->count();
+        $totalDuplicate = Report::where('user_id', $userId)->where('validation_result', 'duplicate')->count();
+
+        $query = Report::where('user_id', $userId)
             ->with(['latestStatusLog', 'documents'])
             ->latest();
 
-        // Search by ticket number or title
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('ticket_number', 'like', "%{$search}%")
@@ -27,9 +34,24 @@ class ReportController extends Controller
             });
         }
 
+        if ($status = $request->get('status')) {
+            $query->where('status', $status);
+        }
+
+        // Filter hasil validasi
+        if ($result = $request->get('result')) {
+            $query->where('validation_result', $result);
+        }
+
         $reports = $query->paginate(10)->withQueryString();
 
-        return view('public.reports.index', compact('reports'));
+        return view('public.reports.index', compact(
+            'reports',
+            'totalAll',
+            'totalValid',
+            'totalInvalid',
+            'totalDuplicate'
+        ));
     }
 
     public function create()
@@ -45,20 +67,20 @@ class ReportController extends Controller
             'affected_system' => ['nullable', 'string', 'max:255'],
             'poc_video_url'   => ['required', 'url', 'max:500'],
             'severity'        => ['required', 'in:critical,high,medium,low'],
-            'poc_images'      => ['required', 'array', 'min:1', 'max:3'],
-            'poc_images.*'    => ['image', 'mimes:jpg,jpeg,png', 'max:5120'],
-            'poc_document'    => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+            // 'poc_images'      => ['required', 'array', 'min:1', 'max:3'],
+            // 'poc_images.*'    => ['image', 'mimes:jpg,jpeg,png', 'max:5120'],
+            // 'poc_document'    => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ], [
             'description.min'     => 'Deskripsi minimal 50 karakter.',
             'poc_video_url.url'   => 'Link video PoC harus berupa URL yang valid.',
-            'poc_images.required' => 'Minimal 1 screenshot wajib diunggah.',
-            'poc_images.min'      => 'Minimal 1 screenshot wajib diunggah.',
-            'poc_images.max'      => 'Maksimal 3 screenshot yang dapat diunggah.',
-            'poc_images.*.image'  => 'File harus berupa gambar.',
-            'poc_images.*.mimes'  => 'Format gambar harus JPG atau PNG.',
-            'poc_images.*.max'    => 'Ukuran gambar maksimal 5MB.',
-            'poc_document.mimes'  => 'Dokumen harus berformat PDF.',
-            'poc_document.max'    => 'Ukuran dokumen maksimal 10MB.',
+            // 'poc_images.required' => 'Minimal 1 screenshot wajib diunggah.',
+            // 'poc_images.min'      => 'Minimal 1 screenshot wajib diunggah.',
+            // 'poc_images.max'      => 'Maksimal 3 screenshot yang dapat diunggah.',
+            // 'poc_images.*.image'  => 'File harus berupa gambar.',
+            // 'poc_images.*.mimes'  => 'Format gambar harus JPG atau PNG.',
+            // 'poc_images.*.max'    => 'Ukuran gambar maksimal 5MB.',
+            // 'poc_document.mimes'  => 'Dokumen harus berformat PDF.',
+            // 'poc_document.max'    => 'Ukuran dokumen maksimal 10MB.',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -77,14 +99,14 @@ class ReportController extends Controller
             ]);
 
             // Upload semua gambar
-            foreach ($request->file('poc_images') as $image) {
-                $this->storeAttachment($image, $report, 'image');
-            }
+            // foreach ($request->file('poc_images') as $image) {
+            //     $this->storeAttachment($image, $report, 'image');
+            // }
 
             // Upload PDF jika ada
-            if ($request->hasFile('poc_document')) {
-                $this->storeAttachment($request->file('poc_document'), $report, 'document');
-            }
+            // if ($request->hasFile('poc_document')) {
+            //     $this->storeAttachment($request->file('poc_document'), $report, 'document');
+            // }
 
             AuditLog::create([
                 'user_id'    => $user->id,
@@ -93,15 +115,16 @@ class ReportController extends Controller
                     'ticket_number' => $ticketNumber,
                     'title'         => $report->title,
                     'severity'      => $report->severity_reporter,
-                    'has_document'  => $request->hasFile('poc_document'),
+                    // 'has_document'  => $request->hasFile('poc_document'),
                 ],
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
+            $user->notify(new \App\Notifications\ReportReceivedNotification($report));
         });
 
         return redirect()->route('public.reports.index')
-            ->with('success', 'Laporan berhasil dikirim! Tim CSIRT Bali akan segera menindaklanjuti.');
+            ->with('success', 'Laporan berhasil dikirim! Tim CSIRT Provinsi Bali akan segera menindaklanjuti.');
     }
 
     public function show(Report $report)
