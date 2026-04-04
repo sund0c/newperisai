@@ -108,8 +108,8 @@ class UserSeeder extends Seeder
         if (app()->environment('local', 'development', 'staging')) {
             $publics = [
                 [
-                    'name'                 => 'Putu Sundika',
-                    'email'                => 'public1@baliprov.go.id',
+                    'name'                 => 'Jhon Vemon',
+                    'email'                => 'vemon15491@agoalz.com',
                     'password'             => Hash::make(env('SEEDER_PUBLIC1_PASSWORD')),
                     'organization'         => 'Dinas Kominfo Bali',
                     'phone'                => '08123456789',
@@ -157,7 +157,7 @@ class UserSeeder extends Seeder
         $csirts = [
             [
                 'name'                 => 'CSIRT Satu',
-                'email'                => 'csirt1@csirt.baliprov.go.id',
+                'email'                => 'csirt1@baliprov.go.id',
                 'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
@@ -167,7 +167,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name'                 => 'CSIRT Dua',
-                'email'                => 'csirt2@csirt.baliprov.go.id',
+                'email'                => 'csirt2@baliprov.go.id',
                 'password'             => Hash::make(env('SEEDER_CSIRT2_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
@@ -177,7 +177,7 @@ class UserSeeder extends Seeder
             ],
             [
                 'name'                 => 'CSIRT Tiga',
-                'email'                => 'csirt3@csirt.baliprov.go.id',
+                'email'                => 'csirt3@baliprov.go.id',
                 'password'             => Hash::make(env('SEEDER_CSIRT3_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,

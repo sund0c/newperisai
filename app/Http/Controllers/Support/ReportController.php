@@ -122,24 +122,28 @@ class ReportController extends Controller
         abort_if($report->status !== 'validated', 403, 'Tiket harus dalam status Divalidasi.');
 
         $request->validate([
-            'result'            => 'required|in:valid,invalid,duplicate',
-            'notes'             => 'nullable|string|max:1000',
-            'severity_verified' => 'nullable|in:critical,high,medium,low',
+            'result'                 => 'required|in:valid,invalid,duplicate',
+            'notes'                  => 'nullable|string|max:1000',
+            'incident_type_verified' => 'required|in:data_breach,web_defacement,ransomware,phishing,malicious_software,exploit,account_hijacking,advanced_persistence_threat,peringatan_keamanan,lainnya',
+            'severity_verified'      => 'nullable|in:critical,high,medium,low',
         ]);
+
         try {
             DB::transaction(function () use ($request, $report) {
                 \Log::info('inside transaction', ['result' => $request->result]);
+
                 if ($request->result === 'valid') {
                     $request->validate([
                         'severity_verified' => 'required|in:critical,high,medium,low',
                     ]);
 
                     $report->update([
-                        'status'            => 'certificate',
-                        'validation_result' => 'valid',
-                        'severity_verified' => $request->severity_verified, // ← tambah ini
-                        'admin_notes'       => $request->notes,
-                        'certificated_at'   => null,
+                        'status'                 => 'certificate',
+                        'validation_result'      => 'valid',
+                        'incident_type_verified' => $request->incident_type_verified, // ← tambah ini
+                        'severity_verified'      => $request->severity_verified,
+                        'admin_notes'            => $request->notes,
+                        'certificated_at'        => null,
                     ]);
                     \Log::info('report updated');
 
@@ -151,17 +155,17 @@ class ReportController extends Controller
                     ]);
                     \Log::info('csirt process created');
 
-
                     // Kirim notifikasi ke semua user role CSIRT
                     $this->notifyCsirtTeam($report);
                 } else {
                     // INVALID atau DUPLICATE → langsung closed
                     $report->update([
-                        'status'            => 'closed',
-                        'validation_result' => $request->result,
-                        'closed_reason'     => $request->notes,
-                        'admin_notes'       => $request->notes,
-                        'closed_at'         => now(),
+                        'status'                 => 'closed',
+                        'validation_result'      => $request->result,
+                        'incident_type_verified' => $request->incident_type_verified, // ← tambah ini juga
+                        'closed_reason'          => $request->notes,
+                        'admin_notes'            => $request->notes,
+                        'closed_at'              => now(),
                     ]);
 
                     // Kirim email ke pelapor

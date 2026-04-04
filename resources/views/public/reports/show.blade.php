@@ -194,6 +194,53 @@
                     <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ $report->description }}</p>
                 </div>
 
+                {{-- Dual Jenis Insiden --}}
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                    @php
+                        $incidentLabel = [
+                            'data_breach' => 'Data Breach',
+                            'web_defacement' => 'Web Defacement',
+                            'ransomware' => 'Ransomware',
+                            'phishing' => 'Phishing',
+                            'malicious_software' => 'Malicious Software',
+                            'exploit' => 'Exploit',
+                            'account_hijacking' => 'Account Hijacking',
+                            'advanced_persistence_threat' => 'Advanced Persistence Threat',
+                            'peringatan_keamanan' => 'Peringatan Keamanan',
+                            'lainnya' => $report->incident_type_other ?? 'Lain-lain',
+                        ];
+                    @endphp
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Jenis Insiden (Pelapor)
+                        </p>
+                        <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                            {{ $incidentLabel[$report->incident_type_reporter] ?? $report->incident_type_reporter }}
+                        </span>
+                    </div>
+
+                    <div class="p-3 bg-gray-50 rounded-lg">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Jenis Insiden
+                            (Terverifikasi)</p>
+
+                        @if ($report->incident_type_verified && $report->validation_result === 'valid')
+                            <span
+                                class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                {{ $incidentLabel[$report->incident_type_verified] ?? $report->incident_type_verified }}
+                            </span>
+                        @elseif($report->validation_result && $report->validation_result !== 'valid')
+                            <span
+                                class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-400">
+                                N/A
+                            </span>
+                        @else
+                            <span
+                                class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-400">
+                                Belum diverifikasi
+                            </span>
+                        @endif
+                    </div>
+                </div>
+
                 {{-- Dual Severity --}}
                 <div class="grid grid-cols-2 gap-3 pt-1">
                     @php
@@ -236,7 +283,6 @@
                                 Belum diverifikasi
                             </span>
                         @endif
-
                     </div>
                 </div>
 
@@ -244,8 +290,6 @@
                     <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Tanggal Laporan</p>
                     <p class="text-sm text-gray-900">
                         {{ $report->created_at->format('d M Y, H:i') }} WITA
-                        <span class="text-gray-400 mx-1"></span>
-                        {{-- {{ $report->created_at->utc()->format('d M Y, H:i') }} UTC (UTC +8) --}}
                     </p>
                 </div>
             </div>

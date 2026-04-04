@@ -150,47 +150,107 @@
                 </div>
             @endif
 
-            {{-- Timeline proses CSIRT --}}
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h2 class="text-sm font-semibold text-gray-700 mb-5">Timeline Mitigasi</h2>
-                @php
-                    $timeline = [
-                        ['label' => 'Dinotifikasi', 'time' => $csirtProcess->notified_at, 'done' => true],
-                        [
-                            'label' => 'Mulai Diproses',
-                            'time' => $csirtProcess->started_at,
-                            'done' => !!$csirtProcess->started_at,
-                        ],
-                        [
-                            'label' => 'Mitigasi Selesai',
-                            'time' => $csirtProcess->closed_at,
-                            'done' => !!$csirtProcess->closed_at,
-                        ],
-                    ];
-                @endphp
-                <div class="space-y-4">
-                    @foreach ($timeline as $step)
-                        <div class="flex items-start gap-3">
-                            <div
-                                class="w-7 h-7 rounded-full flex items-center justify-center shrink-0
-                                {{ $step['done'] ? 'bg-indigo-600' : 'bg-gray-200' }}">
-                                @if ($step['done'])
-                                    <svg class="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd"
-                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" />
-                                    </svg>
-                                @endif
-                            </div>
-                            <div>
-                                <p class="text-sm font-medium {{ $step['done'] ? 'text-gray-800' : 'text-gray-400' }}">
-                                    {{ $step['label'] }}
-                                </p>
-                                <p class="text-xs {{ $step['time'] ? 'text-indigo-500' : 'text-gray-300' }}">
-                                    {{ $step['time'] ? $step['time']->format('d M Y, H:i') . ' WITA' : '—' }}
-                                </p>
-                            </div>
+            {{-- ════ TIMELINE PENANGANAN ════ --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-sm font-semibold text-gray-700">Timeline Penanganan</h2>
+                    <span class="text-xs text-gray-400">{{ $csirtProcess->activityLogs->count() }} aktivitas</span>
+                </div>
+                <div class="px-6 py-5">
+
+                    {{-- ── MILESTONE BAR ── --}}
+                    <div class="grid divide-x divide-gray-200 border border-gray-200 rounded-lg overflow-hidden mb-5"
+                        style="grid-template-columns: repeat(3, minmax(0, 1fr))">
+                        <div class="p-3 bg-gray-50">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Dinotifikasi</p>
+                            <p class="text-xs font-medium text-gray-700">
+                                {{ $csirtProcess->notified_at?->format('d M Y, H:i') ?? '—' }}
+                                {{ $csirtProcess->notified_at ? 'WITA' : '' }}</p>
                         </div>
-                    @endforeach
+                        <div class="p-3 {{ $csirtProcess->started_at ? 'bg-indigo-50' : 'bg-gray-50' }}">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mulai Proses</p>
+                            <p class="text-xs font-medium text-gray-700">
+                                {{ $csirtProcess->started_at?->format('d M Y, H:i') ?? '—' }}
+                                {{ $csirtProcess->started_at ? 'WITA' : '' }}</p>
+                        </div>
+                        <div class="p-3 {{ $csirtProcess->closed_at ? 'bg-green-50' : 'bg-gray-50' }}">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mitigasi Selesai
+                            </p>
+                            <p class="text-xs font-medium text-gray-700">
+                                {{ $csirtProcess->closed_at?->format('d M Y, H:i') ?? '—' }}
+                                {{ $csirtProcess->closed_at ? 'WITA' : '' }}</p>
+                        </div>
+                    </div>
+
+                    {{-- ── DIVIDER ── --}}
+                    @if ($csirtProcess->activityLogs && $csirtProcess->activityLogs->isNotEmpty())
+                        <div class="border-t border-dashed border-gray-200 mb-5"></div>
+
+                        {{-- ── ACTIVITY LOG (terbaru di atas) ── --}}
+                        <ol class="space-y-0">
+                            @foreach ($csirtProcess->activityLogs->sortByDesc('created_at') as $log)
+                                @php
+                                    $typeMap = [
+                                        'update' => [
+                                            'label' => 'Update',
+                                            'color' => '#3b82f6',
+                                            'badge' => 'bg-blue-100 text-blue-700',
+                                        ],
+                                        'notification' => [
+                                            'label' => 'Notifikasi',
+                                            'color' => '#eab308',
+                                            'badge' => 'bg-yellow-100 text-yellow-700',
+                                        ],
+                                        'coordination' => [
+                                            'label' => 'Koordinasi',
+                                            'color' => '#a855f7',
+                                            'badge' => 'bg-purple-100 text-purple-700',
+                                        ],
+                                        'technical' => [
+                                            'label' => 'Teknis',
+                                            'color' => '#ef4444',
+                                            'badge' => 'bg-red-100 text-red-700',
+                                        ],
+                                        'other' => [
+                                            'label' => 'Lainnya',
+                                            'color' => '#9ca3af',
+                                            'badge' => 'bg-gray-100 text-gray-600',
+                                        ],
+                                    ];
+                                    $cfg = $typeMap[$log->type] ?? $typeMap['other'];
+                                @endphp
+                                <li class="flex gap-4">
+                                    <div class="flex flex-col items-center">
+                                        <span class="w-3 h-3 rounded-full shrink-0 mt-1"
+                                            style="background-color: {{ $cfg['color'] }}"></span>
+                                        @if (!$loop->last)
+                                            <span class="w-0.5 bg-gray-200 flex-1 my-1"></span>
+                                        @endif
+                                    </div>
+                                    <div class="pb-5 flex-1 min-w-0">
+                                        <div class="flex items-start gap-2">
+                                            <p class="text-sm font-semibold text-gray-800 leading-snug flex-1 min-w-0">
+                                                {{ $log->title }}</p>
+                                            <span
+                                                class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $cfg['badge'] }}">
+                                                {{ $cfg['label'] }}
+                                            </span>
+                                        </div>
+                                        @if ($log->body)
+                                            <p class="text-xs text-gray-600 mt-1 leading-relaxed break-words">
+                                                {{ trim($log->body) }}</p>
+                                        @endif
+                                        <p class="text-xs text-gray-400 mt-1">
+                                            {{ $log->logger->name }} · {{ $log->created_at->format('d M Y, H:i') }} WITA
+                                        </p>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                    @else
+                        <p class="text-xs text-gray-400 italic">Belum ada aktivitas yang dicatat.</p>
+                    @endif
+
                 </div>
             </div>
 
@@ -283,6 +343,61 @@
                     </form>
                 </div>
             @endif
+
+            {{-- ════ FORM: CATAT AKTIVITAS (status = in_progress) ════ --}}
+            @if ($csirtProcess->status === 'in_progress')
+                <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Catat Aktivitas</h3>
+                    <p class="text-xs text-gray-500 mb-3">
+                        Dokumentasikan setiap tindakan yang dilakukan selama proses mitigasi.
+                    </p>
+                    <form method="POST" action="{{ route('csirt.reports.activity', $csirtProcess) }}">
+                        @csrf
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Aktivitas</label>
+                                <select name="type" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                    <option value="update">Update</option>
+                                    <option value="notification">Notifikasi (surat/email ke aset)</option>
+                                    <option value="coordination">Koordinasi</option>
+                                    <option value="technical">Tindakan Teknis</option>
+                                    <option value="other">Lainnya</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">
+                                    Judul Aktivitas <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" name="title" required maxlength="200"
+                                    placeholder="Contoh: Kirim surat teguran ke pengelola aset"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Detail</label>
+                                <textarea name="body" rows="3" maxlength="5000"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs
+                               focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                    placeholder="Penjelasan lebih lanjut (opsional)..."></textarea>
+                            </div>
+
+                            {{-- TOMBOL SIMPAN --}}
+                            <button type="submit"
+                                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold
+           rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Simpan Aktivitas
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @endif
+
 
             {{-- ════ STATUS CLOSED ════ --}}
             @if ($csirtProcess->status === 'closed')

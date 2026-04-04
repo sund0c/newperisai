@@ -129,4 +129,28 @@ class ReportController extends Controller
             ]
         );
     }
+
+    // ════════════════════════════════════════════════════════════════
+    // ADD ACTIVITY — CSIRT catat aktivitas/progress penanganan
+    // ════════════════════════════════════════════════════════════════
+
+    public function addActivity(Request $request, CsirtProcess $csirtProcess)
+    {
+        abort_if($csirtProcess->status !== 'in_progress', 403, 'Aktivitas hanya bisa ditambah saat proses sedang berjalan.');
+
+        $request->validate([
+            'type'  => 'required|in:update,notification,coordination,technical,other',
+            'title' => 'required|string|max:200',
+            'body'  => 'nullable|string|max:5000',
+        ]);
+
+        $csirtProcess->activityLogs()->create([
+            'logged_by' => auth()->id(),
+            'type'      => $request->type,
+            'title'     => $request->title,
+            'body'      => $request->body,
+        ]);
+
+        return back()->with('success', 'Aktivitas berhasil dicatat.');
+    }
 }

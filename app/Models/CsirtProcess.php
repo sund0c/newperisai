@@ -75,4 +75,8 @@ class CsirtProcess extends Model
     {
         return !empty($this->mitigation_file);
     }
+    public function activityLogs()
+    {
+        return $this->hasMany(CsirtActivityLog::class)->latest();
+    }
 }

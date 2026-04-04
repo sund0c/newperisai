@@ -140,6 +140,8 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
         Route::post('/tiket/{csirtProcess}/close', [\App\Http\Controllers\Csirt\ReportController::class, 'close'])->name('reports.close');
         Route::get('/tiket/{csirtProcess}/download', [\App\Http\Controllers\Csirt\ReportController::class, 'download'])->name('reports.download');
         Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
+        Route::post('reports/{csirtProcess}/activity', [\App\Http\Controllers\Csirt\ReportController::class, 'addActivity'])->name('csirt.reports.activity');
+        Route::post('tiket/{csirtProcess}/activity', [\App\Http\Controllers\Csirt\ReportController::class, 'addActivity'])->name('reports.activity');
     });
 
     // PUBLIC USER AREA

@@ -20,6 +20,35 @@ return new class extends Migration {
             $table->string('title');
             $table->text('description');
             $table->string('affected_system')->nullable();
+
+            // Jenis Insiden (enum - pilih 1)
+            $table->enum('incident_type_reporter', [
+                'data_breach',
+                'web_defacement',
+                'ransomware',
+                'phishing',
+                'malicious_software',
+                'exploit',
+                'account_hijacking',
+                'advanced_persistence_threat',
+                'peringatan_keamanan',
+                'lainnya'
+            ]);
+            $table->string('incident_type_other')->nullable();
+
+            $table->enum('incident_type_verified', [
+                'data_breach',
+                'web_defacement',
+                'ransomware',
+                'phishing',
+                'malicious_software',
+                'exploit',
+                'account_hijacking',
+                'advanced_persistence_threat',
+                'peringatan_keamanan',
+                'lainnya'
+            ])->nullable();
+
             $table->string('poc_video_url');
 
             // Severity: pelapor pilih, support/admin bisa override
@@ -65,6 +94,7 @@ return new class extends Migration {
             $table->index(['user_id', 'status']);
             $table->index(['status', 'validation_result']);
             $table->index('ticket_number');
+            $table->index('incident_type_reporter');
         });
 
         Schema::create('report_attachments', function (Blueprint $table) {

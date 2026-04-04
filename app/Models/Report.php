@@ -35,6 +35,9 @@ class Report extends Model
         'certificated_at',
         'closed_at',
         'is_historical',
+        'incident_type_reporter',
+        'incident_type_other',
+        'incident_type_verified'
 
     ];
 

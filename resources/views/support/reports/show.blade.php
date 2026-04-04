@@ -40,8 +40,7 @@
                             $vrc = \App\Models\Report::validationResultColor()[$report->validation_result] ?? 'gray';
                         @endphp
                         <span
-                            class="inline-flex px-3 py-1 rounded-full text-xs font-semibold
-                             bg-{{ $vrc }}-100 text-{{ $vrc }}-700">
+                            class="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-{{ $vrc }}-100 text-{{ $vrc }}-700">
                             {{ $report->validation_result_label }}
                         </span>
                     @endif
@@ -78,7 +77,69 @@
                         <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ $report->description }}</p>
                     </div>
 
-                    {{-- Dual Severity --}}
+                    {{-- Dual Jenis Insiden --}}
+                    <div class="grid grid-cols-2 gap-3">
+                        @php
+                            $incidentLabel = [
+                                'data_breach' => 'Data Breach',
+                                'web_defacement' => 'Web Defacement',
+                                'ransomware' => 'Ransomware',
+                                'phishing' => 'Phishing',
+                                'malicious_software' => 'Malicious Software',
+                                'exploit' => 'Exploit',
+                                'account_hijacking' => 'Account Hijacking',
+                                'advanced_persistence_threat' => 'Advanced Persistence Threat',
+                                'peringatan_keamanan' => 'Peringatan Keamanan',
+                                'lainnya' => $report->incident_type_other ?? 'Lain-lain',
+                            ];
+                            $incidentColors = [
+                                'data_breach' => 'red',
+                                'web_defacement' => 'orange',
+                                'ransomware' => 'red',
+                                'phishing' => 'yellow',
+                                'malicious_software' => 'purple',
+                                'exploit' => 'blue',
+                                'account_hijacking' => 'orange',
+                                'advanced_persistence_threat' => 'red',
+                                'peringatan_keamanan' => 'blue',
+                                'lainnya' => 'gray',
+                            ];
+                        @endphp
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Jenis Insiden
+                                (Pelapor)</p>
+                            @php $icR = $incidentColors[$report->incident_type_reporter] ?? 'gray'; @endphp
+                            <span
+                                class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-{{ $icR }}-100 text-{{ $icR }}-700">
+                                {{ $incidentLabel[$report->incident_type_reporter] ?? $report->incident_type_reporter }}
+                            </span>
+                        </div>
+
+                        <div class="p-3 bg-gray-50 rounded-lg">
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Jenis Insiden
+                                (Terverifikasi)</p>
+
+                            @if ($report->incident_type_verified && $report->validation_result === 'valid')
+                                @php $icV = $incidentColors[$report->incident_type_verified] ?? 'gray'; @endphp
+                                <span
+                                    class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-{{ $icV }}-100 text-{{ $icV }}-700">
+                                    {{ $incidentLabel[$report->incident_type_verified] ?? $report->incident_type_verified }}
+                                </span>
+                            @elseif($report->validation_result && $report->validation_result !== 'valid')
+                                <span
+                                    class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-400">
+                                    N/A
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-400">
+                                    Belum diverifikasi
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Dual Dampak/Severity --}}
                     <div class="grid grid-cols-2 gap-3">
                         @php
                             $scR = \App\Models\Report::severityColor()[$report->severity_reporter] ?? 'gray';
@@ -94,6 +155,7 @@
                                 {{ $slR }}
                             </span>
                         </div>
+
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Dampak
                                 (Terverifikasi)</p>
@@ -120,7 +182,6 @@
                                     Belum diverifikasi
                                 </span>
                             @endif
-
                         </div>
                     </div>
 
@@ -128,34 +189,23 @@
                         <div>
                             <p class="font-semibold uppercase tracking-wider mb-1">Tanggal Laporan</p>
                             <p>{{ $report->created_at->format('d M Y') }} WITA</p>
-                            {{-- <p class="text-gray-400">{{ $report->created_at->utc()->format('d M Y, H:i') }} UTC (UTC+8)</p> --}}
                         </div>
                         @if ($report->validated_at)
                             <div>
                                 <p class="font-semibold uppercase tracking-wider mb-1">Tanggal Validasi</p>
                                 <p>{{ $report->validated_at->format('d M Y, H:i') }} WITA</p>
-                                {{-- <p class="text-gray-400">{{ $report->validated_at->utc()->format('d M Y, H:i') }} UTC
-                                    (UTC+8)</p> --}}
                             </div>
                         @endif
                         @if ($report->certificated_at)
                             <div>
                                 <p class="font-semibold uppercase tracking-wider mb-1">Tanggal e-Sertifikat</p>
                                 <p>{{ $report->certificated_at->format('d M Y, H:i') }} WITA</p>
-                                {{-- <p class="text-gray-400">{{ $report->certificated_at->utc()->format('d M Y, H:i') }} UTC
-                                    (UTC+8)</p> --}}
                             </div>
                         @endif
                         @if ($report->closed_at)
                             <div>
                                 <p class="font-semibold uppercase tracking-wider mb-1">Tanggal Selesai</p>
-                                <p>{{ $report->closed_at->format('d M Y, H:i') }} WITA
-
-
-
-                                </p>
-                                {{-- <p class="text-gray-400">{{ $report->closed_at->utc()->format('d M Y, H:i') }} UTC
-                                    (UTC+8)</p> --}}
+                                <p>{{ $report->closed_at->format('d M Y, H:i') }} WITA</p>
                             </div>
                         @endif
                     </div>
@@ -242,7 +292,40 @@
                 </div>
             </div>
 
-            {{-- Proses CSIRT (hanya tampil jika ada) --}}
+            {{-- Riwayat Status --}}
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h2 class="text-sm font-semibold text-gray-700">Riwayat Status</h2>
+                </div>
+                <div class="px-6 py-5">
+                    <ol class="space-y-0">
+                        @foreach ($report->statusLogs as $log)
+                            <li class="flex gap-4">
+                                <div class="flex flex-col items-center">
+                                    <span class="w-3 h-3 rounded-full bg-blue-500 shrink-0 mt-1"></span>
+                                    @if (!$loop->last)
+                                        <span class="w-0.5 bg-gray-200 flex-1 my-1"></span>
+                                    @endif
+                                </div>
+                                <div class="pb-5 flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-800">
+                                        {{ \App\Models\Report::statusLabel()[$log->status] ?? $log->status }}
+                                    </p>
+                                    @if ($log->notes)
+                                        <p class="text-xs text-gray-600 mt-0.5 break-words">{{ trim($log->notes) }}</p>
+                                    @endif
+                                    <p class="text-xs text-gray-400 mt-0.5">
+                                        {{ $log->changer?->name ?? 'Sistem' }} ·
+                                        {{ $log->created_at->format('d M Y, H:i') }} WITA
+                                    </p>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+            </div>
+
+            {{-- Proses Mitigasi CSIRT --}}
             @if ($report->csirtProcess)
                 @php $cp = $report->csirtProcess; @endphp
                 <div class="bg-white rounded-xl border border-indigo-200 shadow-sm overflow-hidden">
@@ -257,88 +340,131 @@
                         </div>
                         <span
                             class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium
-                             bg-{{ $cp->status_color }}-100 text-{{ $cp->status_color }}-700">
+                bg-{{ $cp->status_color }}-100 text-{{ $cp->status_color }}-700">
                             {{ $cp->status_label }}
                         </span>
                     </div>
-                    <div class="px-6 py-5 space-y-3 text-sm">
-                        <div class="grid grid-cols-3 gap-4 text-xs">
-                            <div>
-                                <p class="font-semibold text-gray-500 uppercase tracking-wider mb-1">Dinotifikasi</p>
-                                <p class="text-gray-700">{{ $cp->notified_at?->format('d M Y, H:i') ?? '-' }}</p>
+                    <div class="px-6 py-5">
+
+                        {{-- ── MILESTONE BAR ── --}}
+                        <div class="grid divide-x divide-gray-200 border border-gray-200 rounded-lg overflow-hidden mb-5"
+                            style="grid-template-columns: repeat(4, minmax(0, 1fr))">
+                            {{-- Dinotifikasi --}}
+                            <div class="p-3 bg-gray-50">
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Dinotifikasi
+                                </p>
+                                <p class="text-xs font-medium text-gray-700">
+                                    {{ $cp->notified_at?->format('d M Y, H:i') ?? '—' }} WITA</p>
                             </div>
-                            <div>
-                                <p class="font-semibold text-gray-500 uppercase tracking-wider mb-1">Mulai Proses</p>
-                                <p class="text-gray-700">{{ $cp->started_at?->format('d M Y, H:i') ?? '-' }}</p>
+
+                            {{-- Mulai Proses --}}
+                            <div class="p-3 {{ $cp->started_at ? 'bg-indigo-50' : 'bg-gray-50' }}">
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mulai Proses
+                                </p>
+                                <p class="text-xs font-medium text-gray-700">
+                                    {{ $cp->started_at?->format('d M Y, H:i') ?? '—' }}
+                                    {{ $cp->started_at ? 'WITA' : '' }}</p>
                             </div>
-                            <div>
-                                <p class="font-semibold text-gray-500 uppercase tracking-wider mb-1">Selesai</p>
-                                <p class="text-gray-700">{{ $cp->closed_at?->format('d M Y, H:i') ?? '-' }}</p>
+
+                            {{-- Selesai --}}
+                            <div class="p-3 {{ $cp->closed_at ? 'bg-green-50' : 'bg-gray-50' }}">
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Selesai</p>
+                                <p class="text-xs font-medium text-gray-700">
+                                    {{ $cp->closed_at?->format('d M Y, H:i') ?? '—' }} {{ $cp->closed_at ? 'WITA' : '' }}
+                                </p>
                             </div>
+
+                            {{-- Laporan --}}
+                            <div class="p-3 {{ $cp->mitigation_file ? 'bg-indigo-50' : 'bg-gray-50' }}">
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Laporan</p>
+                                @if ($cp->mitigation_file)
+                                    <a href="{{ route('support.csirt.download', $cp) }}" target="_blank"
+                                        class="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:underline">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        Unduh PDF
+                                    </a>
+                                @else
+                                    <p class="text-xs text-gray-300">—</p>
+                                @endif
+                            </div>
+
                         </div>
 
-                        @if ($cp->handled_by)
-                            <div>
-                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Ditangani oleh
-                                </p>
-                                <p class="text-gray-700">{{ $cp->handler?->name }}</p>
-                            </div>
+                        {{-- ── DIVIDER ── --}}
+                        @if ($cp->activityLogs && $cp->activityLogs->isNotEmpty())
+                            <div class="border-t border-dashed border-gray-200 mb-5"></div>
+
+                            {{-- ── ACTIVITY LOG (terbaru di atas) ── --}}
+                            <ol class="space-y-0">
+                                @foreach ($cp->activityLogs->sortByDesc('created_at') as $log)
+                                    @php
+                                        $typeMap = [
+                                            'update' => [
+                                                'label' => 'Update',
+                                                'color' => '#3b82f6',
+                                                'badge' => 'bg-blue-100 text-blue-700',
+                                            ],
+                                            'notification' => [
+                                                'label' => 'Notifikasi',
+                                                'color' => '#eab308',
+                                                'badge' => 'bg-yellow-100 text-yellow-700',
+                                            ],
+                                            'coordination' => [
+                                                'label' => 'Koordinasi',
+                                                'color' => '#a855f7',
+                                                'badge' => 'bg-purple-100 text-purple-700',
+                                            ],
+                                            'technical' => [
+                                                'label' => 'Teknis',
+                                                'color' => '#ef4444',
+                                                'badge' => 'bg-red-100 text-red-700',
+                                            ],
+                                            'other' => [
+                                                'label' => 'Lainnya',
+                                                'color' => '#9ca3af',
+                                                'badge' => 'bg-gray-100 text-gray-600',
+                                            ],
+                                        ];
+                                        $cfg = $typeMap[$log->type] ?? $typeMap['other'];
+                                    @endphp
+                                    <li class="flex gap-4">
+                                        <div class="flex flex-col items-center">
+                                            <span class="w-3 h-3 rounded-full shrink-0 mt-1"
+                                                style="background-color: {{ $cfg['color'] }}"></span>
+                                            @if (!$loop->last)
+                                                <span class="w-0.5 bg-gray-200 flex-1 my-1"></span>
+                                            @endif
+                                        </div>
+                                        <div class="pb-5 flex-1 min-w-0">
+                                            <div class="flex items-start gap-2">
+                                                <p class="text-sm font-semibold text-gray-800 leading-snug flex-1 min-w-0">
+                                                    {{ $log->title }}</p>
+                                                <span
+                                                    class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $cfg['badge'] }}">
+                                                    {{ $cfg['label'] }}
+                                                </span>
+                                            </div>
+                                            @if ($log->body)
+                                                <p class="text-xs text-gray-600 mt-1 leading-relaxed break-words">
+                                                    {{ trim($log->body) }}</p>
+                                            @endif
+                                            <p class="text-xs text-gray-400 mt-1">
+                                                {{ $log->logger->name }} · {{ $log->created_at->format('d M Y, H:i') }}
+                                                WITA
+                                            </p>
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ol>
                         @endif
 
-                        @if ($cp->notes)
-                            <div>
-                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Catatan
-                                    Mitigasi</p>
-                                <p class="text-gray-700 whitespace-pre-wrap">{{ $cp->notes }}</p>
-                            </div>
-                        @endif
-
-                        @if ($cp->mitigation_file)
-                            <div>
-                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Laporan
-                                    Mitigasi</p>
-                                <a href="{{ route('support.csirt.download', $cp) }}" target="_blank"
-                                    class="inline-flex items-center gap-2 px-3 py-2 bg-indigo-50 hover:bg-indigo-100
-                              text-indigo-700 rounded-lg text-xs font-medium border border-indigo-200 transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    {{ $cp->mitigation_file_original ?? 'Unduh Laporan Mitigasi' }}
-                                </a>
-                            </div>
-                        @endif
                     </div>
                 </div>
             @endif
-
-            {{-- Timeline Status --}}
-            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <h2 class="text-sm font-semibold text-gray-700 mb-4">Riwayat Status</h2>
-                <div class="space-y-3">
-                    @foreach ($report->statusLogs as $log)
-                        <div class="flex items-start gap-3">
-                            <div class="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0"></div>
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-sm font-medium text-gray-700">
-                                        {{ \App\Models\Report::statusLabel()[$log->status] ?? $log->status }}
-                                    </span>
-                                    <span class="text-xs text-gray-400 whitespace-nowrap">
-                                        {{ $log->created_at->format('d M Y, H:i') }} WITA
-                                    </span>
-                                </div>
-                                @if ($log->changer)
-                                    <p class="text-xs text-gray-400">oleh {{ $log->changer->name }}</p>
-                                @endif
-                                @if ($log->notes)
-                                    <p class="text-xs text-gray-500 mt-0.5">{{ $log->notes }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
 
         </div>
 
@@ -392,17 +518,57 @@
                             </label>
                             <textarea name="notes" rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                             focus:outline-none focus:ring-2 focus:ring-gray-400"
+                     focus:outline-none focus:ring-2 focus:ring-gray-400"
                                 placeholder="Tambahkan catatan atau keterangan untuk pelapor..."></textarea>
                         </div>
 
+                        {{-- Verifikasi Jenis Insiden --}}
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-600 mb-1">
+                                Verifikasi Jenis Insiden <span class="text-red-500">*</span>
+                            </label>
+                            <select name="incident_type_verified" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                       focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                                <option value="">-- Pilih Jenis Insiden --</option>
+                                @php
+                                    $incidentOptions = [
+                                        'data_breach' => 'Data Breach',
+                                        'web_defacement' => 'Web Defacement',
+                                        'ransomware' => 'Ransomware',
+                                        'phishing' => 'Phishing',
+                                        'malicious_software' => 'Malicious Software',
+                                        'exploit' => 'Exploit',
+                                        'account_hijacking' => 'Account Hijacking',
+                                        'advanced_persistence_threat' => 'Advanced Persistence Threat',
+                                        'peringatan_keamanan' => 'Peringatan Keamanan',
+                                        'lainnya' => 'Lain-lain',
+                                    ];
+                                @endphp
+                                @foreach ($incidentOptions as $value => $label)
+                                    <option value="{{ $value }}"
+                                        {{ $value === $report->incident_type_reporter ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="text-xs text-gray-400 mt-1">
+                                Pelapor menilai:
+                                <strong>{{ $incidentOptions[$report->incident_type_reporter] ?? $report->incident_type_reporter }}</strong>
+                                @if ($report->incident_type_reporter === 'lainnya' && $report->incident_type_other)
+                                    ({{ $report->incident_type_other }})
+                                @endif
+                            </p>
+                        </div>
+
+                        {{-- Verifikasi Dampak --}}
                         <div class="mb-3">
                             <label class="block text-xs font-medium text-gray-600 mb-1">
                                 Verifikasi Dampak <span class="text-red-500">*</span>
                             </label>
                             <select name="severity_verified" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                   focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
+                       focus:outline-none focus:ring-2 focus:ring-green-500 bg-white">
                                 <option value="">-- Pilih Dampak --</option>
                                 @foreach (\App\Models\Report::severityLabel() as $value => $label)
                                     <option value="{{ $value }}"
@@ -422,7 +588,7 @@
                             <button type="button"
                                 onclick="submitResult('valid', 'Tandai sebagai VALID? Tim CSIRT akan dinotifikasi untuk mitigasi.')"
                                 class="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold
-                           rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                       rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M5 13l4 4L19 7" />
@@ -434,8 +600,8 @@
                             <button type="button"
                                 onclick="submitResult('invalid', 'Tandai sebagai TIDAK VALID? Pelapor akan dikirim email pemberitahuan.')"
                                 class="w-full py-2.5 bg-white hover:bg-red-50 text-red-600 font-semibold
-                           rounded-lg text-sm transition-colors border border-red-300
-                           flex items-center justify-center gap-2">
+                       rounded-lg text-sm transition-colors border border-red-300
+                       flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M6 18L18 6M6 6l12 12" />
@@ -447,8 +613,8 @@
                             <button type="button"
                                 onclick="submitResult('duplicate', 'Tandai sebagai DUPLIKAT? Pelapor akan dikirim email pemberitahuan.')"
                                 class="w-full py-2.5 bg-white hover:bg-yellow-50 text-yellow-700 font-semibold
-                           rounded-lg text-sm transition-colors border border-yellow-300
-                           flex items-center justify-center gap-2">
+                       rounded-lg text-sm transition-colors border border-yellow-300
+                       flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -512,7 +678,7 @@
                                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
                         </svg>
                         <h3 class="text-sm font-semibold text-gray-700">Tiket Selesai
-                              dalam waktu {{ (int) $report->created_at->diffInDays($report->closed_at) }} hari
+                            dalam waktu {{ (int) $report->created_at->diffInDays($report->closed_at) }} hari
 
                         </h3>
                     </div>
