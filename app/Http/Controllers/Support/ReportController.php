@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Support;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\CsirtProcess;
+use App\Models\DpoProcess;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -124,7 +125,7 @@ class ReportController extends Controller
         $request->validate([
             'result'                 => 'required|in:valid,invalid,duplicate',
             'notes'                  => 'nullable|string|max:1000',
-            'incident_type_verified' => 'required|in:data_breach,web_defacement,ransomware,phishing,malicious_software,exploit,account_hijacking,advanced_persistence_threat,peringatan_keamanan,lainnya',
+            'incident_type_verified' => 'required|in:data_breach_pdp,data_breach,web_defacement,ransomware,phishing,malicious_software,exploit,account_hijacking,advanced_persistence_threat,peringatan_keamanan,lainnya',
             'severity_verified'      => 'nullable|in:critical,high,medium,low',
         ]);
 
@@ -157,6 +158,16 @@ class ReportController extends Controller
 
                     // Kirim notifikasi ke semua user role CSIRT
                     $this->notifyCsirtTeam($report);
+
+                    // Khusus data_breach_pdp → teruskan ke DPO juga
+                    if ($request->incident_type_verified === 'data_breach_pdp') {
+                        DpoProcess::create([
+                            'report_id'   => $report->id,
+                            'status'      => 'notified',
+                            'notified_at' => now(),
+                        ]);
+                        $this->notifyDpoTeam($report);
+                    }
                 } else {
                     // INVALID atau DUPLICATE → langsung closed
                     $report->update([
@@ -235,6 +246,16 @@ class ReportController extends Controller
             $user->notify(new \App\Notifications\CsirtTicketNotification($report));
         }
     }
+
+    private function notifyDpoTeam(Report $report): void
+    {
+        $dpoUsers = \App\Models\User::role('Dpo')->where('is_active', true)->get();
+
+        foreach ($dpoUsers as $user) {
+            $user->notify(new \App\Notifications\DpoTicketNotification($report));
+        }
+    }
+
 
     private function sendClosedEmail(Report $report): void
     {

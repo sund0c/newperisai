@@ -108,8 +108,8 @@ class UserSeeder extends Seeder
         if (app()->environment('local', 'development', 'staging')) {
             $publics = [
                 [
-                    'name'                 => 'Jhon Vemon',
-                    'email'                => 'vemon15491@agoalz.com',
+                    'name'                 => 'Publik Pelapor',
+                    'email'                => 'public1@baliprov.go.id',
                     'password'             => Hash::make(env('SEEDER_PUBLIC1_PASSWORD')),
                     'organization'         => 'Dinas Kominfo Bali',
                     'phone'                => '08123456789',
@@ -190,6 +190,50 @@ class UserSeeder extends Seeder
         foreach ($csirts as $data) {
             $user = User::firstOrCreate(['email' => $data['email']], $data);
             $user->assignRole('csirt');
+            PasswordHistory::firstOrCreate(
+                ['user_id' => $user->id, 'password' => $data['password']]
+            );
+        }
+
+        // =====================
+        // DPO USERS (3)
+        // =====================
+        $dpo = [
+            [
+                'name'                 => 'DPO satu',
+                'email'                => 'dpo1@baliprov.go.id',
+                'password'             => Hash::make(env('SEEDER_DPO1_PASSWORD')),
+                'organization'         => 'DPO Provinsi Bali',
+                'is_active'            => true,
+                'email_verified_at'    => now(),
+                'password_changed_at'  => null,
+                'must_change_password' => true,
+            ],
+            [
+                'name'                 => 'DPO Dua',
+                'email'                => 'dpo2@baliprov.go.id',
+                'password'             => Hash::make(env('SEEDER_DPO2_PASSWORD')),
+                'organization'         => 'CSIRT Provinsi Bali',
+                'is_active'            => true,
+                'email_verified_at'    => now(),
+                'password_changed_at'  => null,
+                'must_change_password' => true,
+            ],
+            [
+                'name'                 => 'DPO Tiga',
+                'email'                => 'dpo3@baliprov.go.id',
+                'password'             => Hash::make(env('SEEDER_DPO3_PASSWORD')),
+                'organization'         => 'CSIRT Provinsi Bali',
+                'is_active'            => true,
+                'email_verified_at'    => now(),
+                'password_changed_at'  => null,
+                'must_change_password' => true,
+            ],
+        ];
+
+        foreach ($dpo as $data) {
+            $user = User::firstOrCreate(['email' => $data['email']], $data);
+            $user->assignRole('dpo');
             PasswordHistory::firstOrCreate(
                 ['user_id' => $user->id, 'password' => $data['password']]
             );

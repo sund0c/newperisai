@@ -92,12 +92,26 @@
                                 'peringatan_keamanan' => 'Peringatan Keamanan',
                                 'lainnya' => $report->incident_type_other ?? 'Lain-lain',
                             ];
+                            $incidentColors = [
+                                'data_breach_pdp' => 'red',
+                                'data_breach' => 'red',
+                                'web_defacement' => 'orange',
+                                'ransomware' => 'red',
+                                'phishing' => 'yellow',
+                                'malicious_software' => 'purple',
+                                'exploit' => 'blue',
+                                'account_hijacking' => 'orange',
+                                'advanced_persistence_threat' => 'red',
+                                'peringatan_keamanan' => 'blue',
+                                'lainnya' => 'gray',
+                            ];
                         @endphp
                         <div class="p-3 bg-gray-50 rounded-lg">
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Jenis Insiden
                                 (Pelapor)</p>
+                            @php $icR = $incidentColors[$report->incident_type_reporter] ?? 'gray'; @endphp
                             <span
-                                class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-{{ $icR }}-100 text-{{ $icR }}-700">
                                 {{ $incidentLabel[$report->incident_type_reporter] ?? $report->incident_type_reporter }}
                             </span>
                         </div>
@@ -107,8 +121,9 @@
                                 (Terverifikasi)</p>
 
                             @if ($report->incident_type_verified && $report->validation_result === 'valid')
+                                @php $icV = $incidentColors[$report->incident_type_verified] ?? 'gray'; @endphp
                                 <span
-                                    class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                                    class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold bg-{{ $icV }}-100 text-{{ $icV }}-700">
                                     {{ $incidentLabel[$report->incident_type_verified] ?? $report->incident_type_verified }}
                                 </span>
                             @elseif($report->validation_result && $report->validation_result !== 'valid')
@@ -491,7 +506,7 @@
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Hasil Validasi</h3>
                     <p class="text-xs text-gray-500 mb-4">
                         Periksa seluruh bukti PoC sebelum menentukan hasil validasi.
-
+                        Catatan akan dikirim ke pelapor melalui email.
                     </p>
 
                     <form method="POST" action="{{ route('support.reports.result', $report) }}" id="resultForm">
@@ -500,7 +515,7 @@
 
                         <div class="mb-4">
                             <label class="block text-xs font-medium text-gray-600 mb-1">
-                                Catatan <span class="text-gray-400">(opsional — akan dikirim ke pelapor via email)</span>
+                                Catatan <span class="text-gray-400">(opsional — akan dikirim ke pelapor)</span>
                             </label>
                             <textarea name="notes" rows="3"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
@@ -573,7 +588,7 @@
                         <div class="space-y-2 pt-1">
                             {{-- VALID --}}
                             <button type="button"
-                                onclick="submitResult('valid', 'Tandai sebagai VALID? Tim CSIRT akan dinotifikasi untuk mitigasi. Khusus untuk Kebocoran Data (UU PDP) akan dikirimkan ke DPO Prov Bali.')"
+                                onclick="submitResult('valid', 'Tandai sebagai VALID? Tim CSIRT akan dinotifikasi untuk mitigasi.')"
                                 class="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold
                        rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

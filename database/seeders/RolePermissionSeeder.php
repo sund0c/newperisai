@@ -33,6 +33,9 @@ class RolePermissionSeeder extends Seeder
             // CSIRT mitigasi
             'csirt.view',
             'csirt.process',
+            // DPO  mitigasi
+            'dpo.view',
+            'dpo.process',
             // System
             'system.settings',
             'audit.view',
@@ -64,6 +67,14 @@ class RolePermissionSeeder extends Seeder
         $csirtRole->syncPermissions([
             'csirt.view',
             'csirt.process',
+            'ticket.view.all', // baca detail tiket untuk keperluan mitigasi
+        ]);
+
+        // DPO — hanya akses proses mitigasi, tidak terhubung ke ticketing public
+        $dpoRole = Role::firstOrCreate(['name' => 'dpo']);
+        $dpoRole->syncPermissions([
+            'dpo.view',
+            'dpo.process',
             'ticket.view.all', // baca detail tiket untuk keperluan mitigasi
         ]);
 

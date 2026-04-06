@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', $csirtProcess->report->ticket_number)
-@section('page-title', $csirtProcess->report->ticket_number)
-@section('page-subtitle', $csirtProcess->report->title)
+@section('title', $dpoProcess->report->ticket_number)
+@section('page-title', $dpoProcess->report->ticket_number)
+@section('page-subtitle', $dpoProcess->report->title)
 
 @section('content')
 
@@ -24,7 +24,7 @@
         </div>
     @endif
 
-    @php $report = $csirtProcess->report; @endphp
+    @php $report = $dpoProcess->report; @endphp
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
@@ -117,9 +117,9 @@
                     </div>
                     <div class="px-6 py-5 space-y-2">
                         @foreach ($report->images as $img)
-                            <a href="{{ route('csirt.attachments.show', $img) }}" target="_blank"
+                            <a href="{{ route('dpo.attachments.show', $img) }}" target="_blank"
                                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-indigo-50
-                          border border-transparent hover:border-indigo-200 transition-colors group">
+                                  border border-transparent hover:border-indigo-200 transition-colors group">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
                                         <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
@@ -143,9 +143,9 @@
                         @endforeach
 
                         @foreach ($report->documents as $doc)
-                            <a href="{{ route('csirt.attachments.show', $doc) }}" target="_blank"
+                            <a href="{{ route('dpo.attachments.show', $doc) }}" target="_blank"
                                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-indigo-50
-                          border border-transparent hover:border-indigo-200 transition-colors group">
+                                  border border-transparent hover:border-indigo-200 transition-colors group">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
                                         <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor"
@@ -175,7 +175,7 @@
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                     <h2 class="text-sm font-semibold text-gray-700">Timeline Penanganan</h2>
-                    <span class="text-xs text-gray-400">{{ $csirtProcess->activityLogs->count() }} aktivitas</span>
+                    <span class="text-xs text-gray-400">{{ $dpoProcess->activityLogs->count() }} aktivitas</span>
                 </div>
                 <div class="px-6 py-5">
 
@@ -185,31 +185,29 @@
                         <div class="p-3 bg-gray-50">
                             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Dinotifikasi</p>
                             <p class="text-xs font-medium text-gray-700">
-                                {{ $csirtProcess->notified_at?->format('d M Y, H:i') ?? '—' }}
-                                {{ $csirtProcess->notified_at ? 'WITA' : '' }}</p>
+                                {{ $dpoProcess->notified_at?->format('d M Y, H:i') ?? '—' }}
+                                {{ $dpoProcess->notified_at ? 'WITA' : '' }}</p>
                         </div>
-                        <div class="p-3 {{ $csirtProcess->started_at ? 'bg-indigo-50' : 'bg-gray-50' }}">
+                        <div class="p-3 {{ $dpoProcess->started_at ? 'bg-indigo-50' : 'bg-gray-50' }}">
                             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mulai Proses</p>
                             <p class="text-xs font-medium text-gray-700">
-                                {{ $csirtProcess->started_at?->format('d M Y, H:i') ?? '—' }}
-                                {{ $csirtProcess->started_at ? 'WITA' : '' }}</p>
+                                {{ $dpoProcess->started_at?->format('d M Y, H:i') ?? '—' }}
+                                {{ $dpoProcess->started_at ? 'WITA' : '' }}</p>
                         </div>
-                        <div class="p-3 {{ $csirtProcess->closed_at ? 'bg-green-50' : 'bg-gray-50' }}">
-                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mitigasi Selesai
+                        <div class="p-3 {{ $dpoProcess->closed_at ? 'bg-green-50' : 'bg-gray-50' }}">
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Penanganan Selesai
                             </p>
                             <p class="text-xs font-medium text-gray-700">
-                                {{ $csirtProcess->closed_at?->format('d M Y, H:i') ?? '—' }}
-                                {{ $csirtProcess->closed_at ? 'WITA' : '' }}</p>
+                                {{ $dpoProcess->closed_at?->format('d M Y, H:i') ?? '—' }}
+                                {{ $dpoProcess->closed_at ? 'WITA' : '' }}</p>
                         </div>
                     </div>
 
-                    {{-- ── DIVIDER ── --}}
-                    @if ($csirtProcess->activityLogs && $csirtProcess->activityLogs->isNotEmpty())
+                    {{-- ── ACTIVITY LOG ── --}}
+                    @if ($dpoProcess->activityLogs && $dpoProcess->activityLogs->isNotEmpty())
                         <div class="border-t border-dashed border-gray-200 mb-5"></div>
-
-                        {{-- ── ACTIVITY LOG (terbaru di atas) ── --}}
                         <ol class="space-y-0">
-                            @foreach ($csirtProcess->activityLogs->sortByDesc('created_at') as $log)
+                            @foreach ($dpoProcess->activityLogs->sortByDesc('created_at') as $log)
                                 @php
                                     $typeMap = [
                                         'update' => [
@@ -280,7 +278,7 @@
         {{-- KOLOM KANAN: Panel Aksi --}}
         <div class="space-y-4">
 
-            <a href="{{ route('csirt.reports.index') }}"
+            <a href="{{ route('dpo.reports.index') }}"
                 class="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -290,28 +288,28 @@
 
             {{-- Status card --}}
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status Mitigasi</p>
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Status Penanganan</p>
                 <span
                     class="inline-flex px-3 py-1.5 rounded-full text-sm font-semibold
-                         bg-{{ $csirtProcess->status_color }}-100 text-{{ $csirtProcess->status_color }}-700">
-                    {{ $csirtProcess->status_label }}
+                         bg-{{ $dpoProcess->status_color }}-100 text-{{ $dpoProcess->status_color }}-700">
+                    {{ $dpoProcess->status_label }}
                 </span>
-                @if ($csirtProcess->handler)
-                    <p class="text-xs text-gray-500 mt-2">Ditangani: {{ $csirtProcess->handler->name }}</p>
+                @if ($dpoProcess->handler)
+                    <p class="text-xs text-gray-500 mt-2">Ditangani: {{ $dpoProcess->handler->name }}</p>
                 @endif
             </div>
 
             {{-- ════ AKSI: MULAI PROSES (status = notified) ════ --}}
-            @if ($csirtProcess->status === 'notified')
+            @if ($dpoProcess->status === 'notified')
                 <div class="bg-white rounded-xl border border-indigo-200 shadow-sm p-5">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Tindakan</h3>
                     <p class="text-xs text-gray-500 mb-4">
-                        Tekan tombol di bawah untuk memulai proses mitigasi.
+                        Tekan tombol di bawah untuk memulai proses penanganan.
                         Tanggal mulai akan dicatat otomatis.
                     </p>
-                    <form method="POST" action="{{ route('csirt.reports.start', $csirtProcess) }}">
+                    <form method="POST" action="{{ route('dpo.reports.start', $dpoProcess) }}">
                         @csrf
-                        <button type="submit" onclick="return confirm('Mulai proses mitigasi untuk tiket ini?')"
+                        <button type="submit" onclick="return confirm('Mulai proses penanganan untuk tiket ini?')"
                             class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold
                                rounded-lg text-sm transition-colors">
                             Mulai Proses
@@ -321,19 +319,19 @@
             @endif
 
             {{-- ════ AKSI: UPLOAD LAPORAN + SELESAI (status = in_progress) ════ --}}
-            @if ($csirtProcess->status === 'in_progress')
+            @if ($dpoProcess->status === 'in_progress')
                 <div class="bg-white rounded-xl border border-indigo-200 shadow-sm p-5">
-                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Selesaikan Mitigasi</h3>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-1">Selesaikan Penanganan</h3>
                     <p class="text-xs text-gray-500 mb-4">
-                        Upload laporan mitigasi PDF dan tambahkan catatan hasil proses.
+                        Upload laporan penanganan PDF dan tambahkan catatan hasil proses.
                     </p>
-                    <form method="POST" action="{{ route('csirt.reports.close', $csirtProcess) }}"
+                    <form method="POST" action="{{ route('dpo.reports.close', $dpoProcess) }}"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Laporan Mitigasi (PDF, maks 10MB) <span class="text-red-500">*</span>
+                                    Laporan Penanganan (PDF, maks 10MB) <span class="text-red-500">*</span>
                                 </label>
                                 <input type="file" name="mitigation_file" accept=".pdf" required
                                     class="w-full text-xs text-gray-600 border border-gray-300 rounded-lg
@@ -343,15 +341,15 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">
-                                    Catatan Mitigasi
+                                    Catatan Penanganan
                                 </label>
                                 <textarea name="notes" rows="4"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs
                                          focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    placeholder="Ringkasan tindakan mitigasi yang telah dilakukan..."></textarea>
+                                    placeholder="Ringkasan tindakan penanganan yang telah dilakukan..."></textarea>
                             </div>
                             <button type="submit"
-                                onclick="return confirm('Selesaikan proses mitigasi? Tindakan ini tidak bisa dibatalkan.')"
+                                onclick="return confirm('Selesaikan proses penanganan? Tindakan ini tidak bisa dibatalkan.')"
                                 class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold
                                    rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -366,20 +364,20 @@
             @endif
 
             {{-- ════ FORM: CATAT AKTIVITAS (status = in_progress) ════ --}}
-            @if ($csirtProcess->status === 'in_progress')
+            @if ($dpoProcess->status === 'in_progress')
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                     <h3 class="text-sm font-semibold text-gray-700 mb-1">Catat Aktivitas</h3>
                     <p class="text-xs text-gray-500 mb-3">
-                        Dokumentasikan setiap tindakan yang dilakukan selama proses mitigasi.
+                        Dokumentasikan setiap tindakan yang dilakukan selama proses penanganan.
                     </p>
-                    <form method="POST" action="{{ route('csirt.reports.activity', $csirtProcess) }}">
+                    <form method="POST" action="{{ route('dpo.reports.activity', $dpoProcess) }}">
                         @csrf
                         <div class="space-y-3">
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Jenis Aktivitas</label>
                                 <select name="type" required
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
                                     <option value="update">Update</option>
                                     <option value="notification">Notifikasi (surat/email ke aset)</option>
                                     <option value="coordination">Koordinasi</option>
@@ -392,22 +390,20 @@
                                     Judul Aktivitas <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" name="title" required maxlength="200"
-                                    placeholder="Contoh: Kirim surat teguran ke pengelola aset"
+                                    placeholder="Contoh: Kirim notifikasi ke subjek data terdampak"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             </div>
                             <div>
                                 <label class="block text-xs font-medium text-gray-600 mb-1">Detail</label>
                                 <textarea name="body" rows="3" maxlength="5000"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs
-                               focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                       focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     placeholder="Penjelasan lebih lanjut (opsional)..."></textarea>
                             </div>
-
-                            {{-- TOMBOL SIMPAN --}}
                             <button type="submit"
                                 class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold
-           rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                                   rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4" />
@@ -419,30 +415,29 @@
                 </div>
             @endif
 
-
             {{-- ════ STATUS CLOSED ════ --}}
-            @if ($csirtProcess->status === 'closed')
+            @if ($dpoProcess->status === 'closed')
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                     <div class="flex items-center gap-2 mb-3">
                         <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
                         </svg>
-                        <h3 class="text-sm font-semibold text-gray-700">Mitigasi Selesai</h3>
+                        <h3 class="text-sm font-semibold text-gray-700">Penanganan Selesai</h3>
                     </div>
                     <p class="text-xs text-gray-500 mb-3">
-                        Diselesaikan pada {{ $csirtProcess->closed_at?->format('d M Y, H:i') }} WITA.
+                        Diselesaikan pada {{ $dpoProcess->closed_at?->format('d M Y, H:i') }} WITA.
                     </p>
-                    @if ($csirtProcess->mitigation_file)
-                        <a href="{{ route('csirt.reports.download', $csirtProcess) }}" target="_blank"
+                    @if ($dpoProcess->mitigation_file)
+                        <a href="{{ route('dpo.reports.download', $dpoProcess) }}" target="_blank"
                             class="w-full inline-flex items-center justify-center gap-2 py-2 px-3
-                      bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs
-                      font-medium border border-indigo-200 transition-colors">
+                              bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-xs
+                              font-medium border border-indigo-200 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
-                            Lihat Laporan Mitigasi
+                            Lihat Laporan Penanganan
                         </a>
                     @endif
                 </div>

@@ -63,17 +63,17 @@ class ReportController extends Controller
     {
         $request->validate([
             'title'           => ['required', 'string', 'max:255'],
-            'description'     => ['required', 'string', 'min:50'],
+            'description'     => ['required', 'string', 'min:30'],
             'affected_system' => ['nullable', 'string', 'max:255'],
             'poc_video_url'   => ['required', 'url', 'max:500'],
             'severity'        => ['required', 'in:critical,high,medium,low'],
-            'incident_type'   => ['required', 'in:data_breach,web_defacement,ransomware,phishing,malicious_software,exploit,account_hijacking,advanced_persistence_threat,peringatan_keamanan,lainnya'],
+            'incident_type'   => ['required', 'in:data_breach_pdp,data_breach,web_defacement,ransomware,phishing,malicious_software,exploit,account_hijacking,advanced_persistence_threat,peringatan_keamanan,lainnya'],
             'incident_type_other' => ['required_if:incident_type,lainnya', 'nullable', 'string', 'max:255'],
             // 'poc_images'      => ['required', 'array', 'min:1', 'max:3'],
             // 'poc_images.*'    => ['image', 'mimes:jpg,jpeg,png', 'max:5120'],
             // 'poc_document'    => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ], [
-            'description.min'     => 'Deskripsi minimal 50 karakter.',
+            'description.min'     => 'Deskripsi minimal 30 karakter.',
             'poc_video_url.url'   => 'Link video PoC harus berupa URL yang valid.',
             'incident_type.required' => 'Jenis insiden wajib dipilih.',
             // 'poc_images.required' => 'Minimal 1 screenshot wajib diunggah.',

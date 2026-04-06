@@ -2,7 +2,7 @@
 
 @section('title', 'Buat Laporan Baru')
 @section('page-title', 'Buat Laporan Baru')
-@section('page-subtitle', 'Laporkan insiden atau kerentanan keamanan siber kepada CSIRT Provinsi Bali')
+@section('page-subtitle', 'Laporkan insiden atau kerentanan keamanan siber kepada CSIRT Provinsi Bali. ')
 
 @section('content')
 
@@ -18,7 +18,9 @@
                     </svg>
                     <div>
                         <p class="text-sm font-semibold text-blue-800">Panduan Pengisian Laporan</p>
-                        <p class="text-xs text-blue-700 mt-0.5">Laporan wajib disertai video Proof of Concept (PoC)</p>
+                        <p class="text-xs text-blue-700 mt-0.5">Laporan wajib disertai video Proof of Concept (PoC).
+                            Laporan yang valid akan mendapatkan Certificate of Appreciation atau Certificate of
+                            Acknowledgement, tergantung tingkat kesulitan PoC. </p>
                     </div>
                 </div>
             </div>
@@ -64,7 +66,7 @@
                         @error('description')
                             <p class="text-xs text-red-600">{{ $message }}</p>
                         @else
-                            <p class="text-xs text-gray-400">Minimal 50 karakter.</p>
+                            <p class="text-xs text-gray-400">Minimal 30 karakter.</p>
                         @enderror
                         <p class="text-xs text-gray-400" id="desc-count">0 karakter</p>
                     </div>
@@ -82,9 +84,14 @@
                         @php
                             $incidents = [
                                 [
+                                    'value' => 'data_breach_pdp',
+                                    'label' => 'Data Pribadi Bocor (UU PDP)',
+                                    'desc' => 'Data pribadi bocor/terekspose',
+                                ],
+                                [
                                     'value' => 'data_breach',
-                                    'label' => 'Data Breach',
-                                    'desc' => 'Data sensitif bocor/terexpose',
+                                    'label' => 'Data Breach (Non PDP)',
+                                    'desc' => 'Data sensitif bocor/terekspose',
                                 ],
                                 [
                                     'value' => 'web_defacement',
@@ -165,7 +172,7 @@
                         Tingkat Dampak pada Sistem <span class="text-red-500">*</span>
                     </label>
                     <p class="text-xs text-gray-400 mb-3">
-                        Pilih berdasarkan kemampuan eksploitasi yang Anda buktikan, bukan data yang Anda ambil.
+                        Pilih berdasarkan PoC Anda
                     </p>
                     <div class="space-y-2">
 
@@ -184,8 +191,12 @@
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Sangat Berbahaya</p>
                                     <p class="text-xs text-gray-500 mt-0.5">
-                                        Sistem memungkinkan eksfiltrasi data total, remote code execution,
-                                        atau layanan sudah tidak berfungsi akibat serangan
+                                        PoC membuktikan eksploitasi telah berhasil dilakukan dan mengakibatkan kerugian
+                                        nyata, atau data pribadi masyarakat telah terekspos ke publik dengan atau tanpa
+                                        eksploitasi teknis (misconfiguration, human error, dokumen terunggah tidak sesuai
+                                        prosedur). Contoh: data pribadi berhasil diekstrak dan dapat dibaca, dokumen
+                                        sensitif dapat diakses publik tanpa autentikasi, sistem layanan publik lumpuh, atau
+                                        penyerang mendapatkan kendali penuh atas sistem.
                                     </p>
                                 </div>
                             </div>
@@ -206,8 +217,10 @@
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Berbahaya</p>
                                     <p class="text-xs text-gray-500 mt-0.5">
-                                        Data dapat diakses atau dimodifikasi tanpa izin,
-                                        atau fungsi penting sistem dapat terganggu
+                                        PoC membuktikan eksploitasi berhasil dilakukan namun dampak terhadap kerahasiaan
+                                        data masih dapat dimitigasi. Contoh: PoC menunjukkan data berhasil diekstrak tetapi
+                                        terenkripsi kuat, atau akses tidak sah ke data internal/rahasia pemerintah berhasil
+                                        dibuktikan.
                                     </p>
                                 </div>
                             </div>
@@ -228,8 +241,10 @@
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Cukup Berbahaya</p>
                                     <p class="text-xs text-gray-500 mt-0.5">
-                                        Akses tidak sah dapat terjadi namun terbatas scope-nya,
-                                        atau dampak masih dapat dikontrol
+                                        PoC membuktikan eksploitasi berhasil dilakukan namun data yang terdampak tidak
+                                        sensitif dan dampaknya terkendali. Contoh: PoC menunjukkan data non-sensitif
+                                        berhasil diekstrak (katalog, data referensi), atau akses tidak sah terbatas pada
+                                        satu segmen sistem tanpa dampak ke layanan publik.
                                     </p>
                                 </div>
                             </div>
@@ -250,8 +265,10 @@
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Perlu Diperhatikan</p>
                                     <p class="text-xs text-gray-500 mt-0.5">
-                                        Celah keamanan ditemukan dan dapat direproduksi,
-                                        namun belum terjadi eksploitasi aktif
+                                        Kerentanan keamanan teridentifikasi pada sistem namun belum terbukti dapat
+                                        dieksploitasi secara aktif. Termasuk temuan CVE dari hasil pemindaian (vulnerability
+                                        scanning), konfigurasi tidak aman yang terdeteksi, atau PoC yang hanya membuktikan
+                                        kerentanan ada tanpa berhasil mengakses atau mengekstrak data apapun.
                                     </p>
                                 </div>
                             </div>
@@ -362,7 +379,7 @@
                 function updateCounter() {
                     var len = desc.value.length;
                     counter.textContent = len + ' karakter';
-                    counter.className = len >= 50 ? 'text-xs text-green-600' : 'text-xs text-red-500';
+                    counter.className = len >= 30 ? 'text-xs text-green-600' : 'text-xs text-red-500';
                 }
                 desc.addEventListener('input', updateCounter);
                 updateCounter();

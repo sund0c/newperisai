@@ -144,6 +144,19 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
         Route::post('tiket/{csirtProcess}/activity', [\App\Http\Controllers\Csirt\ReportController::class, 'addActivity'])->name('reports.activity');
     });
 
+    // DPO PANEL
+    Route::prefix('dpo')->name('dpo.')->middleware('role:dpo')->group(function () {
+        Route::get('/dashboard', fn() => view('dpo.dashboard'))->name('dashboard');
+        Route::get('/tiket', [\App\Http\Controllers\Dpo\ReportController::class, 'index'])->name('reports.index');
+        Route::get('/tiket/{dpoProcess}', [\App\Http\Controllers\Dpo\ReportController::class, 'show'])->name('reports.show');
+        Route::post('/tiket/{dpoProcess}/start', [\App\Http\Controllers\Dpo\ReportController::class, 'start'])->name('reports.start');
+        Route::post('/tiket/{dpoProcess}/close', [\App\Http\Controllers\Dpo\ReportController::class, 'close'])->name('reports.close');
+        Route::get('/tiket/{dpoProcess}/download', [\App\Http\Controllers\Dpo\ReportController::class, 'download'])->name('reports.download');
+        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
+        Route::post('reports/{dpoProcess}/activity', [\App\Http\Controllers\Dpo\ReportController::class, 'addActivity'])->name('dpo.reports.activity');
+        Route::post('tiket/{dpoProcess}/activity', [\App\Http\Controllers\Dpo\ReportController::class, 'addActivity'])->name('reports.activity');
+    });
+
     // PUBLIC USER AREA
     Route::middleware('role:public')->group(function () {
         Route::get('/laporan', fn() => view('public.dashboard'))->name('public.dashboard');

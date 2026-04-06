@@ -16,6 +16,8 @@ class DashboardController extends Controller
             return view('support.dashboard');
         } elseif ($user->hasRole('csirt')) {
             return view('csirt.dashboard');
+        } elseif ($user->hasRole('dpo')) {
+            return view('dpo.dashboard');
         } else {
             return view('public.dashboard');
         }

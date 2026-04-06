@@ -23,6 +23,7 @@ return new class extends Migration {
 
             // Jenis Insiden (enum - pilih 1)
             $table->enum('incident_type_reporter', [
+                'data_breach_pdp',
                 'data_breach',
                 'web_defacement',
                 'ransomware',
@@ -37,6 +38,7 @@ return new class extends Migration {
             $table->string('incident_type_other')->nullable();
 
             $table->enum('incident_type_verified', [
+                'data_breach_pdp',
                 'data_breach',
                 'web_defacement',
                 'ransomware',

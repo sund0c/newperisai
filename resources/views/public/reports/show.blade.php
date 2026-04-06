@@ -198,7 +198,8 @@
                 <div class="grid grid-cols-2 gap-3 pt-1">
                     @php
                         $incidentLabel = [
-                            'data_breach' => 'Data Breach',
+                            'data_breach_pdp' => 'Data Pribadi Bocor (UU PDP)',
+                            'data_breach' => 'Data Breach (Non PDP)',
                             'web_defacement' => 'Web Defacement',
                             'ransomware' => 'Ransomware',
                             'phishing' => 'Phishing',
