@@ -7,7 +7,9 @@ use App\Models\AuditLog;
 use App\Models\Report;
 use App\Models\ReportAttachment;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -69,21 +71,10 @@ class ReportController extends Controller
             'severity'        => ['required', 'in:critical,high,medium,low'],
             'incident_type'   => ['required', 'in:data_breach_pdp,data_breach,web_defacement,ransomware,phishing,malicious_software,exploit,account_hijacking,advanced_persistence_threat,peringatan_keamanan,lainnya'],
             'incident_type_other' => ['required_if:incident_type,lainnya', 'nullable', 'string', 'max:255'],
-            // 'poc_images'      => ['required', 'array', 'min:1', 'max:3'],
-            // 'poc_images.*'    => ['image', 'mimes:jpg,jpeg,png', 'max:5120'],
-            // 'poc_document'    => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
         ], [
             'description.min'     => 'Deskripsi minimal 30 karakter.',
             'poc_video_url.url'   => 'Link video PoC harus berupa URL yang valid.',
             'incident_type.required' => 'Jenis insiden wajib dipilih.',
-            // 'poc_images.required' => 'Minimal 1 screenshot wajib diunggah.',
-            // 'poc_images.min'      => 'Minimal 1 screenshot wajib diunggah.',
-            // 'poc_images.max'      => 'Maksimal 3 screenshot yang dapat diunggah.',
-            // 'poc_images.*.image'  => 'File harus berupa gambar.',
-            // 'poc_images.*.mimes'  => 'Format gambar harus JPG atau PNG.',
-            // 'poc_images.*.max'    => 'Ukuran gambar maksimal 5MB.',
-            // 'poc_document.mimes'  => 'Dokumen harus berformat PDF.',
-            // 'poc_document.max'    => 'Ukuran dokumen maksimal 10MB.',
         ]);
 
         DB::transaction(function () use ($request) {
@@ -91,26 +82,16 @@ class ReportController extends Controller
             $ticketNumber = Report::generateTicketNumber();
 
             $report = Report::create([
-                'ticket_number'     => $ticketNumber,
-                'user_id'           => $user->id,
-                'title'             => strip_tags($request->title),
-                'description'       => strip_tags($request->description),
-                'affected_system'   => $request->affected_system ? strip_tags($request->affected_system) : null,
-                'poc_video_url'     => $request->poc_video_url,
-                'severity_reporter' => $request->severity,
+                'ticket_number'          => $ticketNumber,
+                'user_id'                => $user->id,
+                'title'                  => strip_tags($request->title),
+                'description'            => strip_tags($request->description),
+                'affected_system'        => $request->affected_system ? strip_tags($request->affected_system) : null,
+                'poc_video_url'          => $request->poc_video_url,
+                'severity_reporter'      => $request->severity,
                 'incident_type_reporter' => $request->incident_type,
-                'status'            => 'submitted',
+                'status'                 => 'submitted',
             ]);
-
-            // Upload semua gambar
-            // foreach ($request->file('poc_images') as $image) {
-            //     $this->storeAttachment($image, $report, 'image');
-            // }
-
-            // Upload PDF jika ada
-            // if ($request->hasFile('poc_document')) {
-            //     $this->storeAttachment($request->file('poc_document'), $report, 'document');
-            // }
 
             AuditLog::create([
                 'user_id'    => $user->id,
@@ -119,14 +100,20 @@ class ReportController extends Controller
                     'ticket_number' => $ticketNumber,
                     'title'         => $report->title,
                     'severity'      => $report->severity_reporter,
-                    'incident_type'      => $report->incident_type_reporter,
-
-                    // 'has_document'  => $request->hasFile('poc_document'),
+                    'incident_type' => $report->incident_type_reporter,
                 ],
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
+
+            // Notifikasi ke pelapor (public user)
             $user->notify(new \App\Notifications\ReportReceivedNotification($report));
+
+            // Notifikasi internal ke email CSIRT
+            // Set relasi user secara manual agar data pelapor tersedia (tanpa query ulang)
+            $report->setRelation('user', $user);
+            Notification::route('mail', config('csirt.notification_email', 'csirt@baliprov.go.id'))
+                ->notify(new \App\Notifications\NewReportCsirtNotification($report));
         });
 
         return redirect()->route('public.reports.index')

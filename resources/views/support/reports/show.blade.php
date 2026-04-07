@@ -175,7 +175,8 @@
                                 @if ($report->validation_file)
                                     <a href="{{ route('support.reports.validation-file', $report) }}" target="_blank"
                                         class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline">
-                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
@@ -462,13 +463,15 @@
                 <div class="bg-white rounded-xl border border-purple-200 shadow-sm overflow-hidden">
                     <div class="px-6 py-4 border-b border-purple-100 bg-purple-50 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                             <h2 class="text-sm font-semibold text-purple-700">Proses Penanganan DPO</h2>
                         </div>
-                        <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium
+                        <span
+                            class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium
                             bg-{{ $dp->status_color }}-100 text-{{ $dp->status_color }}-700">
                             {{ $dp->status_label }}
                         </span>
@@ -479,12 +482,14 @@
                         <div class="grid divide-x divide-gray-200 border border-gray-200 rounded-lg overflow-hidden mb-5"
                             style="grid-template-columns: repeat(4, minmax(0, 1fr))">
                             <div class="p-3 bg-gray-50">
-                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Dinotifikasi</p>
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Dinotifikasi
+                                </p>
                                 <p class="text-xs font-medium text-gray-700">
                                     {{ $dp->notified_at?->format('d M Y, H:i') ?? '—' }} WITA</p>
                             </div>
                             <div class="p-3 {{ $dp->started_at ? 'bg-purple-50' : 'bg-gray-50' }}">
-                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mulai Proses</p>
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Mulai Proses
+                                </p>
                                 <p class="text-xs font-medium text-gray-700">
                                     {{ $dp->started_at?->format('d M Y, H:i') ?? '—' }}
                                     {{ $dp->started_at ? 'WITA' : '' }}</p>
@@ -500,7 +505,8 @@
                                 @if ($dp->mitigation_file)
                                     <a href="{{ route('support.dpo.download', $dp) }}" target="_blank"
                                         class="inline-flex items-center gap-1 text-xs font-medium text-purple-600 hover:underline">
-                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
@@ -519,11 +525,31 @@
                                 @foreach ($dp->activityLogs->sortByDesc('created_at') as $log)
                                     @php
                                         $typeMap = [
-                                            'update'       => ['label' => 'Update',     'color' => '#3b82f6', 'badge' => 'bg-blue-100 text-blue-700'],
-                                            'notification' => ['label' => 'Notifikasi', 'color' => '#eab308', 'badge' => 'bg-yellow-100 text-yellow-700'],
-                                            'coordination' => ['label' => 'Koordinasi', 'color' => '#a855f7', 'badge' => 'bg-purple-100 text-purple-700'],
-                                            'technical'    => ['label' => 'Teknis',     'color' => '#ef4444', 'badge' => 'bg-red-100 text-red-700'],
-                                            'other'        => ['label' => 'Lainnya',    'color' => '#9ca3af', 'badge' => 'bg-gray-100 text-gray-600'],
+                                            'update' => [
+                                                'label' => 'Update',
+                                                'color' => '#3b82f6',
+                                                'badge' => 'bg-blue-100 text-blue-700',
+                                            ],
+                                            'notification' => [
+                                                'label' => 'Notifikasi',
+                                                'color' => '#eab308',
+                                                'badge' => 'bg-yellow-100 text-yellow-700',
+                                            ],
+                                            'coordination' => [
+                                                'label' => 'Koordinasi',
+                                                'color' => '#a855f7',
+                                                'badge' => 'bg-purple-100 text-purple-700',
+                                            ],
+                                            'technical' => [
+                                                'label' => 'Teknis',
+                                                'color' => '#ef4444',
+                                                'badge' => 'bg-red-100 text-red-700',
+                                            ],
+                                            'other' => [
+                                                'label' => 'Lainnya',
+                                                'color' => '#9ca3af',
+                                                'badge' => 'bg-gray-100 text-gray-600',
+                                            ],
                                         ];
                                         $cfg = $typeMap[$log->type] ?? $typeMap['other'];
                                     @endphp
@@ -539,19 +565,22 @@
                                             <div class="flex items-start gap-2">
                                                 <p class="text-sm font-semibold text-gray-800 leading-snug flex-1 min-w-0">
                                                     {{ $log->title }}</p>
-                                                <span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $cfg['badge'] }}">
+                                                <span
+                                                    class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $cfg['badge'] }}">
                                                     {{ $cfg['label'] }}
                                                 </span>
                                             </div>
                                             @if ($dp->handler)
-                                                <p class="text-xs text-gray-500 mt-0.5">Ditangani: {{ $dp->handler->name }}</p>
+                                                <p class="text-xs text-gray-500 mt-0.5">Ditangani:
+                                                    {{ $dp->handler->name }}</p>
                                             @endif
                                             @if ($log->body)
                                                 <p class="text-xs text-gray-600 mt-1 leading-relaxed break-words">
                                                     {{ trim($log->body) }}</p>
                                             @endif
                                             <p class="text-xs text-gray-400 mt-1">
-                                                {{ $log->logger->name }} · {{ $log->created_at->format('d M Y, H:i') }} WITA
+                                                {{ $log->logger->name }} · {{ $log->created_at->format('d M Y, H:i') }}
+                                                WITA
                                             </p>
                                         </div>
                                     </li>
@@ -607,7 +636,8 @@
 
                     </p>
 
-                    <form method="POST" action="{{ route('support.reports.result', $report) }}" id="resultForm" enctype="multipart/form-data">
+                    <form method="POST" action="{{ route('support.reports.result', $report) }}" id="resultForm"
+                        enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="result" id="resultInput" value="">
 
@@ -695,20 +725,23 @@
                                       file:mr-3 file:py-2 file:px-3 file:border-0 file:text-xs
                                       file:font-medium file:bg-gray-50 file:text-gray-700
                                       hover:file:bg-gray-100 cursor-pointer">
-                                <p class="text-xs text-red-400 mt-1">Wajib diupload sebelum menandai tiket sebagai Valid.</p>
+                                <p class="text-xs text-red-400 mt-1">Wajib diupload sebelum menandai tiket sebagai Valid.
+                                </p>
                             @else
                                 <p class="text-xs text-green-600 font-medium">✓ Laporan validasi sudah diupload.</p>
                             @endif
                         </div>
 
+                        @php $hasValidationFile = (bool) $report->validation_file; @endphp
+
                         <div class="space-y-2 pt-1">
                             {{-- VALID --}}
                             <button type="button" id="btnValid"
                                 onclick="submitResult('valid', 'Tandai sebagai VALID? Tim CSIRT akan dinotifikasi untuk mitigasi. Khusus untuk Kebocoran Data (UU PDP) akan dikirimkan ke DPO Prov Bali.')"
-                                @if(!$report->validation_file) disabled @endif
-                                class="w-full py-2.5 text-white font-semibold rounded-lg text-sm transition-colors
+                                @if (!$hasValidationFile) disabled @endif
+                                class="w-full py-2.5 font-semibold rounded-lg text-sm transition-colors border
                                        flex items-center justify-center gap-2
-                                       {{ $report->validation_file ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-300 cursor-not-allowed' }}">
+                                       {{ $hasValidationFile ? 'bg-green-600 hover:bg-green-700 text-white border-green-600' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M5 13l4 4L19 7" />
@@ -717,11 +750,12 @@
                             </button>
 
                             {{-- TIDAK VALID --}}
-                            <button type="button"
+                            <button type="button" id="btnInvalid"
                                 onclick="submitResult('invalid', 'Tandai sebagai TIDAK VALID? Pelapor akan dikirim email pemberitahuan.')"
-                                class="w-full py-2.5 bg-white hover:bg-red-50 text-red-600 font-semibold
-                       rounded-lg text-sm transition-colors border border-red-300
-                       flex items-center justify-center gap-2">
+                                @if (!$hasValidationFile) disabled @endif
+                                class="w-full py-2.5 font-semibold rounded-lg text-sm transition-colors border
+                                       flex items-center justify-center gap-2
+                                       {{ $hasValidationFile ? 'bg-white hover:bg-red-50 text-red-600 border-red-300' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M6 18L18 6M6 6l12 12" />
@@ -730,11 +764,12 @@
                             </button>
 
                             {{-- DUPLIKAT --}}
-                            <button type="button"
+                            <button type="button" id="btnDuplicate"
                                 onclick="submitResult('duplicate', 'Tandai sebagai DUPLIKAT? Pelapor akan dikirim email pemberitahuan.')"
-                                class="w-full py-2.5 bg-white hover:bg-yellow-50 text-yellow-700 font-semibold
-                       rounded-lg text-sm transition-colors border border-yellow-300
-                       flex items-center justify-center gap-2">
+                                @if (!$hasValidationFile) disabled @endif
+                                class="w-full py-2.5 font-semibold rounded-lg text-sm transition-colors border
+                                       flex items-center justify-center gap-2
+                                       {{ $hasValidationFile ? 'bg-white hover:bg-yellow-50 text-yellow-700 border-yellow-300' : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed' }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -752,20 +787,48 @@
                         document.getElementById('resultForm').submit();
                     }
 
-                    // Enable tombol Valid saat file dipilih
+                    // Enable semua tombol hasil validasi saat file dipilih
                     const fileInput = document.getElementById('validationFileInput');
-                    const btnValid  = document.getElementById('btnValid');
-                    if (fileInput && btnValid) {
-                        fileInput.addEventListener('change', function () {
-                            if (this.files.length > 0) {
-                                btnValid.disabled = false;
-                                btnValid.classList.remove('bg-gray-300', 'cursor-not-allowed');
-                                btnValid.classList.add('bg-green-600', 'hover:bg-green-700');
-                            } else {
-                                btnValid.disabled = true;
-                                btnValid.classList.add('bg-gray-300', 'cursor-not-allowed');
-                                btnValid.classList.remove('bg-green-600', 'hover:bg-green-700');
-                            }
+                    const btnValid = document.getElementById('btnValid');
+                    const btnInvalid = document.getElementById('btnInvalid');
+                    const btnDuplicate = document.getElementById('btnDuplicate');
+
+                    if (fileInput) {
+                        fileInput.addEventListener('change', function() {
+                            const hasFile = this.files.length > 0;
+
+                            // Valid
+                            btnValid.disabled = !hasFile;
+                            btnValid.classList.toggle('bg-green-600', hasFile);
+                            btnValid.classList.toggle('hover:bg-green-700', hasFile);
+                            btnValid.classList.toggle('text-white', hasFile);
+                            btnValid.classList.toggle('border-green-600', hasFile);
+                            btnValid.classList.toggle('bg-gray-100', !hasFile);
+                            btnValid.classList.toggle('text-gray-400', !hasFile);
+                            btnValid.classList.toggle('border-gray-200', !hasFile);
+                            btnValid.classList.toggle('cursor-not-allowed', !hasFile);
+
+                            // Tidak Valid
+                            btnInvalid.disabled = !hasFile;
+                            btnInvalid.classList.toggle('bg-white', hasFile);
+                            btnInvalid.classList.toggle('hover:bg-red-50', hasFile);
+                            btnInvalid.classList.toggle('text-red-600', hasFile);
+                            btnInvalid.classList.toggle('border-red-300', hasFile);
+                            btnInvalid.classList.toggle('bg-gray-100', !hasFile);
+                            btnInvalid.classList.toggle('text-gray-400', !hasFile);
+                            btnInvalid.classList.toggle('border-gray-200', !hasFile);
+                            btnInvalid.classList.toggle('cursor-not-allowed', !hasFile);
+
+                            // Duplikat
+                            btnDuplicate.disabled = !hasFile;
+                            btnDuplicate.classList.toggle('bg-white', hasFile);
+                            btnDuplicate.classList.toggle('hover:bg-yellow-50', hasFile);
+                            btnDuplicate.classList.toggle('text-yellow-700', hasFile);
+                            btnDuplicate.classList.toggle('border-yellow-300', hasFile);
+                            btnDuplicate.classList.toggle('bg-gray-100', !hasFile);
+                            btnDuplicate.classList.toggle('text-gray-400', !hasFile);
+                            btnDuplicate.classList.toggle('border-gray-200', !hasFile);
+                            btnDuplicate.classList.toggle('cursor-not-allowed', !hasFile);
                         });
                     }
                 </script>

@@ -103,6 +103,10 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
             ->name('users.toggle-active');
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])
             ->name('users.reset-password');
+
+        Route::patch('users/{user}/restore', [UserController::class, 'restore'])
+            ->name('users.restore')
+            ->withTrashed();
     });
 
     // SUPPORT PANEL
