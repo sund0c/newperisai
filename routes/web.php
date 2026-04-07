@@ -109,6 +109,10 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
     Route::prefix('support')->name('support.')->middleware('role:support|admin')->group(function () {
         Route::get('/dashboard', fn() => view('support.dashboard'))->name('dashboard');
 
+        Route::get('/tiket/{report}/validation-file', [\App\Http\Controllers\Support\ReportController::class, 'showValidationFile'])
+            ->name('reports.validation-file');
+
+
         // Tiket
         Route::get('/tiket', [\App\Http\Controllers\Support\ReportController::class, 'index'])->name('reports.index');
         Route::get('/tiket/{report}', [\App\Http\Controllers\Support\ReportController::class, 'show'])->name('reports.show');
@@ -119,6 +123,8 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
         // File downloads
         Route::get('/tiket/{report}/certificate/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadCertificate'])->name('certificate.download');
         Route::get('/csirt/{csirtProcess}/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadMitigation'])->name('csirt.download');
+        Route::get('/dpo/{dpoProcess}/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadDpoMitigation'])
+            ->name('dpo.download');
         Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
 
         Route::get('/users', [\App\Http\Controllers\Support\UserController::class, 'index'])->name('users.index');
@@ -142,6 +148,7 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
         Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
         Route::post('reports/{csirtProcess}/activity', [\App\Http\Controllers\Csirt\ReportController::class, 'addActivity'])->name('csirt.reports.activity');
         Route::post('tiket/{csirtProcess}/activity', [\App\Http\Controllers\Csirt\ReportController::class, 'addActivity'])->name('reports.activity');
+        Route::get('/tiket/{report}/validation-file', [\App\Http\Controllers\Csirt\ReportController::class, 'showValidationFile'])->name('reports.validation-file');
     });
 
     // DPO PANEL
@@ -155,6 +162,7 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
         Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
         Route::post('reports/{dpoProcess}/activity', [\App\Http\Controllers\Dpo\ReportController::class, 'addActivity'])->name('dpo.reports.activity');
         Route::post('tiket/{dpoProcess}/activity', [\App\Http\Controllers\Dpo\ReportController::class, 'addActivity'])->name('reports.activity');
+        Route::get('/tiket/{report}/validation-file', [\App\Http\Controllers\Dpo\ReportController::class, 'showValidationFile'])->name('reports.validation-file');
     });
 
     // PUBLIC USER AREA

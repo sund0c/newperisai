@@ -10,6 +10,10 @@ return new class extends Migration {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
 
+
+            $table->string('validation_file')->nullable();
+            $table->string('validation_file_original')->nullable();
+
             // Nomor tiket unik: BALIPROV-CSIRT-YYYY-XXXX
             $table->string('ticket_number', 30)->unique();
 

@@ -37,7 +37,9 @@ class Report extends Model
         'is_historical',
         'incident_type_reporter',
         'incident_type_other',
-        'incident_type_verified'
+        'incident_type_verified',
+        'validation_file',
+        'validation_file_original',
 
     ];
 
@@ -117,6 +119,11 @@ class Report extends Model
     // ════════════════════════════════════════════════════════════════
     // RELASI
     // ════════════════════════════════════════════════════════════════
+
+    public function dpoProcess(): HasOne
+    {
+        return $this->hasOne(DpoProcess::class);
+    }
 
     public function reporter(): BelongsTo
     {

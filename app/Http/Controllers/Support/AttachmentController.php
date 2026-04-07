@@ -94,4 +94,26 @@ class AttachmentController extends Controller
             ]
         );
     }
+
+    public function downloadDpoMitigation(\App\Models\DpoProcess $dpoProcess)
+    {
+        abort_if(!$dpoProcess->mitigation_file, 404, 'Laporan belum tersedia.');
+        abort_unless(
+            Storage::disk('local')->exists($dpoProcess->mitigation_file),
+            404,
+            'File tidak ditemukan.'
+        );
+
+        $filename = $dpoProcess->mitigation_file_original ?? 'laporan-dpo.pdf';
+
+        return Storage::disk('local')->response(
+            $dpoProcess->mitigation_file,
+            $filename,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => "inline; filename=\"{$filename}\"",
+                'Cache-Control'       => 'private, no-store, no-cache',
+            ]
+        );
+    }
 }

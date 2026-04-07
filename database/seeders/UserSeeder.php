@@ -108,8 +108,8 @@ class UserSeeder extends Seeder
         if (app()->environment('local', 'development', 'staging')) {
             $publics = [
                 [
-                    'name'                 => 'Publik Pelapor',
-                    'email'                => 'public1@baliprov.go.id',
+                    'name'                 => 'Piyor Public',
+                    'email'                => 'piyor12856@lealking.com',
                     'password'             => Hash::make(env('SEEDER_PUBLIC1_PASSWORD')),
                     'organization'         => 'Dinas Kominfo Bali',
                     'phone'                => '08123456789',

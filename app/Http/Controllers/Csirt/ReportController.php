@@ -130,6 +130,22 @@ class ReportController extends Controller
         );
     }
 
+
+    public function showValidationFile(\App\Models\Report $report)
+    {
+        abort_if(!$report->validation_file, 404);
+        abort_unless(
+            \Illuminate\Support\Facades\Storage::disk('local')->exists($report->validation_file),
+            404
+        );
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response(
+            $report->validation_file,
+            $report->validation_file_original ?? 'laporan-validasi.pdf',
+            ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store']
+        );
+    }
+
     // ════════════════════════════════════════════════════════════════
     // ADD ACTIVITY — CSIRT catat aktivitas/progress penanganan
     // ════════════════════════════════════════════════════════════════

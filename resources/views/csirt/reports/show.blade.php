@@ -106,6 +106,20 @@
                             {{ $report->poc_video_url }}
                         </a>
                     </div>
+
+                    @if ($report->validation_file)
+                        <div>
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Laporan Validasi</p>
+                            <a href="{{ route('csirt.reports.validation-file', $report) }}" target="_blank"
+                                class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:underline">
+                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Lihat PDF
+                            </a>
+                        </div>
+                    @endif
                 </div>
             </div>
 

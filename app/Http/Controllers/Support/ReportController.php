@@ -84,6 +84,8 @@ class ReportController extends Controller
             'documents',
             'statusLogs.changer',
             'csirtProcess.handler',
+            'dpoProcess.handler',
+            'dpoProcess.activityLogs.logger',
         ]);
 
         return view('support.reports.show', compact('report'));
@@ -122,12 +124,53 @@ class ReportController extends Controller
 
         abort_if($report->status !== 'validated', 403, 'Tiket harus dalam status Divalidasi.');
 
+        $isValid         = $request->result === 'valid';
+        $needsFileUpload = $isValid && !$report->validation_file;
+
         $request->validate([
             'result'                 => 'required|in:valid,invalid,duplicate',
             'notes'                  => 'nullable|string|max:1000',
             'incident_type_verified' => 'required|in:data_breach_pdp,data_breach,web_defacement,ransomware,phishing,malicious_software,exploit,account_hijacking,advanced_persistence_threat,peringatan_keamanan,lainnya',
             'severity_verified'      => 'nullable|in:critical,high,medium,low',
+        ], [
+            'validation_file.required' => 'Laporan Validasi wajib diupload untuk menandai tiket sebagai Valid.',
+            'validation_file.mimes'    => 'Laporan Validasi harus berupa file PDF.',
+            'validation_file.max'      => 'Ukuran file tidak boleh lebih dari 2MB.',
         ]);
+
+        // Validasi file terpisah — hanya jika ada file yang diupload atau memang wajib
+        if ($needsFileUpload) {
+            $request->validate([
+                'validation_file' => 'required|file|mimes:pdf|max:2048',
+            ], [
+                'validation_file.required' => 'Laporan Validasi wajib diupload untuk menandai tiket sebagai Valid.',
+                'validation_file.mimes'    => 'Laporan Validasi harus berupa file PDF.',
+                'validation_file.max'      => 'Ukuran file tidak boleh lebih dari 2MB.',
+            ]);
+        } elseif ($request->hasFile('validation_file')) {
+            $request->validate([
+                'validation_file' => 'file|mimes:pdf|max:2048',
+            ], [
+                'validation_file.mimes' => 'Laporan Validasi harus berupa file PDF.',
+                'validation_file.max'   => 'Ukuran file tidak boleh lebih dari 2MB.',
+            ]);
+        }
+
+        // Upload laporan validasi — sekali upload, tidak bisa diganti
+        if ($request->hasFile('validation_file')) {
+            if ($report->validation_file) {
+                return back()->withErrors(['validation_file' => 'Laporan validasi sudah pernah diupload dan tidak dapat diganti.']);
+            }
+
+            $file = $request->file('validation_file');
+            $path = "validation/{$report->id}/" . \Illuminate\Support\Str::uuid() . '.pdf';
+            Storage::disk('local')->put($path, file_get_contents($file));
+
+            $report->update([
+                'validation_file'          => $path,
+                'validation_file_original' => $file->getClientOriginalName(),
+            ]);
+        }
 
         try {
             DB::transaction(function () use ($request, $report) {
@@ -141,14 +184,13 @@ class ReportController extends Controller
                     $report->update([
                         'status'                 => 'certificate',
                         'validation_result'      => 'valid',
-                        'incident_type_verified' => $request->incident_type_verified, // ← tambah ini
+                        'incident_type_verified' => $request->incident_type_verified,
                         'severity_verified'      => $request->severity_verified,
                         'admin_notes'            => $request->notes,
                         'certificated_at'        => null,
                     ]);
                     \Log::info('report updated');
 
-                    // Buat record proses CSIRT
                     CsirtProcess::create([
                         'report_id'   => $report->id,
                         'status'      => 'notified',
@@ -156,10 +198,8 @@ class ReportController extends Controller
                     ]);
                     \Log::info('csirt process created');
 
-                    // Kirim notifikasi ke semua user role CSIRT
                     $this->notifyCsirtTeam($report);
 
-                    // Khusus data_breach_pdp → teruskan ke DPO juga
                     if ($request->incident_type_verified === 'data_breach_pdp') {
                         DpoProcess::create([
                             'report_id'   => $report->id,
@@ -169,17 +209,15 @@ class ReportController extends Controller
                         $this->notifyDpoTeam($report);
                     }
                 } else {
-                    // INVALID atau DUPLICATE → langsung closed
                     $report->update([
                         'status'                 => 'closed',
                         'validation_result'      => $request->result,
-                        'incident_type_verified' => $request->incident_type_verified, // ← tambah ini juga
+                        'incident_type_verified' => $request->incident_type_verified,
                         'closed_reason'          => $request->notes,
                         'admin_notes'            => $request->notes,
                         'closed_at'              => now(),
                     ]);
 
-                    // Kirim email ke pelapor
                     $this->sendClosedEmail($report);
                 }
             });
@@ -191,6 +229,23 @@ class ReportController extends Controller
         $label = Report::validationResultLabel()[$request->result];
         return back()->with('success', "Tiket ditandai sebagai {$label}.");
     }
+
+
+    // ReportController@showValidationFile
+    public function showValidationFile(Report $report)
+    {
+        abort_if(!$report->validation_file, 404, 'File tidak tersedia.');
+        abort_unless(Storage::disk('local')->exists($report->validation_file), 404, 'File tidak ditemukan.');
+
+        $filename = $report->validation_file_original ?? 'laporan-validasi.pdf';
+
+        return Storage::disk('local')->response(
+            $report->validation_file,
+            $filename,
+            ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store']
+        );
+    }
+
 
     // ════════════════════════════════════════════════════════════════
     // UPLOAD CERTIFICATE — upload e-certificate PDF
