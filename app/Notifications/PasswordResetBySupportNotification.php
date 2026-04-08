@@ -12,9 +12,11 @@ class PasswordResetBySupportNotification extends Notification implements ShouldQ
 {
     use Queueable;
 
+    // $plainPassword DIHAPUS dari constructor.
+    // Password tidak pernah di-generate atau dikirim via email.
+    // Email ini hanya notifikasi — link reset dikirim oleh Laravel Password Broker secara terpisah.
     public function __construct(
-        public User $user,
-        public string $plainPassword
+        public User $user
     ) {}
 
     public function via(object $notifiable): array
@@ -25,15 +27,13 @@ class PasswordResetBySupportNotification extends Notification implements ShouldQ
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Password Akun Anda Telah Direset — CSIRT Provinsi Bali')
+            ->subject('Permintaan Reset Password — CSIRT Provinsi Bali')
             ->greeting('Om Suastiastu, Yth. ' . $this->user->name . '!')
-            ->line('Sesuai permintaan Anda, password akun Anda di Sistem Aduan CSIRT Provinsi Bali telah **direset oleh administrator**')
-            ->line('Berikut informasi login baru Anda:')
-            ->line('**Email:** ' . $this->user->email)
-            ->line('**Password Baru:** ' . $this->plainPassword)
-            ->action('Login Sekarang', url('/login'))
-            ->line('Demi keamanan akun Anda, **Anda wajib mengganti password** segera setelah login.')
-            ->line('Jika Anda merasa tidak meminta reset password ini, segera hubungi tim kami di csirt@baliprov.go.id.')
+            ->line('Administrator sistem telah meminta reset password untuk akun Anda di Sistem Aduan CSIRT Provinsi Bali.')
+            ->line('Anda akan segera menerima **email terpisah** berisi link reset password.')
+            ->line('Link tersebut hanya berlaku selama **15 menit** dan hanya bisa digunakan satu kali.')
+            ->line('Setelah reset, Anda akan diminta membuat password baru yang kuat.')
+            ->line('Jika Anda tidak merasa meminta reset ini atau ada aktivitas mencurigakan, segera hubungi kami di csirt@baliprov.go.id.')
             ->salutation('Om Santih, Santih, Santih Om — hormat kami, BALIPROV-CSIRT #jagaRuangSiber');
     }
 }

@@ -123,29 +123,32 @@ class UserController extends Controller
             return back()->withErrors(['error' => 'Gunakan menu Profil untuk mengubah password sendiri.']);
         }
 
-        // Generate password acak yang memenuhi policy
-        $newPassword = Str::password(12, true, true, true, false);
-
-        $user->update([
-            'password'             => Hash::make($newPassword),
-            'must_change_password' => true,
-            'password_changed_at'  => now(),
-        ]);
+        // Kirim reset link via Laravel Password Broker.
+        // Password TIDAK diubah di sini — user yang set sendiri via link.
+        // Token di-hash bcrypt, disimpan di password_reset_tokens, expired 15 menit
+        // (sesuai config/auth.php → passwords.users.expire = 15)
+        $status = \Illuminate\Support\Facades\Password::broker()->sendResetLink(
+            ['email' => $user->email]
+        );
 
         AuditLog::create([
             'user_id'    => auth()->id(),
-            'action'     => 'user_password_reset',
+            'action'     => 'user_password_reset_requested',
             'model_type' => 'User',
             'model_id'   => $user->id,
+            'new_values' => ['target_email' => $user->email, 'status' => $status],
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
 
-        // Kirim email ke user dengan password baru
-        // Reuse notifikasi yang sama dengan support — kontennya sudah generik
-        $user->notify(new \App\Notifications\PasswordResetBySupportNotification($user, $newPassword));
+        if ($status === \Illuminate\Support\Facades\Password::RESET_LINK_SENT) {
+            return back()->with(
+                'success',
+                "Link reset password telah dikirim ke {$user->email}. Link berlaku 15 menit."
+            );
+        }
 
-        return back()->with('success', "Password {$user->name} berhasil direset. Email notifikasi telah dikirim.");
+        return back()->withErrors(['error' => __($status)]);
     }
 
     public function destroy(User $user, Request $request)

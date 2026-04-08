@@ -19,34 +19,15 @@ class UserSeeder extends Seeder
         $admins = [
             [
                 'name'                 => 'Admin CSIRT Bali',
-                'email'                => 'admin1@baliprov.go.id',
+                'email'                => 'putu.sundika@baliprov.go.id',
                 'password'             => Hash::make(env('SEEDER_ADMIN1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => true,
+                'must_change_password' => false,
             ],
-            [
-                'name'                 => 'Admin Dua',
-                'email'                => 'admin2@baliprov.go.id',
-                'password'             => Hash::make(env('SEEDER_ADMIN2_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
-                'is_active'            => true,
-                'email_verified_at'    => now(),
-                'password_changed_at'  => null,
-                'must_change_password' => true,
-            ],
-            [
-                'name'                 => 'Admin Tiga',
-                'email'                => 'admin3@baliprov.go.id',
-                'password'             => Hash::make(env('SEEDER_ADMIN3_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
-                'is_active'            => true,
-                'email_verified_at'    => now(),
-                'password_changed_at'  => null,
-                'must_change_password' => true,
-            ],
+
         ];
 
         foreach ($admins as $data) {
@@ -62,14 +43,14 @@ class UserSeeder extends Seeder
         // =====================
         $supports = [
             [
-                'name'                 => 'Support Satu',
-                'email'                => 'yopila7792@fpxnet.com',
+                'name'                 => 'Support-01',
+                'email'                => 'bidpersandianbali@gmail.com',
                 'password'             => Hash::make(env('SEEDER_SUPPORT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => true,
+                'must_change_password' => false,
             ],
 
         ];
@@ -89,10 +70,10 @@ class UserSeeder extends Seeder
         if (app()->environment('local', 'development', 'staging')) {
             $publics = [
                 [
-                    'name'                 => 'Piyor Public',
-                    'email'                => 'simifar488@bpotogo.com',
+                    'name'                 => 'Putu Sundika',
+                    'email'                => 'putu.sundika@gmail.com',
                     'password'             => Hash::make(env('SEEDER_PUBLIC1_PASSWORD')),
-                    'organization'         => 'Dinas Kominfo Bali',
+                    'organization'         => 'personal',
                     'phone'                => '08123456789',
                     'is_active'            => true,
                     'email_verified_at'    => now(),
@@ -116,8 +97,38 @@ class UserSeeder extends Seeder
         // =====================
         $csirts = [
             [
-                'name'                 => 'CSIRT Satu',
-                'email'                => 'focapi8325@kobace.com',
+                'name'                 => 'CSIRT-01',
+                'email'                => 'anantaw81@gmail.com',
+                'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
+                'organization'         => 'CSIRT Provinsi Bali',
+                'is_active'            => true,
+                'email_verified_at'    => now(),
+                'password_changed_at'  => null,
+                'must_change_password' => true,
+            ],
+            [
+                'name'                 => 'CSIRT-02',
+                'email'                => 'arircbm@gmail.com',
+                'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
+                'organization'         => 'CSIRT Provinsi Bali',
+                'is_active'            => true,
+                'email_verified_at'    => now(),
+                'password_changed_at'  => null,
+                'must_change_password' => true,
+            ],
+            [
+                'name'                 => 'CSIRT-03',
+                'email'                => 'esamahadi.office@gmail.com',
+                'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
+                'organization'         => 'CSIRT Provinsi Bali',
+                'is_active'            => true,
+                'email_verified_at'    => now(),
+                'password_changed_at'  => null,
+                'must_change_password' => true,
+            ],
+            [
+                'name'                 => 'CSIRT-04',
+                'email'                => 'OmanJaya53@gmail.com',
                 'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
@@ -141,14 +152,14 @@ class UserSeeder extends Seeder
         // =====================
         $dpo = [
             [
-                'name'                 => 'DPO satu',
-                'email'                => 'dpo1@baliprov.go.id',
+                'name'                 => 'DPO-01',
+                'email'                => 'widiartha.made@gmail.com',
                 'password'             => Hash::make(env('SEEDER_DPO1_PASSWORD')),
                 'organization'         => 'DPO Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => true,
+                'must_change_password' => false,
             ],
 
         ];

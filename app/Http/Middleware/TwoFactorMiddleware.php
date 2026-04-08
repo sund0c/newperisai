@@ -12,10 +12,22 @@ class TwoFactorMiddleware
     {
         $user = Auth::user();
 
-        // Hanya berlaku jika user mengaktifkan 2FA secara sukarela
-        if ($user && $user->hasTwoFactorEnabled()) {
+        if (!$user) {
+            return $next($request);
+        }
+
+        // Hanya berlaku jika 2FA aktif DAN secret tersedia
+        // Edge case: flag enabled tapi secret null → jangan paksa verify (infinite loop)
+        if ($user->google2fa_enabled && $user->google2fa_secret) {
             if (!$request->session()->get('2fa_verified')) {
-                return redirect()->route('2fa.form');
+
+                // Hindari redirect loop: jangan redirect jika sudah di route 2fa
+                $currentRoute = $request->route()?->getName();
+                $excluded = ['2fa.form', '2fa.verify', 'logout'];
+
+                if (!in_array($currentRoute, $excluded)) {
+                    return redirect()->route('2fa.form');
+                }
             }
         }
 
