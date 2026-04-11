@@ -77,7 +77,7 @@ class UserController extends Controller
             'organization'         => $organization,
             'email_verified_at'    => now(),
             'is_active'            => true,
-            'must_change_password' => true,
+            'must_change_password' => false,
         ]);
 
         $user->assignRole($validated['role']);

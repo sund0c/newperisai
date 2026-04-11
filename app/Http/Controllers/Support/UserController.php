@@ -60,7 +60,7 @@ class UserController extends Controller
                 'organization'         => strip_tags($request->organization),
                 'email_verified_at'    => now(),
                 'is_active'            => true,
-                'must_change_password' => true,
+                'must_change_password' => false,
                 'password_changed_at'  => null,
             ]);
 
