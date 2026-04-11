@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Csirt;
 
+use App\Models\AuditLog;
 use App\Http\Controllers\Controller;
 use App\Models\CsirtProcess;
 use App\Models\Report;
@@ -138,19 +139,55 @@ class ReportController extends Controller
     }
 
 
-    public function showValidationFile(\App\Models\Report $report)
-    {
-        abort_if(!$report->validation_file, 404);
-        abort_unless(
-            \Illuminate\Support\Facades\Storage::disk('local')->exists($report->validation_file),
-            404
-        );
+    // public function showValidationFile(\App\Models\Report $report)
+    // {
+    //     abort_if(!$report->validation_file, 404);
+    //     abort_unless(
+    //         \Illuminate\Support\Facades\Storage::disk('local')->exists($report->validation_file),
+    //         404
+    //     );
 
-        return \Illuminate\Support\Facades\Storage::disk('local')->response(
-            $report->validation_file,
-            $report->validation_file_original ?? 'laporan-validasi.pdf',
-            ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store']
-        );
+    //     return \Illuminate\Support\Facades\Storage::disk('local')->response(
+    //         $report->validation_file,
+    //         $report->validation_file_original ?? 'laporan-validasi.pdf',
+    //         ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store']
+    //     );
+    // }
+
+    public function showValidationFile(Report $report)
+    {
+        abort_if(!$report->validation_file, 404, 'File tidak tersedia.');
+
+        $encPath = Storage::disk('local')->path($report->validation_file);
+
+        abort_if(!file_exists($encPath), 404, 'File tidak ditemukan.');
+
+        // Dekripsi via SEAL BSSN
+        [$pdfContent, $error] = \App\Http\Middleware\SandidataMiddleware::unsealFile($encPath);
+
+        if ($error || !$pdfContent) {
+            abort(500, 'Gagal mendekripsi file.');
+        }
+
+        // Audit log setiap akses
+        AuditLog::create([
+            'user_id'    => auth()->id(),
+            'action'     => 'validation_file_accessed',
+            'model_type' => 'Report',
+            'model_id'   => $report->id,
+            'new_values' => ['file' => $report->validation_file_original],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        $filename = $report->validation_file_original ?? 'laporan-validasi.pdf';
+
+        return response($pdfContent, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Length'      => strlen($pdfContent),
+            'Cache-Control'       => 'private, no-store',
+        ]);
     }
 
     // ════════════════════════════════════════════════════════════════
