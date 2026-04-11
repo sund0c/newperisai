@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Http\Middleware\SandidataMiddleware;
 
 class UserController extends Controller
 {
@@ -51,11 +52,15 @@ class UserController extends Controller
         $user = DB::transaction(function () use ($request, $plainPassword) {
             $hashedPassword = Hash::make($plainPassword);
 
+            $phone = $request->phone
+                ? SandidataMiddleware::encryptValue(strip_tags($request->phone))
+                : null;
+
             $user = User::create([
                 'name'                 => strip_tags($request->name),
                 'email'                => $request->email,
                 'password'             => $hashedPassword,
-                'phone'                => $request->input('phone'),
+                'phone'                => $phone,
                 //$request->phone,
                 'organization'         => strip_tags($request->organization),
                 'email_verified_at'    => now(),
