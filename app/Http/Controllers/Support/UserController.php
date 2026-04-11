@@ -125,20 +125,7 @@ class UserController extends Controller
     {
         abort_unless($user->hasRole('public'), 403);
 
-        $plainPassword  = Str::password(12);
-        $hashedPassword = Hash::make($plainPassword);
-
-        DB::transaction(function () use ($user, $plainPassword, $hashedPassword, $request) {
-            $user->update([
-                'password'             => $hashedPassword,
-                'must_change_password' => true,
-                'password_changed_at'  => null,
-            ]);
-
-            PasswordHistory::create([
-                'user_id'  => $user->id,
-                'password' => $hashedPassword,
-            ]);
+        DB::transaction(function () use ($user, $request) {
 
             AuditLog::create([
                 'user_id'    => auth()->id(),
@@ -148,9 +135,15 @@ class UserController extends Controller
                 'ip_address' => $request->ip(),
             ]);
 
-            $user->notify(new \App\Notifications\PasswordResetBySupportNotification($user, $plainPassword));
+            // 1. Kirim notifikasi ke user bahwa reset diminta oleh support
+            $user->notify(new \App\Notifications\PasswordResetBySupportNotification($user));
+
+            // 2. Kirim link reset via Laravel Password Broker
+            \Illuminate\Support\Facades\Password::broker()->sendResetLink(
+                ['email' => $user->email]
+            );
         });
 
-        return back()->with('success', 'Password berhasil direset dan dikirim ke email user.');
+        return back()->with('success', 'Notifikasi dan link reset password telah dikirim ke email user.');
     }
 }
