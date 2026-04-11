@@ -86,18 +86,22 @@ class ReportController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $csirtProcess) {
-            $file     = $request->file('mitigation_file');
-            $uuid     = Str::uuid();
-            $filename = $uuid . '.pdf';
-            $path     = "mitigations/{$csirtProcess->report_id}/{$filename}";
+            $file    = $request->file('mitigation_file');
+            $tmpPath = $file->getRealPath();
 
-            Storage::disk('local')->put($path, file_get_contents($file));
+            // Enkripsi file via SEAL BSSN
+            [$encContent, $error] = \App\Http\Middleware\SandidataMiddleware::sealFile($tmpPath);
 
+            if ($error || !$encContent) {
+                throw new \Exception('Gagal mengenkripsi file mitigasi.');
+            }
+
+            $path = "mitigations/{$csirtProcess->report_id}/" . Str::uuid() . '.enc';
+            Storage::disk('local')->put($path, $encContent);
 
             $notes = $request->notes
                 ? SandidataMiddleware::encryptValue(strip_tags($request->notes))
                 : null;
-
 
             $csirtProcess->update([
                 'status'                   => 'closed',
@@ -108,6 +112,29 @@ class ReportController extends Controller
             ]);
         });
 
+        // DB::transaction(function () use ($request, $csirtProcess) {
+        //     $file     = $request->file('mitigation_file');
+        //     $uuid     = Str::uuid();
+        //     $filename = $uuid . '.pdf';
+        //     $path     = "mitigations/{$csirtProcess->report_id}/{$filename}";
+
+        //     Storage::disk('local')->put($path, file_get_contents($file));
+
+
+        //     $notes = $request->notes
+        //         ? SandidataMiddleware::encryptValue(strip_tags($request->notes))
+        //         : null;
+
+
+        //     $csirtProcess->update([
+        //         'status'                   => 'closed',
+        //         'notes'                    => $notes,
+        //         'mitigation_file'          => $path,
+        //         'mitigation_file_original' => $file->getClientOriginalName(),
+        //         'closed_at'                => now(),
+        //     ]);
+        // });
+
         return back()->with('success', 'Proses mitigasi selesai. Laporan berhasil diupload.');
     }
 
@@ -115,29 +142,64 @@ class ReportController extends Controller
     // DOWNLOAD — laporan mitigasi PDF (hanya CSIRT sendiri)
     // ════════════════════════════════════════════════════════════════
 
+    // public function download(CsirtProcess $csirtProcess)
+    // {
+    //     abort_if(!$csirtProcess->mitigation_file, 404, 'Laporan mitigasi belum tersedia.');
+    //     abort_unless(
+    //         Storage::disk('local')->exists($csirtProcess->mitigation_file),
+    //         404,
+    //         'File tidak ditemukan.'
+    //     );
+
+    //     $filename = $csirtProcess->mitigation_file_original ?? 'laporan-mitigasi.pdf';
+
+    //     return Storage::disk('local')->response(
+    //         $csirtProcess->mitigation_file,
+    //         $filename,
+    //         [
+    //             'Content-Type'           => 'application/pdf',
+    //             'Content-Disposition'    => "inline; filename=\"{$filename}\"",
+    //             'Cache-Control'          => 'private, no-store, no-cache',
+    //             'X-Content-Type-Options' => 'nosniff',
+    //         ]
+    //     );
+    // }
+
     public function download(CsirtProcess $csirtProcess)
     {
         abort_if(!$csirtProcess->mitigation_file, 404, 'Laporan mitigasi belum tersedia.');
-        abort_unless(
-            Storage::disk('local')->exists($csirtProcess->mitigation_file),
-            404,
-            'File tidak ditemukan.'
-        );
+
+        $encPath = Storage::disk('local')->path($csirtProcess->mitigation_file);
+
+        abort_if(!file_exists($encPath), 404, 'File tidak ditemukan.');
+
+        // Dekripsi via SEAL BSSN
+        [$pdfContent, $error] = \App\Http\Middleware\SandidataMiddleware::unsealFile($encPath);
+
+        if ($error || !$pdfContent) {
+            abort(500, 'Gagal mendekripsi file.');
+        }
+
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'mitigation_file_accessed',
+            'model_type' => 'CsirtProcess',
+            'model_id' => $csirtProcess->id,
+            'new_values' => ['file' => $csirtProcess->mitigation_file_original],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
 
         $filename = $csirtProcess->mitigation_file_original ?? 'laporan-mitigasi.pdf';
 
-        return Storage::disk('local')->response(
-            $csirtProcess->mitigation_file,
-            $filename,
-            [
-                'Content-Type'           => 'application/pdf',
-                'Content-Disposition'    => "inline; filename=\"{$filename}\"",
-                'Cache-Control'          => 'private, no-store, no-cache',
-                'X-Content-Type-Options' => 'nosniff',
-            ]
-        );
+        return response($pdfContent, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Length' => strlen($pdfContent),
+            'Cache-Control' => 'private, no-store, no-cache',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
-
 
     // public function showValidationFile(\App\Models\Report $report)
     // {
