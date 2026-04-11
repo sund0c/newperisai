@@ -206,4 +206,100 @@ class SandidataMiddleware
 
         Log::info("Sandidata: field {$field} dienkripsi");
     }
+
+
+    public static function sealFile(string $filePath): array
+    {
+        self::init();
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => self::$baseUrl . '/sealfile',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => [
+                'file' => new \CURLFile(
+                    $filePath,
+                    mime_content_type($filePath),
+                    basename($filePath)
+                ),
+            ],
+            CURLOPT_SSLCERT        => self::$certFile,
+            CURLOPT_SSLKEY         => self::$keyFile,
+            CURLOPT_SSLKEYPASSWD   => self::$certPassword,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_TIMEOUT        => 60, // file lebih besar, timeout lebih lama
+        ]);
+
+        $t0       = microtime(true);
+        $response = curl_exec($ch);
+        $duration = round((microtime(true) - $t0) * 1000, 2);
+        $error    = curl_errno($ch) ? curl_error($ch) : null;
+        curl_close($ch);
+
+        if ($error) {
+            Log::error('SEAL sealFile error', [
+                'file'     => basename($filePath),
+                'error'    => $error,
+                'duration' => $duration . 'ms',
+            ]);
+        } else {
+            Log::debug('SEAL sealFile OK', [
+                'file'     => basename($filePath),
+                'duration' => $duration . 'ms',
+            ]);
+        }
+
+        // Response adalah binary file .enc
+        return [$response, $error];
+    }
+
+
+    public static function unsealFile(string $filePath): array
+    {
+        self::init();
+
+        $ch = curl_init();
+        curl_setopt_array($ch, [
+            CURLOPT_URL            => self::$baseUrl . '/unsealfile',
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => [
+                'file' => new \CURLFile(
+                    $filePath,
+                    'application/octet-stream',
+                    basename($filePath)
+                ),
+            ],
+            CURLOPT_SSLCERT        => self::$certFile,
+            CURLOPT_SSLKEY         => self::$keyFile,
+            CURLOPT_SSLKEYPASSWD   => self::$certPassword,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_TIMEOUT        => 60,
+        ]);
+
+        $t0       = microtime(true);
+        $response = curl_exec($ch);
+        $duration = round((microtime(true) - $t0) * 1000, 2);
+        $error    = curl_errno($ch) ? curl_error($ch) : null;
+        curl_close($ch);
+
+        if ($error) {
+            Log::error('SEAL unsealFile error', [
+                'file'     => basename($filePath),
+                'error'    => $error,
+                'duration' => $duration . 'ms',
+            ]);
+        } else {
+            Log::debug('SEAL unsealFile OK', [
+                'file'     => basename($filePath),
+                'duration' => $duration . 'ms',
+            ]);
+        }
+
+        // Response adalah binary file asli (PDF)
+        return [$response, $error];
+    }
 }

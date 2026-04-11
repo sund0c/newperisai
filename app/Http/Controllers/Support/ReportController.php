@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Support;
 
+use App\Models\AuditLog;
 use App\Http\Controllers\Controller;
 use App\Models\Report;
 use App\Models\CsirtProcess;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Http\Middleware\SandidataMiddleware;
 
 class ReportController extends Controller
 {
@@ -163,13 +165,32 @@ class ReportController extends Controller
             }
 
             $file = $request->file('validation_file');
-            $path = "validation/{$report->id}/" . \Illuminate\Support\Str::uuid() . '.pdf';
-            Storage::disk('local')->put($path, file_get_contents($file));
+
+            $tmpPath = $file->getRealPath();
+
+            // Enkripsi file via SEAL BSSN
+            [$encContent, $error] = \App\Http\Middleware\SandidataMiddleware::sealFile($tmpPath);
+
+            if ($error || !$encContent) {
+                return back()->withErrors(['validation_file' => 'Gagal mengenkripsi file. Silakan coba lagi.']);
+            }
+
+            // Simpan file .enc (bukan .pdf)
+            $path = "validation/{$report->id}/" . \Illuminate\Support\Str::uuid() . '.enc';
+            Storage::disk('local')->put($path, $encContent);
 
             $report->update([
                 'validation_file'          => $path,
-                'validation_file_original' => $file->getClientOriginalName(),
+                'validation_file_original' => $file->getClientOriginalName(), // simpan nama asli .pdf
             ]);
+
+            // $path = "validation/{$report->id}/" . \Illuminate\Support\Str::uuid() . '.pdf';
+            // Storage::disk('local')->put($path, file_get_contents($file));
+
+            // $report->update([
+            //     'validation_file'          => $path,
+            //     'validation_file_original' => $file->getClientOriginalName(),
+            // ]);
         }
 
         try {
@@ -232,20 +253,54 @@ class ReportController extends Controller
 
 
     // ReportController@showValidationFile
+    // public function showValidationFile(Report $report)
+    // {
+    //     abort_if(!$report->validation_file, 404, 'File tidak tersedia.');
+    //     abort_unless(Storage::disk('local')->exists($report->validation_file), 404, 'File tidak ditemukan.');
+
+    //     $filename = $report->validation_file_original ?? 'laporan-validasi.pdf';
+
+    //     return Storage::disk('local')->response(
+    //         $report->validation_file,
+    //         $filename,
+    //         ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store']
+    //     );
+    // }
     public function showValidationFile(Report $report)
     {
         abort_if(!$report->validation_file, 404, 'File tidak tersedia.');
-        abort_unless(Storage::disk('local')->exists($report->validation_file), 404, 'File tidak ditemukan.');
+
+        $encPath = Storage::disk('local')->path($report->validation_file);
+
+        abort_if(!file_exists($encPath), 404, 'File tidak ditemukan.');
+
+        // Dekripsi via SEAL BSSN
+        [$pdfContent, $error] = \App\Http\Middleware\SandidataMiddleware::unsealFile($encPath);
+
+        if ($error || !$pdfContent) {
+            abort(500, 'Gagal mendekripsi file.');
+        }
+
+        // Audit log setiap akses
+        AuditLog::create([
+            'user_id'    => auth()->id(),
+            'action'     => 'validation_file_accessed',
+            'model_type' => 'Report',
+            'model_id'   => $report->id,
+            'new_values' => ['file' => $report->validation_file_original],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
 
         $filename = $report->validation_file_original ?? 'laporan-validasi.pdf';
 
-        return Storage::disk('local')->response(
-            $report->validation_file,
-            $filename,
-            ['Content-Type' => 'application/pdf', 'Cache-Control' => 'private, no-store']
-        );
+        return response($pdfContent, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+            'Content-Length'      => strlen($pdfContent),
+            'Cache-Control'       => 'private, no-store',
+        ]);
     }
-
 
     // ════════════════════════════════════════════════════════════════
     // UPLOAD CERTIFICATE — upload e-certificate PDF
