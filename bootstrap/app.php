@@ -22,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             '2fa'             => \App\Http\Middleware\TwoFactorMiddleware::class,
             'password.expiry' => \App\Http\Middleware\PasswordExpiryMiddleware::class,
             'verify.auto-auth' => \App\Http\Middleware\EnsureUserIsAuthenticatedForVerification::class,
+            'sandidata' => \App\Http\Middleware\SandidataMiddleware::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

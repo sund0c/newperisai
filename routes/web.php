@@ -134,7 +134,7 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
         Route::get('/users', [\App\Http\Controllers\Support\UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [\App\Http\Controllers\Support\UserController::class, 'create'])->name('users.create');
         Route::get('/users/{user}', [\App\Http\Controllers\Support\UserController::class, 'show'])->name('users.show');
-        Route::post('/users', [\App\Http\Controllers\Support\UserController::class, 'store'])->name('users.store');
+        Route::post('/users', [\App\Http\Controllers\Support\UserController::class, 'store'])->middleware('sandidata:phone')->name('users.store');
         Route::get('/users/{user}/historical/create', [\App\Http\Controllers\Support\HistoricalReportController::class, 'create'])->name('users.historical.create');
         Route::post('/users/{user}/historical', [\App\Http\Controllers\Support\HistoricalReportController::class, 'store'])->name('users.historical.store');
 

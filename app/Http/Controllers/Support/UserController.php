@@ -14,6 +14,7 @@ use Illuminate\Support\Str;
 
 class UserController extends Controller
 {
+
     public function index(Request $request)
     {
         $query = User::role('public')->with('roles');
@@ -54,7 +55,8 @@ class UserController extends Controller
                 'name'                 => strip_tags($request->name),
                 'email'                => $request->email,
                 'password'             => $hashedPassword,
-                'phone'                => $request->phone,
+                'phone'                => $request->input('phone'),
+                //$request->phone,
                 'organization'         => strip_tags($request->organization),
                 'email_verified_at'    => now(),
                 'is_active'            => true,
