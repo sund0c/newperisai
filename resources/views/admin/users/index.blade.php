@@ -141,9 +141,9 @@
                                             <span class="ml-1 text-xs text-blue-500 font-normal">(Anda)</span>
                                         @endif
                                     </p>
-                                    @if ($user->phone)
+                                    {{-- @if ($user->phone)
                                         <p class="text-xs text-gray-400">{{ $user->phone }}</p>
-                                    @endif
+                                    @endif --}}
                                 </td>
                                 <td class="px-4 py-3 text-xs text-gray-600">
                                     {{ $user->email }}
