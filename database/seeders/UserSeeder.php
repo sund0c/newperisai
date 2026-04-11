@@ -24,7 +24,7 @@ class UserSeeder extends Seeder
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
-                'password_changed_at'  => null,
+                'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
 
@@ -49,7 +49,7 @@ class UserSeeder extends Seeder
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
-                'password_changed_at'  => null,
+                'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
 
@@ -76,7 +76,7 @@ class UserSeeder extends Seeder
                     'organization'         => 'personal',
                     'is_active'            => true,
                     'email_verified_at'    => now(),
-                    'password_changed_at'  => null,
+                    'password_changed_at'  => now(),
                     'must_change_password' => true,
                 ],
 
@@ -102,7 +102,7 @@ class UserSeeder extends Seeder
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
-                'password_changed_at'  => null,
+                'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
             [
@@ -112,7 +112,7 @@ class UserSeeder extends Seeder
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
-                'password_changed_at'  => null,
+                'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
             [
@@ -122,7 +122,7 @@ class UserSeeder extends Seeder
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
-                'password_changed_at'  => null,
+                'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
             [
@@ -132,7 +132,7 @@ class UserSeeder extends Seeder
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
-                'password_changed_at'  => null,
+                'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
 
@@ -157,7 +157,7 @@ class UserSeeder extends Seeder
                 'organization'         => 'DPO Provinsi Bali',
                 'is_active'            => true,
                 'email_verified_at'    => now(),
-                'password_changed_at'  => null,
+                'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
 
