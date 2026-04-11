@@ -27,7 +27,7 @@ return new class extends Migration {
                 'other',
             ])->default('update');
 
-            $table->string('title', 200);     // judul singkat aktivitas
+            $table->text('title');     // judul singkat aktivitas
             $table->text('body')->nullable();  // detail/penjelasan
 
             $table->timestamps();

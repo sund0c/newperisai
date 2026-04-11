@@ -81,7 +81,7 @@ class ReportController extends Controller
 
         $request->validate([
             'mitigation_file' => 'required|file|mimes:pdf|max:10240', // maks 10MB
-            'notes'           => 'nullable|string|max:2000',
+            'notes'           => 'nullable|string',
         ]);
 
         DB::transaction(function () use ($request, $csirtProcess) {
@@ -163,8 +163,8 @@ class ReportController extends Controller
 
         $request->validate([
             'type'  => 'required|in:update,notification,coordination,technical,other',
-            'title' => 'required|string|max:200',
-            'body'  => 'nullable|string|max:5000',
+            'title' => 'required|string',
+            'body'  => 'nullable|string',
         ]);
 
         $title          = SandidataMiddleware::encryptValue(strip_tags($request->title));
