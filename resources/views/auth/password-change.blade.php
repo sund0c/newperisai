@@ -53,7 +53,7 @@
 
             <form method="POST" action="{{ route('password.change.update') }}">
                 @csrf
-                @method('PATCH')
+
                 <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1.5">
