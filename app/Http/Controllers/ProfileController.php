@@ -30,7 +30,7 @@ class ProfileController extends Controller
 
         $request->validate([
             'name'         => ['required', 'string', 'max:255'],
-            'phone'        => ['nullable', 'string', 'max:20'],
+            'phone'        => ['nullable', 'string'],
             'organization' => ['required', 'string', 'max:255'],
         ]);
 
@@ -38,7 +38,7 @@ class ProfileController extends Controller
 
         $user->update([
             'name'         => strip_tags($request->name),
-            'phone'        => $request->phone,
+            'phone'        => $request->input('phone'),
             'organization' => strip_tags($request->organization),
         ]);
 
