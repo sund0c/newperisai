@@ -25,7 +25,7 @@ class UserSeeder extends Seeder
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => false,
+                'must_change_password' => true,
             ],
 
         ];
@@ -50,7 +50,7 @@ class UserSeeder extends Seeder
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => false,
+                'must_change_password' => true,
             ],
 
         ];
@@ -103,7 +103,7 @@ class UserSeeder extends Seeder
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => false,
+                'must_change_password' => true,
             ],
             [
                 'name'                 => 'CSIRT-02',
@@ -113,7 +113,7 @@ class UserSeeder extends Seeder
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => false,
+                'must_change_password' => true,
             ],
             [
                 'name'                 => 'CSIRT-03',
@@ -123,7 +123,7 @@ class UserSeeder extends Seeder
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => false,
+                'must_change_password' => true,
             ],
             [
                 'name'                 => 'CSIRT-04',
@@ -133,7 +133,7 @@ class UserSeeder extends Seeder
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => false,
+                'must_change_password' => true,
             ],
 
         ];
@@ -158,7 +158,7 @@ class UserSeeder extends Seeder
                 'is_active'            => true,
                 'email_verified_at'    => now(),
                 'password_changed_at'  => null,
-                'must_change_password' => false,
+                'must_change_password' => true,
             ],
 
         ];
