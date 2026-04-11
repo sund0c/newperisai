@@ -90,6 +90,8 @@ class SandidataMiddleware
      */
     public static function seal($plaintext)
     {
+        self::init();
+
         $payload = json_encode([
             'Plaintext' => [['text' => $plaintext]]
         ]);
@@ -102,6 +104,7 @@ class SandidataMiddleware
      */
     public static function unseal($ciphertext)
     {
+        self::init();
         $payload = json_encode([
             'Ciphertext' => [['text' => $ciphertext]]
         ]);
