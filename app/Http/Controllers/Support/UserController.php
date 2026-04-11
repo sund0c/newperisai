@@ -47,11 +47,7 @@ class UserController extends Controller
             'phone'        => 'nullable|string',
         ]);
 
-        $plainPassword = Str::password(12);
-
-        $user = DB::transaction(function () use ($request, $plainPassword) {
-            $hashedPassword = Hash::make($plainPassword);
-
+        $user = DB::transaction(function () use ($request) {
             $phone = $request->phone
                 ? SandidataMiddleware::encryptValue(strip_tags($request->phone))
                 : null;
@@ -59,9 +55,8 @@ class UserController extends Controller
             $user = User::create([
                 'name'                 => strip_tags($request->name),
                 'email'                => $request->email,
-                'password'             => $hashedPassword,
+                'password'             => Hash::make(\Str::random(32)), // password acak, tidak dikirim
                 'phone'                => $phone,
-                //$request->phone,
                 'organization'         => strip_tags($request->organization),
                 'email_verified_at'    => now(),
                 'is_active'            => true,
@@ -73,7 +68,7 @@ class UserController extends Controller
 
             PasswordHistory::create([
                 'user_id'  => $user->id,
-                'password' => $hashedPassword,
+                'password' => $user->password,
             ]);
 
             AuditLog::create([
@@ -85,7 +80,13 @@ class UserController extends Controller
                 'ip_address' => $request->ip(),
             ]);
 
-            $user->notify(new WelcomeUserNotification($user, $plainPassword));
+            // Kirim welcome email
+            $user->notify(new WelcomeUserNotification($user));
+
+            // Kirim link reset password via Password Broker
+            \Illuminate\Support\Facades\Password::broker()->sendResetLink(
+                ['email' => $user->email]
+            );
 
             return $user;
         });
