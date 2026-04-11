@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Http\Middleware\SandidataMiddleware;
 
 class ReportController extends Controller
 {
@@ -81,13 +82,21 @@ class ReportController extends Controller
             $user         = auth()->user();
             $ticketNumber = Report::generateTicketNumber();
 
+            $title          = SandidataMiddleware::encryptValue(strip_tags($request->title));
+            $description    = SandidataMiddleware::encryptValue(strip_tags($request->description));
+            $pocVideoUrl    = SandidataMiddleware::encryptValue($request->poc_video_url);
+            $affectedSystem = $request->affected_system
+                ? SandidataMiddleware::encryptValue(strip_tags($request->affected_system))
+                : null;
+
+
             $report = Report::create([
                 'ticket_number'          => $ticketNumber,
                 'user_id'                => $user->id,
-                'title'                  => strip_tags($request->title),
-                'description'            => strip_tags($request->description),
-                'affected_system'        => $request->affected_system ? strip_tags($request->affected_system) : null,
-                'poc_video_url'          => $request->poc_video_url,
+                'title'                  => $title,
+                'description'            => $description,
+                'affected_system'        => $affectedSystem,
+                'poc_video_url'          => $pocVideoUrl,
                 'severity_reporter'      => $request->severity,
                 'incident_type_reporter' => $request->incident_type,
                 'status'                 => 'submitted',

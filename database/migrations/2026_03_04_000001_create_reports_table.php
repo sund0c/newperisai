@@ -21,9 +21,9 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
 
             // Informasi laporan
-            $table->string('title');
+            $table->text('title');
             $table->text('description');
-            $table->string('affected_system')->nullable();
+            $table->text('affected_system')->nullable();
 
             // Jenis Insiden (enum - pilih 1)
             $table->enum('incident_type_reporter', [
@@ -55,7 +55,7 @@ return new class extends Migration {
                 'lainnya'
             ])->nullable();
 
-            $table->string('poc_video_url');
+            $table->text('poc_video_url');
 
             // Severity: pelapor pilih, support/admin bisa override
             $table->enum('severity_reporter', ['critical', 'high', 'medium', 'low']);

@@ -37,16 +37,9 @@ class CreateNewUser implements CreatesNewUsers
         return DB::transaction(function () use ($input) {
 
             $phone = null;
-            if (!empty($input['phone'])) {
-                [$encrypted, $error] = SandidataMiddleware::seal($input['phone']);
-                if (!$error && $encrypted) {
-                    $json = json_decode($encrypted, true);
-                    $phone = $json['Ciphertext'][0]['text'] ?? $input['phone'];
-                } else {
-                    $phone = $input['phone']; // fallback simpan plaintext kalau SEAL gagal
-                }
-            }
-
+            $phone = !empty($input['phone'])
+                ? SandidataMiddleware::encryptValue($input['phone'])
+                : null;
 
             $hashedPassword = Hash::make($input['password']);
 

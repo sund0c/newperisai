@@ -8,89 +8,98 @@ use Illuminate\Support\Facades\Log;
 
 class SandidataMiddleware
 {
-    private static $certFile;
-    private static $keyFile;
-    private static $certPassword;
-    private static $baseUrl;
+    private static bool $initialized = false;
+    private static string $certFile      = '';
+    private static string $keyFile       = '';
+    private static string $certPassword  = '';
+    private static string $baseUrl       = '';
 
-    /**
-     * Inisialisasi konfigurasi SEAL
-     */
-    private static function init()
+    // ----------------------------------------------------------------
+    // Init — hanya sekali per request cycle
+    // ----------------------------------------------------------------
+    private static function init(): void
     {
-        // Kalau sudah diinisialisasi, skip
-        if (!empty(self::$baseUrl)) {
-            return;
+        if (self::$initialized) {
+            return;  // ← guard: tidak init ulang
         }
 
-        self::$baseUrl       = rtrim(config('seal.base_url'));
-        self::$certFile      = rtrim(config('seal.cert_file'));
-        self::$keyFile       = rtrim(config('seal.key_file'));
-        self::$certPassword  = rtrim(config('seal.cert_password'));
+        self::$baseUrl      = rtrim(config('seal.base_url', ''));
+        self::$certFile     = rtrim(config('seal.cert_file', ''));
+        self::$keyFile      = rtrim(config('seal.key_file', ''));
+        self::$certPassword = rtrim(config('seal.cert_password', ''));
 
-        Log::info('Sandidata init debug', [
-            'baseUrl' => self::$baseUrl,
-            'baseUrl_length' => strlen(self::$baseUrl),
-            'last_char_hex' => dechex(ord(substr(self::$baseUrl, -1))),
-        ]);
-
-        // Validasi
         if (empty(self::$baseUrl)) {
-            throw new \Exception('SEAL_BASE_URL belum di-set di .env');
+            throw new \Exception('SEAL_BASE_URL belum dikonfigurasi');
         }
 
-        if (empty(self::$certFile) || !file_exists(self::$certFile)) {
-            throw new \Exception('SEAL_CERT_CRT tidak ditemukan: ' . self::$certFile);
+        if (!file_exists(self::$certFile)) {
+            throw new \Exception('SEAL cert tidak ditemukan: ' . self::$certFile);
         }
 
-        if (empty(self::$keyFile) || !file_exists(self::$keyFile)) {
-            throw new \Exception('SEAL_CERT_KEY tidak ditemukan: ' . self::$keyFile);
+        if (!file_exists(self::$keyFile)) {
+            throw new \Exception('SEAL key tidak ditemukan: ' . self::$keyFile);
         }
+
+        self::$initialized = true;
+
+        Log::debug('SandidataMiddleware initialized', [
+            'baseUrl' => self::$baseUrl,
+        ]);
     }
 
-    /**
-     * Send request ke API SEAL BSSN
-     */
-    private static function sendRequest($url, $payload)
+    // ----------------------------------------------------------------
+    // sendRequest
+    // ----------------------------------------------------------------
+    private static function sendRequest(string $url, string $payload): array
     {
         self::init();
 
         $ch = curl_init();
         curl_setopt_array($ch, [
-            CURLOPT_URL => $url,
+            CURLOPT_URL            => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_HTTPHEADER => [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $payload,
+            CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
-                'Content-Length: ' . strlen($payload)
+                'Content-Length: ' . strlen($payload),
             ],
-            CURLOPT_SSLCERT => self::$certFile,
-            CURLOPT_SSLKEY => self::$keyFile,
-            CURLOPT_SSLKEYPASSWD => self::$certPassword,
+            CURLOPT_SSLCERT        => self::$certFile,
+            CURLOPT_SSLKEY         => self::$keyFile,
+            CURLOPT_SSLKEYPASSWD   => self::$certPassword,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_TIMEOUT => 30,
+            CURLOPT_TIMEOUT        => 30,
         ]);
 
+        $t0       = microtime(true);
         $response = curl_exec($ch);
-        $error = curl_errno($ch) ? curl_error($ch) : null;
+        $duration = round((microtime(true) - $t0) * 1000, 2);
+        $error    = curl_errno($ch) ? curl_error($ch) : null;
+        curl_close($ch);
 
         if ($error) {
-            Log::error('SEAL cURL Error: ' . $error);
+            Log::error('SEAL cURL error', [
+                'url'      => $url,
+                'error'    => $error,
+                'duration' => $duration . 'ms',
+            ]);
+        } else {
+            Log::debug('SEAL request OK', [
+                'url'      => $url,
+                'duration' => $duration . 'ms',
+            ]);
         }
-
-        curl_close($ch);
 
         return [$response, $error];
     }
 
-    /**
-     * ENKRIPSI - Plaintext → Ciphertext
-     */
-    public static function seal($plaintext)
+    // ----------------------------------------------------------------
+    // Public API
+    // ----------------------------------------------------------------
+    public static function seal(string $plaintext): array
     {
-        self::init();
+        self::init();  // ← init sebelum pakai $baseUrl
 
         $payload = json_encode([
             'Plaintext' => [['text' => $plaintext]]
@@ -99,12 +108,10 @@ class SandidataMiddleware
         return self::sendRequest(self::$baseUrl . '/seal', $payload);
     }
 
-    /**
-     * DEKRIPSI - Ciphertext → Plaintext
-     */
-    public static function unseal($ciphertext)
+    public static function unseal(string $ciphertext): array
     {
-        self::init();
+        self::init();  // ← init sebelum pakai $baseUrl
+
         $payload = json_encode([
             'Ciphertext' => [['text' => $ciphertext]]
         ]);
@@ -112,144 +119,91 @@ class SandidataMiddleware
         return self::sendRequest(self::$baseUrl . '/unseal', $payload);
     }
 
-    /**
-     * Handle middleware
-     */
-    public function handle(Request $request, Closure $next, string ...$fields)
+    // ----------------------------------------------------------------
+    // Helper publik — enkripsi single value
+    // ----------------------------------------------------------------
+    public static function encryptValue(string $value): string
+    {
+        if (empty($value)) {
+            return $value;
+        }
+
+        // Skip kalau sudah terenkripsi
+        if (str_starts_with($value, 's0:')) {
+            return $value;
+        }
+
+        [$response, $error] = self::seal($value);
+
+        if ($error || !$response) {
+            Log::error('SEAL encryptValue gagal', ['error' => $error]);
+            return $value; // fallback plaintext
+        }
+
+        $json = json_decode($response, true);
+        return $json['Ciphertext'][0]['text'] ?? $value;
+    }
+
+    // ----------------------------------------------------------------
+    // Helper publik — dekripsi single value
+    // ----------------------------------------------------------------
+    public static function decryptValue(string $value): string
+    {
+        if (empty($value) || !str_starts_with($value, 's0:')) {
+            return $value;
+        }
+
+        [$response, $error] = self::unseal($value);
+
+        if ($error || !$response) {
+            Log::error('SEAL decryptValue gagal', ['error' => $error]);
+            return $value;
+        }
+
+        $json = json_decode($response, true);
+        return $json['Plaintext'][0]['text'] ?? $value;
+    }
+
+    // ----------------------------------------------------------------
+    // Middleware handle
+    // ----------------------------------------------------------------
+    public function handle(Request $request, Closure $next, string ...$fields): mixed
     {
         Log::info('SandidataMiddleware START', [
-            'url' => $request->url(),
+            'url'    => $request->url(),
             'fields' => $fields,
-            'original_input' => $request->all()
         ]);
 
-        // ENKRIPSI
         foreach ($fields as $field) {
             $this->encryptField($request, $field);
         }
 
-        Log::info('SandidataMiddleware AFTER ENCRYPT', [
-            'modified_input' => $request->all()
-        ]);
-
         $response = $next($request);
-
-        // DEKRIPSI untuk view
-        if ($response instanceof \Illuminate\View\View) {
-            $data = $response->getData();
-            foreach ($fields as $field) {
-                $data = $this->decryptFieldInData($data, $field);
-            }
-            foreach ($data as $key => $value) {
-                $response->with($key, $value);
-            }
-        }
 
         Log::info('SandidataMiddleware END');
 
         return $response;
     }
 
+    // ----------------------------------------------------------------
+    // Enkripsi field di request
+    // ----------------------------------------------------------------
     protected function encryptField(Request $request, string $field): void
     {
         if (!$request->has($field)) {
-            Log::warning("Sandidata: Field {$field} tidak ada di request");
             return;
         }
 
         $value = $request->input($field);
 
-        Log::info("Sandidata: Processing field {$field}", [
-            'value' => $value,
-            'is_encrypted' => is_string($value) && str_starts_with($value, 's0:')
-        ]);
-
-        if (empty($value)) {
-            Log::info("Sandidata: Field {$field} kosong, skip");
+        // Skip null, empty, array
+        if (empty($value) || is_array($value)) {
             return;
         }
 
-        // Skip jika sudah terenkripsi
-        if (is_string($value) && str_starts_with($value, 's0:')) {
-            Log::info("Sandidata: Field {$field} sudah terenkripsi, skip");
-            return;
-        }
+        $encrypted = self::encryptValue((string) $value);
+        $request->merge([$field => $encrypted]);
 
-        try {
-            [$response, $error] = self::seal($value);
-
-            if ($error || !$response) {
-                Log::error("Sandidata: Gagal enkripsi field {$field}", ['error' => $error]);
-                return;
-            }
-
-            $json = json_decode($response, true);
-            $encrypted = $json['Ciphertext'][0]['text'] ?? null;
-
-            if ($encrypted) {
-                // PENTING: Merge ke request
-                $request->merge([$field => $encrypted]);
-
-                Log::info("Sandidata: Field {$field} BERHASIL dienkripsi", [
-                    'encrypted' => $encrypted
-                ]);
-            } else {
-                Log::error("Sandidata: Response SEAL tidak valid untuk {$field}");
-            }
-        } catch (\Exception $e) {
-            Log::error("Sandidata: Exception untuk {$field}", [
-                'message' => $e->getMessage()
-            ]);
-        }
-    }
-
-    /**
-     * Decrypt field in data
-     */
-    protected function decryptFieldInData($data, string $field)
-    {
-        if (is_object($data)) {
-            if (isset($data->$field) && is_string($data->$field) && str_starts_with($data->$field, 's0:')) {
-                $data->$field = $this->decryptValue($data->$field);
-                Log::info("Sandidata: Field {$field} didekripsi untuk view");
-            }
-            // Recursive untuk relations
-            foreach (get_object_vars($data) as $key => $value) {
-                if (is_object($value) || is_array($value)) {
-                    $data->$key = $this->decryptFieldInData($value, $field);
-                }
-            }
-        } elseif (is_array($data)) {
-            foreach ($data as $key => $value) {
-                if ($key === $field && is_string($value) && str_starts_with($value, 's0:')) {
-                    $data[$key] = $this->decryptValue($value);
-                } elseif (is_array($value) || is_object($value)) {
-                    $data[$key] = $this->decryptFieldInData($value, $field);
-                }
-            }
-        }
-
-        return $data;
-    }
-
-    /**
-     * Decrypt single value
-     */
-    protected function decryptValue(string $value): string
-    {
-        try {
-            [$response, $error] = self::unseal($value);
-
-            if ($error || !$response) {
-                Log::error("Sandidata: Gagal dekripsi - {$error}");
-                return $value;
-            }
-
-            $json = json_decode($response, true);
-            return $json['Plaintext'][0]['text'] ?? $value;
-        } catch (\Exception $e) {
-            Log::error("Sandidata Decryption Exception: " . $e->getMessage());
-            return $value;
-        }
+        Log::info("Sandidata: field {$field} dienkripsi");
     }
 }

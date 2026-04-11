@@ -219,15 +219,8 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
 
-    public function getPhoneAttribute($value)
+    public function getPhoneAttribute($value): string
     {
-        if ($value && str_starts_with($value, 's0:')) {
-            [$decrypted, $error] = SandidataMiddleware::unseal($value);
-            if (!$error && $decrypted) {
-                $json = json_decode($decrypted, true);
-                return $json['Plaintext'][0]['text'] ?? $value;
-            }
-        }
-        return $value;
+        return SandidataMiddleware::decryptValue($value ?? '');
     }
 }
