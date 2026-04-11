@@ -74,7 +74,6 @@ class UserSeeder extends Seeder
                     'email'                => 'putu.sundika@gmail.com',
                     'password'             => Hash::make(env('SEEDER_PUBLIC1_PASSWORD')),
                     'organization'         => 'personal',
-                    'phone'                => '08123456789',
                     'is_active'            => true,
                     'email_verified_at'    => now(),
                     'password_changed_at'  => null,

@@ -43,7 +43,7 @@ class UserController extends Controller
             'name'         => 'required|string|max:255',
             'email'        => 'required|email|unique:users,email',
             'organization' => 'required|string|max:255',
-            'phone'        => 'nullable|string|max:20',
+            'phone'        => 'nullable|string',
         ]);
 
         $plainPassword = Str::password(12);

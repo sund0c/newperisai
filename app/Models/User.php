@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Traits\HasRoles;
 use Carbon\Carbon;
+use App\Http\Middleware\SandidataMiddleware;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -215,5 +216,18 @@ class User extends Authenticatable implements MustVerifyEmail
     public function reports(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(\App\Models\Report::class, 'user_id');
+    }
+
+
+    public function getPhoneAttribute($value)
+    {
+        if ($value && str_starts_with($value, 's0:')) {
+            [$decrypted, $error] = SandidataMiddleware::unseal($value);
+            if (!$error && $decrypted) {
+                $json = json_decode($decrypted, true);
+                return $json['Plaintext'][0]['text'] ?? $value;
+            }
+        }
+        return $value;
     }
 }
