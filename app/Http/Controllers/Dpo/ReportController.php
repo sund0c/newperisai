@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Http\Middleware\SandidataMiddleware;
 
 class ReportController extends Controller
 {
@@ -91,9 +92,13 @@ class ReportController extends Controller
 
             Storage::disk('local')->put($path, file_get_contents($file));
 
+            $notes = $request->notes
+                ? SandidataMiddleware::encryptValue(strip_tags($request->notes))
+                : null;
+
             $dpoProcess->update([
                 'status'                   => 'closed',
-                'notes'                    => $request->notes,
+                'notes'                    => $notes,
                 'mitigation_file'          => $path,
                 'mitigation_file_original' => $file->getClientOriginalName(),
                 'closed_at'                => now(),
@@ -160,11 +165,16 @@ class ReportController extends Controller
             'body'  => 'nullable|string|max:5000',
         ]);
 
+        $title          = SandidataMiddleware::encryptValue(strip_tags($request->title));
+        $body = $request->body
+            ? SandidataMiddleware::encryptValue(strip_tags($request->body))
+            : null;
+
         $dpoProcess->activityLogs()->create([
             'logged_by' => auth()->id(),
             'type'      => $request->type,
-            'title'     => $request->title,
-            'body'      => $request->body,
+            'title'     => $title,
+            'body'      => $body,
         ]);
 
         return back()->with('success', 'Aktivitas berhasil dicatat.');

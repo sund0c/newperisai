@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Http\Middleware\SandidataMiddleware;
 
 class DpoProcess extends Model
 {
@@ -78,5 +79,9 @@ class DpoProcess extends Model
     public function activityLogs()
     {
         return $this->hasMany(DpoActivityLog::class)->latest();
+    }
+    public function getNotesAttribute($value): string
+    {
+        return SandidataMiddleware::decryptValue($value ?? '');
     }
 }

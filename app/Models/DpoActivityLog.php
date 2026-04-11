@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Http\Middleware\SandidataMiddleware;
 
 class DpoActivityLog extends Model
 {
@@ -38,5 +39,15 @@ class DpoActivityLog extends Model
             'technical'    => ['label' => 'Teknis',        'color' => 'red',    'icon' => 'code'],
             'other'        => ['label' => 'Lainnya',       'color' => 'gray',   'icon' => 'dots'],
         ];
+    }
+
+    public function getTitleAttribute($value): string
+    {
+        return SandidataMiddleware::decryptValue($value ?? '');
+    }
+
+    public function getBodyAttribute($value): string
+    {
+        return SandidataMiddleware::decryptValue($value ?? '');
     }
 }
