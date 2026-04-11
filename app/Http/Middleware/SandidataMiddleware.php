@@ -18,16 +18,15 @@ class SandidataMiddleware
      */
     private static function init()
     {
-        // // Gunakan rtrim untuk hapus spasi, tab, newline di kanan
-        // self::$baseUrl = rtrim(env('SEAL_BASE_URL') ?? '');
-        // self::$certFile = rtrim(env('SEAL_CERT_CRT') ?? '');
-        // self::$keyFile = rtrim(env('SEAL_CERT_KEY') ?? '');
-        // self::$certPassword = rtrim(env('SEAL_CERT_PASSWORD') ?? '');
+        // Kalau sudah diinisialisasi, skip
+        if (!empty(self::$baseUrl)) {
+            return;
+        }
 
-        self::$baseUrl = 'https://10.100.4.3:2796';  // Tanpa spasi!
-        self::$certFile = '/var/www/aduancsirt/storage/app/client.crt';
-        self::$keyFile = '/var/www/aduancsirt/storage/app/client.key';
-        self::$certPassword = '';
+        self::$baseUrl       = rtrim(config('seal.base_url'));
+        self::$certFile      = rtrim(config('seal.cert_file'));
+        self::$keyFile       = rtrim(config('seal.key_file'));
+        self::$certPassword  = rtrim(config('seal.cert_password'));
 
         Log::info('Sandidata init debug', [
             'baseUrl' => self::$baseUrl,
