@@ -18,10 +18,17 @@ class SandidataMiddleware
      */
     private static function init()
     {
-        self::$certFile = trim(env('SEAL_CERT_CRT'));
-        self::$keyFile = trim(env('SEAL_CERT_KEY'));
-        self::$certPassword = trim(env('SEAL_CERT_PASSWORD', ''));
-        self::$baseUrl = trim(env('SEAL_BASE_URL'));
+        // Gunakan rtrim untuk hapus spasi, tab, newline di kanan
+        self::$baseUrl = rtrim(env('SEAL_BASE_URL') ?? '');
+        self::$certFile = rtrim(env('SEAL_CERT_CRT') ?? '');
+        self::$keyFile = rtrim(env('SEAL_CERT_KEY') ?? '');
+        self::$certPassword = rtrim(env('SEAL_CERT_PASSWORD') ?? '');
+
+        Log::info('Sandidata init debug', [
+            'baseUrl' => self::$baseUrl,
+            'baseUrl_length' => strlen(self::$baseUrl),
+            'last_char_hex' => dechex(ord(substr(self::$baseUrl, -1))),
+        ]);
 
         // Validasi
         if (empty(self::$baseUrl)) {
