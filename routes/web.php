@@ -90,7 +90,7 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(functio
 
     // Profile & Security Settings
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-    Route::patch('/profile/info', [ProfileController::class, 'updateInfo'])->name('profile.update-info');
+    Route::patch('/profile/info', [ProfileController::class, 'updateInfo'])->middleware('sandidata:phone')->name('profile.update-info');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
 
 
