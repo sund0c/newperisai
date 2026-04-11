@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Middleware\SandidataMiddleware;
 
 class Report extends Model
 {
@@ -297,5 +298,25 @@ class Report extends Model
         $flow         = self::statusFlow();
         $currentIndex = array_search($this->status, $flow);
         return $flow[$currentIndex + 1] ?? null;
+    }
+
+    public function getTitleAttribute($value): string
+    {
+        return SandidataMiddleware::decryptValue($value ?? '');
+    }
+
+    public function getDescriptionAttribute($value): string
+    {
+        return SandidataMiddleware::decryptValue($value ?? '');
+    }
+
+    public function getPocVideoUrlAttribute($value): string
+    {
+        return SandidataMiddleware::decryptValue($value ?? '');
+    }
+
+    public function getAffectedSystemAttribute($value): string
+    {
+        return SandidataMiddleware::decryptValue($value ?? '');
     }
 }

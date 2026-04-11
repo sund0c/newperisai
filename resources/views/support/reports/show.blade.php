@@ -44,7 +44,9 @@
                         <div>
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Pelapor</p>
                             <p class="text-sm text-gray-900">{{ $report->reporter?->name }}</p>
-                            <p class="text-xs text-gray-400">{{ $report->reporter?->email }}</p>
+                            <p class="text-xs text-gray-400">{{ $report->reporter?->email }} 
+                                @if ($report->reporter?->phone) / {{ $report->reporter?-> }} @endif
+                            </p>
                             <p class="text-xs text-gray-400">{{ $report->reporter?->organization }}</p>
                         </div>
                     </div>
