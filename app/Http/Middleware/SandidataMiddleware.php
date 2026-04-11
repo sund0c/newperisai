@@ -18,10 +18,10 @@ class SandidataMiddleware
      */
     private static function init()
     {
-        self::$certFile = env('SEAL_CERT_CRT');
-        self::$keyFile = env('SEAL_CERT_KEY');
-        self::$certPassword = env('SEAL_CERT_PASSWORD', '');
-        self::$baseUrl = env('SEAL_BASE_URL');
+        self::$certFile = trim(env('SEAL_CERT_CRT'));
+        self::$keyFile = trim(env('SEAL_CERT_KEY'));
+        self::$certPassword = trim(env('SEAL_CERT_PASSWORD', ''));
+        self::$baseUrl = trim(env('SEAL_BASE_URL'));
 
         // Validasi
         if (empty(self::$baseUrl)) {
