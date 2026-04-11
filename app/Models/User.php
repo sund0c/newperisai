@@ -223,4 +223,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return SandidataMiddleware::decryptValue($value ?? '');
     }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
 }

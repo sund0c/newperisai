@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
                 'password'             => Hash::make(env('SEEDER_ADMIN1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
-                'email_verified_at'    => now(),
+                'email_verified_at' => null,
                 'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
@@ -32,6 +32,7 @@ class UserSeeder extends Seeder
 
         foreach ($admins as $data) {
             $user = User::firstOrCreate(['email' => $data['email']], $data);
+            $user->markEmailAsVerified();
             $user->assignRole('admin');
             PasswordHistory::firstOrCreate(
                 ['user_id' => $user->id, 'password' => $data['password']]
@@ -48,7 +49,7 @@ class UserSeeder extends Seeder
                 'password'             => Hash::make(env('SEEDER_SUPPORT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
-                'email_verified_at'    => now(),
+                'email_verified_at' => null,
                 'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
@@ -57,6 +58,7 @@ class UserSeeder extends Seeder
 
         foreach ($supports as $data) {
             $user = User::firstOrCreate(['email' => $data['email']], $data);
+            $user->markEmailAsVerified();
             $user->assignRole('support');
             PasswordHistory::firstOrCreate(
                 ['user_id' => $user->id, 'password' => $data['password']]
@@ -75,7 +77,7 @@ class UserSeeder extends Seeder
                     'password'             => Hash::make(env('SEEDER_PUBLIC1_PASSWORD')),
                     'organization'         => 'personal',
                     'is_active'            => true,
-                    'email_verified_at'    => now(),
+                    'email_verified_at' => null,
                     'password_changed_at'  => now(),
                     'must_change_password' => true,
                 ],
@@ -84,6 +86,7 @@ class UserSeeder extends Seeder
 
             foreach ($publics as $data) {
                 $user = User::firstOrCreate(['email' => $data['email']], $data);
+                $user->markEmailAsVerified();
                 $user->assignRole('public');
                 PasswordHistory::firstOrCreate(
                     ['user_id' => $user->id, 'password' => $data['password']]
@@ -101,7 +104,7 @@ class UserSeeder extends Seeder
                 'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
-                'email_verified_at'    => now(),
+                'email_verified_at' => null,
                 'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
@@ -111,7 +114,7 @@ class UserSeeder extends Seeder
                 'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
-                'email_verified_at'    => now(),
+                'email_verified_at' => null,
                 'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
@@ -121,7 +124,7 @@ class UserSeeder extends Seeder
                 'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
-                'email_verified_at'    => now(),
+                'email_verified_at' => null,
                 'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
@@ -131,7 +134,7 @@ class UserSeeder extends Seeder
                 'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
                 'organization'         => 'CSIRT Provinsi Bali',
                 'is_active'            => true,
-                'email_verified_at'    => now(),
+                'email_verified_at' => null,
                 'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
@@ -140,6 +143,7 @@ class UserSeeder extends Seeder
 
         foreach ($csirts as $data) {
             $user = User::firstOrCreate(['email' => $data['email']], $data);
+            $user->markEmailAsVerified();
             $user->assignRole('csirt');
             PasswordHistory::firstOrCreate(
                 ['user_id' => $user->id, 'password' => $data['password']]
@@ -156,7 +160,7 @@ class UserSeeder extends Seeder
                 'password'             => Hash::make(env('SEEDER_DPO1_PASSWORD')),
                 'organization'         => 'DPO Provinsi Bali',
                 'is_active'            => true,
-                'email_verified_at'    => now(),
+                'email_verified_at' => null,
                 'password_changed_at'  => now(),
                 'must_change_password' => true,
             ],
@@ -165,6 +169,7 @@ class UserSeeder extends Seeder
 
         foreach ($dpo as $data) {
             $user = User::firstOrCreate(['email' => $data['email']], $data);
+            $user->markEmailAsVerified();
             $user->assignRole('dpo');
             PasswordHistory::firstOrCreate(
                 ['user_id' => $user->id, 'password' => $data['password']]
