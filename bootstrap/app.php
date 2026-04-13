@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'password.expiry' => \App\Http\Middleware\PasswordExpiryMiddleware::class,
             'verify.auto-auth' => \App\Http\Middleware\EnsureUserIsAuthenticatedForVerification::class,
             'sandidata' => \App\Http\Middleware\SandidataMiddleware::class,
+            'maintenance.check' => \App\Http\Middleware\CheckMaintenance::class,
 
         ]);
     })

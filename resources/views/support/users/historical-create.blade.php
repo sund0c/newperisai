@@ -36,28 +36,6 @@
 
             <div class="space-y-4">
 
-                {{-- Judul --}}
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Judul Laporan <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="title" value="{{ old('title') }}" required
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                                  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           placeholder="Judul singkat laporan">
-                </div>
-
-                {{-- Sistem Terdampak --}}
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Sistem Terdampak <span class="text-gray-400">(opsional)</span>
-                    </label>
-                    <input type="text" name="affected_system" value="{{ old('affected_system') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                                  focus:outline-none focus:ring-2 focus:ring-blue-500"
-                           placeholder="URL atau nama sistem">
-                </div>
-
                 {{-- Tanggal Laporan --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -69,23 +47,6 @@
                                   focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
-                {{-- Dampak (pelapor) --}}
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Dampak <span class="text-red-500">*</span>
-                    </label>
-                    <select name="severity_reporter" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="">-- Pilih Dampak --</option>
-                        @foreach(\App\Models\Report::severityLabel() as $val => $label)
-                        <option value="{{ $val }}" {{ old('severity_reporter') === $val ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
-
                 {{-- Hasil Validasi --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -95,27 +56,9 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
                                    focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
                         <option value="">-- Pilih Hasil --</option>
-                        <option value="valid" {{ old('validation_result') === 'valid' ? 'selected' : '' }}>Valid</option>
-                        <option value="invalid" {{ old('validation_result') === 'invalid' ? 'selected' : '' }}>Tidak Valid</option>
+                        <option value="valid"     {{ old('validation_result') === 'valid'     ? 'selected' : '' }}>Valid</option>
+                        <option value="invalid"   {{ old('validation_result') === 'invalid'   ? 'selected' : '' }}>Tidak Valid</option>
                         <option value="duplicate" {{ old('validation_result') === 'duplicate' ? 'selected' : '' }}>Duplikat</option>
-                    </select>
-                </div>
-
-                {{-- Dampak Terverifikasi — hanya jika VALID --}}
-                <div x-show="result === 'valid'" x-transition>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Dampak Terverifikasi <span class="text-red-500">*</span>
-                    </label>
-                    <select name="severity_verified"
-                            :required="result === 'valid'"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-                        <option value="">-- Pilih Dampak --</option>
-                        @foreach(\App\Models\Report::severityLabel() as $val => $label)
-                        <option value="{{ $val }}" {{ old('severity_verified') === $val ? 'selected' : '' }}>
-                            {{ $label }}
-                        </option>
-                        @endforeach
                     </select>
                 </div>
 
@@ -133,8 +76,65 @@
                     <p class="text-xs text-gray-400 mt-1">Maks. 5 MB</p>
                 </div>
 
-                {{-- Catatan --}}
-                <div>
+                {{-- Judul Laporan (dinonaktifkan) --}}
+                {{-- <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Judul Laporan <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="title" value="{{ old('title') }}" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="Judul singkat laporan">
+                </div> --}}
+
+                {{-- Sistem Terdampak (dinonaktifkan) --}}
+                {{-- <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Sistem Terdampak <span class="text-gray-400">(opsional)</span>
+                    </label>
+                    <input type="text" name="affected_system" value="{{ old('affected_system') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                                  focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           placeholder="URL atau nama sistem">
+                </div> --}}
+
+                {{-- Dampak / severity_reporter (dinonaktifkan) --}}
+                {{-- <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Dampak <span class="text-red-500">*</span>
+                    </label>
+                    <select name="severity_reporter" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">-- Pilih Dampak --</option>
+                        @foreach(\App\Models\Report::severityLabel() as $val => $label)
+                        <option value="{{ $val }}" {{ old('severity_reporter') === $val ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div> --}}
+
+                {{-- Dampak Terverifikasi (dinonaktifkan) --}}
+                {{-- <div x-show="result === 'valid'" x-transition>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Dampak Terverifikasi <span class="text-red-500">*</span>
+                    </label>
+                    <select name="severity_verified"
+                            :required="result === 'valid'"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+                        <option value="">-- Pilih Dampak --</option>
+                        @foreach(\App\Models\Report::severityLabel() as $val => $label)
+                        <option value="{{ $val }}" {{ old('severity_verified') === $val ? 'selected' : '' }}>
+                            {{ $label }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div> --}}
+
+                {{-- Catatan (dinonaktifkan) --}}
+                {{-- <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Catatan <span class="text-gray-400">(opsional)</span>
                     </label>
@@ -142,7 +142,7 @@
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
                                      focus:outline-none focus:ring-2 focus:ring-blue-500"
                               placeholder="Catatan tambahan...">{{ old('admin_notes') }}</textarea>
-                </div>
+                </div> --}}
 
                 <div class="flex items-center gap-3 pt-1">
                     <button type="submit"
@@ -156,6 +156,7 @@
                         Batal
                     </a>
                 </div>
+
             </div>
         </form>
     </div>

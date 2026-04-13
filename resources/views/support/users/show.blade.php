@@ -74,7 +74,7 @@
             {{-- Aksi --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
                 <h3 class="text-sm font-semibold text-gray-700 mb-3">Aksi</h3>
-                {{-- <a href="{{ route('support.users.historical.create', $user) }}"
+                <a href="{{ route('support.users.historical.create', $user) }}"
                class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5
                       bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold
                       rounded-lg transition-colors">
@@ -82,7 +82,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Input Tiket Historis
-            </a> --}}
+            </a>
                 <form method="POST" action="{{ route('support.users.reset-password', $user) }}"
                     onsubmit="return confirm('Reset password user ini? Password baru akan dikirim ke email mereka.')">
                     @csrf

@@ -2,6 +2,7 @@
 // app/Http/Controllers/DashboardController.php
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -11,7 +12,9 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         if ($user->hasRole('admin')) {
-            return view('admin.dashboard');
+            return view('admin.dashboard', [
+                'maintenanceActive' => Setting::maintenanceActive(),
+            ]);
         } elseif ($user->hasRole('support')) {
             return view('support.dashboard');
         } elseif ($user->hasRole('csirt')) {

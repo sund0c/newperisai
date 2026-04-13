@@ -4,10 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\ReportController;
+
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -16,9 +16,6 @@ use Illuminate\Support\Facades\Auth;
 // PUBLIC ROUTES
 // =====================
 Route::get('/', fn() => redirect()->route('login'));
-
-// Halaman maintenance — dapat diakses tanpa auth (untuk public yang di-redirect)
-Route::get('/maintenance', fn() => view('maintenance'))->name('maintenance');
 
 // =====================
 // EMAIL VERIFICATION — Custom route menggantikan Fortify's default
@@ -88,14 +85,14 @@ Route::middleware(['auth', 'verified', '2fa'])->group(function () {
 
 // =====================
 // AUTHENTICATED ROUTES (terproteksi penuh)
-// maintenance.check diterapkan di sini — bypass untuk non-public
 // =====================
-Route::middleware(['auth', 'verified', '2fa', 'password.expiry', 'maintenance.check'])->group(function () {
+Route::middleware(['auth', 'verified', '2fa', 'password.expiry'])->group(function () {
 
     // Profile & Security Settings
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile/info', [ProfileController::class, 'updateInfo'])->name('profile.update-info');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -110,10 +107,6 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry', 'maintenance.ch
         Route::patch('users/{user}/restore', [UserController::class, 'restore'])
             ->name('users.restore')
             ->withTrashed();
-
-        // Maintenance toggle
-        Route::post('/maintenance/toggle', [MaintenanceController::class, 'toggle'])
-            ->name('maintenance.toggle');
     });
 
     // SUPPORT PANEL
@@ -122,6 +115,7 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry', 'maintenance.ch
 
         Route::get('/tiket/{report}/validation-file', [\App\Http\Controllers\Support\ReportController::class, 'showValidationFile'])
             ->name('reports.validation-file');
+
 
         // Tiket
         Route::get('/tiket', [\App\Http\Controllers\Support\ReportController::class, 'index'])->name('reports.index');
@@ -185,6 +179,7 @@ Route::middleware(['auth', 'verified', '2fa', 'password.expiry', 'maintenance.ch
 
         Route::get('/attachments/{attachment}', [\App\Http\Controllers\Public\AttachmentController::class, 'show'])
             ->name('public.attachments.show');
+        // Di dalam blok role:public
         Route::get('/laporan/{report}/certificate', [\App\Http\Controllers\Public\AttachmentController::class, 'downloadCertificate'])
             ->name('public.certificate.download');
     });

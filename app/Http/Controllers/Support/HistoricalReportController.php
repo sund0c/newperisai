@@ -27,57 +27,49 @@ class HistoricalReportController extends Controller
         abort_unless($user->email_verified_at !== null, 403, 'User belum verifikasi email.');
 
         $request->validate([
-            'title'             => 'required|string|max:255',
-            'affected_system'   => 'nullable|string|max:255',
-            'severity_reporter' => 'required|in:critical,high,medium,low',
+            // --- Field aktif ---
             'reported_at'       => 'required|date|before_or_equal:today',
             'validation_result' => 'required|in:valid,invalid,duplicate',
-            'severity_verified' => 'required_if:validation_result,valid|nullable|in:critical,high,medium,low',
             'certificate'       => 'nullable|file|mimes:pdf|max:5120',
-            'admin_notes'       => 'nullable|string|max:1000',
+
+            // --- Field dinonaktifkan di form (tidak dikirim), tetap didefinisikan
+            //     agar tidak ada mass-assignment tak terduga dari luar ---
+            // 'title'             => tidak divalidasi, diisi default di bawah
+            // 'affected_system'   => tidak divalidasi, diisi null
+            // 'severity_reporter' => tidak divalidasi, diisi default
+            // 'severity_verified' => tidak divalidasi, diisi null
+            // 'admin_notes'       => tidak divalidasi, diisi null
         ]);
 
         DB::transaction(function () use ($request, $user) {
             $ticketNumber = Report::generateHistoricalTicketNumber();
             $reportedAt   = $request->reported_at;
 
-            // Upload sertifikat jika ada
-            $certPath         = null;
-            $certOriginalName = null;
-            if ($request->hasFile('certificate') && $request->validation_result === 'valid') {
-                $file             = $request->file('certificate');
-                $certOriginalName = $file->getClientOriginalName();
-                $storedName       = Str::uuid() . '.pdf';
-
-                // Simpan dulu dengan ID sementara, update setelah create
-                $certPath = '__pending__' . $storedName;
-            }
-
             $report = Report::create([
                 'ticket_number'      => $ticketNumber,
                 'user_id'            => $user->id,
-                'title'              => strip_tags($request->title),
-                'description' => '',
-                'affected_system'    => $request->affected_system,
+                'title'              => '(historis)',        // default karena field dinonaktifkan
+                'description'        => '',
+                'affected_system'    => null,               // field dinonaktifkan
                 'poc_video_url'      => '',
-                'severity_reporter'  => $request->severity_reporter,
-                'severity_verified'  => $request->validation_result === 'valid' ? $request->severity_verified : null,
+                'severity_reporter'  => 'low',              // default karena field dinonaktifkan
+                'severity_verified'  => null,               // field dinonaktifkan
                 'status'             => 'closed',
                 'validation_result'  => $request->validation_result,
-                'closed_reason'      => $request->admin_notes,
-                'admin_notes'        => $request->admin_notes,
+                'closed_reason'      => null,               // field dinonaktifkan
+                'admin_notes'        => null,               // field dinonaktifkan
                 'handled_by'         => auth()->id(),
                 'handled_at'         => $reportedAt,
                 'validated_at'       => $reportedAt,
-                'certificated_at'    => ($certPath || $request->validation_result === 'valid') ? $reportedAt : null,
+                'certificated_at'    => $request->validation_result === 'valid' ? $reportedAt : null,
                 'closed_at'          => $reportedAt,
                 'is_historical'      => true,
                 'created_at'         => $reportedAt,
                 'updated_at'         => $reportedAt,
             ]);
 
-            // Upload sertifikat dengan ID yang sudah ada
-            if ($request->hasFile('certificate') && $request->validation_result === 'valid') {
+            // Upload sertifikat — hanya jika hasil valid DAN file benar-benar ada
+            if ($request->validation_result === 'valid' && $request->hasFile('certificate')) {
                 $file       = $request->file('certificate');
                 $storedName = Str::uuid() . '.pdf';
                 $path       = "certificates/{$report->id}/{$storedName}";
