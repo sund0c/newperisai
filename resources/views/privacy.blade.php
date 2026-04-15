@@ -1,966 +1,407 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="id">
 
-@section('title', 'Kebijakan Privasi — CSIRT Bali')
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kebijakan Privasi - CSIRT Bali</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
 
-@section('content')
-    <div class="privacy-page">
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 font-[Inter] text-white">
+
+    {{-- Sticky Nav --}}
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-900/70 border-b border-white/10">
+        <div class="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('images/logo.png') }}" alt="CSIRT Bali" class="h-8 w-auto object-contain">
+                <span class="text-sm font-semibold text-white/90 hidden sm:block">CSIRT Bali</span>
+                <span class="text-white/20 hidden sm:block">·</span>
+                <span class="text-sm text-blue-300 hidden sm:block">Kebijakan Privasi</span>
+            </div>
+            <a href="{{ url()->previous() }}"
+                class="flex items-center gap-1.5 text-xs text-blue-300 hover:text-white transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Kembali
+            </a>
+        </div>
+    </header>
+
+    <div class="max-w-4xl mx-auto px-6 py-10 pb-20">
 
         {{-- Hero --}}
-        <section class="privacy-hero">
-            <div class="privacy-hero__badge">
-                <span class="badge-dot"></span>
+        <div class="text-center mb-10">
+            <div
+                class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-full px-4 py-1.5 text-xs font-semibold text-blue-300 uppercase tracking-widest mb-5">
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
                 Dokumen Resmi
             </div>
-            <h1 class="privacy-hero__title">Kebijakan <span class="accent">Privasi</span></h1>
-            <p class="privacy-hero__sub">CSIRT Bali — Computer Security Incident Response Team</p>
-            <div class="privacy-hero__meta">
-                <span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" />
-                        <line x1="16" y1="2" x2="16" y2="6" />
-                        <line x1="8" y1="2" x2="8" y2="6" />
-                        <line x1="3" y1="10" x2="21" y2="10" />
+            <h1 class="text-4xl font-bold text-white mb-2">Kebijakan Privasi</h1>
+            <p class="text-blue-300 text-sm mb-5">Aduan Insiden &amp; Kerentanan — Pemerintah Provinsi Bali</p>
+            <div class="flex items-center justify-center gap-5 text-xs text-white/40 flex-wrap">
+                <span class="flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     Berlaku sejak: {{ $effectiveDate }}
                 </span>
-                <span class="divider">|</span>
-                <span>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                <span class="text-white/20">|</span>
+                <span class="flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                     Diperbarui: {{ $lastUpdated }}
                 </span>
             </div>
-        </section>
+        </div>
 
         {{-- Table of Contents --}}
-        <aside class="toc" id="toc">
-            <div class="toc__header">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2">
-                    <line x1="8" y1="6" x2="21" y2="6" />
-                    <line x1="8" y1="12" x2="21" y2="12" />
-                    <line x1="8" y1="18" x2="21" y2="18" />
-                    <line x1="3" y1="6" x2="3.01" y2="6" />
-                    <line x1="3" y1="12" x2="3.01" y2="12" />
-                    <line x1="3" y1="18" x2="3.01" y2="18" />
+        <div class="bg-white/5 border border-white/10 rounded-2xl p-5 mb-8">
+            <p class="text-xs font-bold uppercase tracking-widest text-blue-300 mb-3 flex items-center gap-2">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                 </svg>
                 Daftar Isi
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0.5">
+                @foreach ([['#pendahuluan', '1. Pendahuluan'], ['#data-dikumpulkan', '2. Data yang Dikumpulkan'], ['#penggunaan-data', '3. Penggunaan Data'], ['#penyimpanan', '4. Penyimpanan &amp; Keamanan'], ['#berbagi-data', '5. Berbagi Data'], ['#hak-pengguna', '6. Hak Pengguna'], ['#cookies', '7. Cookies'], ['#perubahan', '8. Perubahan Kebijakan'], ['#kontak', '9. Hubungi Kami']] as [$anchor, $label])
+                    <a href="{{ $anchor }}"
+                        class="text-sm text-white/60 hover:text-blue-300 py-1.5 border-b border-white/5 transition-colors">
+                        {!! $label !!}
+                    </a>
+                @endforeach
             </div>
-            <nav class="toc__nav">
-                <a href="#pendahuluan" class="toc__link">1. Pendahuluan</a>
-                <a href="#data-dikumpulkan" class="toc__link">2. Data yang Dikumpulkan</a>
-                <a href="#penggunaan-data" class="toc__link">3. Penggunaan Data</a>
-                <a href="#penyimpanan-keamanan" class="toc__link">4. Penyimpanan &amp; Keamanan</a>
-                <a href="#berbagi-data" class="toc__link">5. Berbagi Data</a>
-                <a href="#hak-pengguna" class="toc__link">6. Hak Pengguna</a>
-                <a href="#cookies" class="toc__link">7. Cookies</a>
-                <a href="#perubahan-kebijakan" class="toc__link">8. Perubahan Kebijakan</a>
-                <a href="#kontak" class="toc__link">9. Hubungi Kami</a>
-            </nav>
-        </aside>
+        </div>
 
-        {{-- Main Content --}}
-        <main class="privacy-content">
+        {{-- Policy Sections --}}
+        <div class="space-y-4">
 
-            <section class="policy-section" id="pendahuluan">
-                <div class="section-number">01</div>
-                <h2 class="section-title">Pendahuluan</h2>
-                <div class="section-body">
-                    <p>CSIRT Bali (<em>Computer Security Incident Response Team</em> Provinsi Bali) berkomitmen untuk
-                        melindungi privasi dan keamanan data pribadi setiap individu yang menggunakan layanan pelaporan
-                        insiden keamanan siber kami.</p>
-                    <p>Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, dan melindungi
-                        informasi pribadi Anda sesuai dengan Undang-Undang Nomor 27 Tahun 2022 tentang Perlindungan Data
-                        Pribadi (UU PDP) Republik Indonesia.</p>
-                    <div class="policy-callout policy-callout--info">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                        </svg>
-                        <p>Dengan menggunakan layanan kami, Anda menyetujui pengumpulan dan penggunaan informasi sesuai
-                            kebijakan ini. Jika Anda tidak menyetujui, mohon tidak menggunakan layanan kami.</p>
+            {{-- 01 Pendahuluan --}}
+            <section id="pendahuluan" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">01</span>
                     </div>
-                </div>
-            </section>
-
-            <section class="policy-section" id="data-dikumpulkan">
-                <div class="section-number">02</div>
-                <h2 class="section-title">Data yang Dikumpulkan</h2>
-                <div class="section-body">
-                    <p>Kami mengumpulkan informasi yang Anda berikan secara langsung saat melaporkan insiden keamanan siber,
-                        antara lain:</p>
-
-                    <div class="data-grid">
-                        <div class="data-card">
-                            <div class="data-card__icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                    <circle cx="12" cy="7" r="4" />
-                                </svg>
-                            </div>
-                            <h3>Data Identitas</h3>
-                            <ul>
-                                <li>Nama lengkap</li>
-                                <li>Nomor identitas (NIK/NIP)</li>
-                                <li>Jabatan / instansi</li>
-                            </ul>
-                        </div>
-                        <div class="data-card">
-                            <div class="data-card__icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                    <polyline points="22,6 12,13 2,6" />
-                                </svg>
-                            </div>
-                            <h3>Data Kontak</h3>
-                            <ul>
-                                <li>Alamat email</li>
-                                <li>Nomor telepon</li>
-                                <li>Alamat instansi</li>
-                            </ul>
-                        </div>
-                        <div class="data-card">
-                            <div class="data-card__icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                                </svg>
-                            </div>
-                            <h3>Data Insiden</h3>
-                            <ul>
-                                <li>Deskripsi insiden</li>
-                                <li>Timestamp kejadian</li>
-                                <li>Sistem/aset terdampak</li>
-                                <li>Bukti pendukung (log, screenshot)</li>
-                            </ul>
-                        </div>
-                        <div class="data-card">
-                            <div class="data-card__icon">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <line x1="2" y1="12" x2="22" y2="12" />
-                                    <path
-                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-                                </svg>
-                            </div>
-                            <h3>Data Teknis</h3>
-                            <ul>
-                                <li>Alamat IP pengirim</li>
-                                <li>User-agent browser</li>
-                                <li>Log akses sistem</li>
-                            </ul>
+                    <div>
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Pendahuluan</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-3">
+                            CSIRT Bali (<em>Computer Security Incident Response Team</em> Provinsi Bali) berkomitmen
+                            untuk melindungi privasi dan keamanan data pribadi setiap individu yang menggunakan layanan
+                            pelaporan insiden keamanan siber kami.
+                        </p>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, menyimpan, dan
+                            melindungi informasi pribadi Anda sesuai dengan <strong class="text-gray-800">Undang-Undang
+                                Nomor 27 Tahun 2022</strong> tentang Perlindungan Data Pribadi (UU PDP) Republik
+                            Indonesia.
+                        </p>
+                        <div class="flex gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-700">
+                            <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-blue-500" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p class="leading-relaxed">Dengan menggunakan layanan kami, Anda menyetujui pengumpulan dan
+                                penggunaan informasi sesuai kebijakan ini. Jika Anda tidak menyetujui, mohon tidak
+                                menggunakan layanan kami.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section class="policy-section" id="penggunaan-data">
-                <div class="section-number">03</div>
-                <h2 class="section-title">Penggunaan Data</h2>
-                <div class="section-body">
-                    <p>Data yang Anda berikan digunakan <strong>semata-mata</strong> untuk keperluan penanganan insiden
-                        keamanan siber dan tidak akan digunakan untuk tujuan komersial.</p>
-                    <div class="usage-list">
-                        @foreach ($usages as $usage)
-                            <div class="usage-item">
-                                <div class="usage-check">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                        stroke="currentColor" stroke-width="2.5">
-                                        <polyline points="20 6 9 17 4 12" />
-                                    </svg>
+            {{-- 02 Data yang Dikumpulkan --}}
+            <section id="data-dikumpulkan" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">02</span>
+                    </div>
+                    <div class="w-full">
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Data yang Dikumpulkan</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            Kami mengumpulkan informasi yang Anda berikan secara langsung saat melaporkan insiden
+                            keamanan siber, antara lain:
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            @foreach ([['Identitas', ['Nama lengkap', 'Nomor identitas (NIK/NIP)', 'Jabatan / instansi']], ['Kontak', ['Alamat email', 'Nomor telepon', 'Alamat instansi']], ['Insiden', ['Deskripsi insiden', 'Timestamp kejadian', 'Sistem / aset terdampak', 'Bukti pendukung (log, screenshot)']], ['Teknis', ['Alamat IP pengirim', 'User-agent browser', 'Log akses sistem']]] as [$label, $items])
+                                <div class="border border-gray-100 rounded-xl p-4">
+                                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                                        {{ $label }}</p>
+                                    <ul class="space-y-1">
+                                        @foreach ($items as $item)
+                                            <li class="flex items-center gap-2 text-sm text-gray-600">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>
+                                                {{ $item }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
-                                <span>{{ $usage }}</span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </section>
-
-            <section class="policy-section" id="penyimpanan-keamanan">
-                <div class="section-number">04</div>
-                <h2 class="section-title">Penyimpanan &amp; Keamanan Data</h2>
-                <div class="section-body">
-                    <p>Kami menerapkan langkah-langkah keamanan teknis dan organisasi yang sesuai standar untuk melindungi
-                        data Anda dari akses tidak sah, perubahan, pengungkapan, atau penghancuran.</p>
-
-                    <div class="security-measures">
-                        <div class="measure">
-                            <div class="measure__icon measure__icon--green">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                </svg>
-                            </div>
-                            <div>
-                                <strong>Enkripsi Data</strong>
-                                <p>Data sensitif dienkripsi menggunakan standar AES-256 saat penyimpanan dan TLS 1.3 saat
-                                    transmisi.</p>
-                            </div>
-                        </div>
-                        <div class="measure">
-                            <div class="measure__icon measure__icon--blue">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                                    <circle cx="9" cy="7" r="4" />
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                                </svg>
-                            </div>
-                            <div>
-                                <strong>Kontrol Akses</strong>
-                                <p>Akses data dibatasi hanya untuk personel CSIRT Bali yang berwenang dan membutuhkan data
-                                    untuk tugas resmi.</p>
-                            </div>
-                        </div>
-                        <div class="measure">
-                            <div class="measure__icon measure__icon--orange">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-                                </svg>
-                            </div>
-                            <div>
-                                <strong>Pemantauan Aktif</strong>
-                                <p>Sistem pemantauan aktif 24/7 untuk mendeteksi dan merespons potensi ancaman keamanan
-                                    data.</p>
-                            </div>
-                        </div>
-                        <div class="measure">
-                            <div class="measure__icon measure__icon--purple">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                    <polyline points="9 22 9 12 15 12 15 22" />
-                                </svg>
-                            </div>
-                            <div>
-                                <strong>Retensi Data</strong>
-                                <p>Data disimpan selama <strong>5 tahun</strong> sejak tanggal laporan, sesuai kebijakan
-                                    retensi arsip pemerintah, kemudian dihapus secara aman.</p>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section class="policy-section" id="berbagi-data">
-                <div class="section-number">05</div>
-                <h2 class="section-title">Berbagi Data dengan Pihak Ketiga</h2>
-                <div class="section-body">
-                    <p>CSIRT Bali <strong>tidak menjual, menyewakan, atau memperjualbelikan</strong> data pribadi Anda
-                        kepada pihak ketiga. Data hanya dapat dibagikan dalam kondisi berikut:</p>
-                    <div class="policy-callout policy-callout--warning">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path
-                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                            <line x1="12" y1="9" x2="12" y2="13" />
-                            <line x1="12" y1="17" x2="12.01" y2="17" />
-                        </svg>
-                        <p>Pembagian data hanya dilakukan kepada instansi pemerintah terkait (BSSN, Kominfo, Kepolisian)
-                            untuk keperluan penegakan hukum atau koordinasi penanganan insiden siber nasional, berdasarkan
-                            dasar hukum yang sah.</p>
+            {{-- 03 Penggunaan Data --}}
+            <section id="penggunaan-data" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">03</span>
+                    </div>
+                    <div class="w-full">
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Penggunaan Data</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            Data yang Anda berikan digunakan <strong class="text-gray-800">semata-mata</strong> untuk
+                            keperluan penanganan insiden keamanan siber dan tidak akan digunakan untuk tujuan komersial.
+                        </p>
+                        <div class="space-y-2">
+                            @foreach ($usages as $usage)
+                                <div class="flex items-start gap-3 text-sm text-gray-600">
+                                    <span
+                                        class="flex-shrink-0 w-5 h-5 rounded-full bg-green-50 border border-green-200 flex items-center justify-center mt-0.5">
+                                        <svg class="w-2.5 h-2.5 text-green-600" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </span>
+                                    {{ $usage }}
+                                </div>
+                            @endforeach
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section class="policy-section" id="hak-pengguna">
-                <div class="section-number">06</div>
-                <h2 class="section-title">Hak Anda sebagai Subjek Data</h2>
-                <div class="section-body">
-                    <p>Sesuai UU PDP, Anda memiliki hak-hak berikut terkait data pribadi Anda:</p>
-                    <div class="rights-grid">
-                        <div class="right-card">
-                            <span class="right-label">Akses</span>
-                            <p>Meminta salinan data pribadi yang kami simpan tentang Anda.</p>
-                        </div>
-                        <div class="right-card">
-                            <span class="right-label">Koreksi</span>
-                            <p>Meminta perbaikan data yang tidak akurat atau tidak lengkap.</p>
-                        </div>
-                        <div class="right-card">
-                            <span class="right-label">Penghapusan</span>
-                            <p>Meminta penghapusan data dalam kondisi tertentu yang diatur undang-undang.</p>
-                        </div>
-                        <div class="right-card">
-                            <span class="right-label">Keberatan</span>
-                            <p>Mengajukan keberatan atas pemrosesan data Anda dalam situasi tertentu.</p>
+            {{-- 04 Penyimpanan & Keamanan --}}
+            <section id="penyimpanan" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">04</span>
+                    </div>
+                    <div class="w-full">
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Penyimpanan &amp; Keamanan Data</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            Kami menerapkan langkah-langkah keamanan teknis dan organisasi sesuai standar untuk
+                            melindungi data Anda dari akses tidak sah, perubahan, pengungkapan, atau penghancuran.
+                        </p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            @foreach ([['green', 'Enkripsi Data', 'Data sensitif dienkripsi dengan AES-256 saat penyimpanan dan TLS 1.3 saat transmisi.'], ['blue', 'Kontrol Akses', 'Akses dibatasi hanya untuk personel CSIRT Bali yang berwenang sesuai tugas resmi.'], ['orange', 'Pemantauan 24/7', 'Sistem pemantauan aktif mendeteksi dan merespons potensi ancaman keamanan data.'], ['purple', 'Retensi 5 Tahun', 'Data disimpan 5 tahun sejak tanggal laporan, kemudian dihapus secara aman.']] as [$color, $title, $desc])
+                                <div class="border border-gray-100 rounded-xl p-4">
+                                    <div class="flex items-center gap-2 mb-1.5">
+                                        <span
+                                            class="w-2 h-2 rounded-full
+                                        @if ($color === 'green') bg-green-400
+                                        @elseif($color === 'blue') bg-blue-400
+                                        @elseif($color === 'orange') bg-orange-400
+                                        @else bg-purple-400 @endif flex-shrink-0"></span>
+                                        <p class="text-sm font-semibold text-gray-800">{{ $title }}</p>
+                                    </div>
+                                    <p class="text-sm text-gray-500 leading-relaxed">{{ $desc }}</p>
+                                </div>
+                            @endforeach
                         </div>
                     </div>
-                    <p class="mt-4">Untuk menggunakan hak-hak Anda, silakan hubungi kami melalui kontak yang tercantum di
-                        bagian 9.</p>
                 </div>
             </section>
 
-            <section class="policy-section" id="cookies">
-                <div class="section-number">07</div>
-                <h2 class="section-title">Cookies &amp; Teknologi Pelacakan</h2>
-                <div class="section-body">
-                    <p>Portal CSIRT Bali menggunakan cookies yang <strong>diperlukan secara teknis</strong> untuk memastikan
-                        fungsi sistem berjalan dengan baik. Kami tidak menggunakan cookies pihak ketiga untuk tujuan
-                        periklanan atau analitik komersial.</p>
-                    <table class="cookie-table">
-                        <thead>
-                            <tr>
-                                <th>Nama Cookie</th>
-                                <th>Tujuan</th>
-                                <th>Masa Berlaku</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>XSRF-TOKEN</code></td>
-                                <td>Perlindungan CSRF pada formulir</td>
-                                <td>Sesi browser</td>
-                            </tr>
-                            <tr>
-                                <td><code>csirt_session</code></td>
-                                <td>Manajemen sesi pengguna</td>
-                                <td>2 jam</td>
-                            </tr>
-                            <tr>
-                                <td><code>remember_token</code></td>
-                                <td>Autentikasi persisten (opsional)</td>
-                                <td>30 hari</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="policy-section" id="perubahan-kebijakan">
-                <div class="section-number">08</div>
-                <h2 class="section-title">Perubahan Kebijakan</h2>
-                <div class="section-body">
-                    <p>Kami berhak memperbarui Kebijakan Privasi ini sewaktu-waktu. Perubahan signifikan akan diinformasikan
-                        melalui notifikasi di portal kami atau melalui email ke alamat yang terdaftar, minimal <strong>14
-                            hari</strong> sebelum perubahan berlaku.</p>
-                    <p>Penggunaan layanan kami setelah tanggal efektif perubahan dianggap sebagai persetujuan Anda terhadap
-                        kebijakan yang telah diperbarui.</p>
-                </div>
-            </section>
-
-            <section class="policy-section" id="kontak">
-                <div class="section-number">09</div>
-                <h2 class="section-title">Hubungi Kami</h2>
-                <div class="section-body">
-                    <p>Jika Anda memiliki pertanyaan, kekhawatiran, atau ingin menggunakan hak-hak Anda terkait kebijakan
-                        privasi ini, silakan hubungi <strong>Data Protection Officer (DPO)</strong> CSIRT Bali:</p>
-                    <div class="contact-block">
-                        <div class="contact-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                                <polyline points="22,6 12,13 2,6" />
+            {{-- 05 Berbagi Data --}}
+            <section id="berbagi-data" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">05</span>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Berbagi Data dengan Pihak Ketiga</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            CSIRT Bali <strong class="text-gray-800">tidak menjual, menyewakan, atau
+                                memperjualbelikan</strong> data pribadi Anda kepada pihak ketiga.
+                        </p>
+                        <div
+                            class="flex gap-3 bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-800">
+                            <svg class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
                             </svg>
-                            <a href="mailto:{{ $contactEmail }}">{{ $contactEmail }}</a>
-                        </div>
-                        <div class="contact-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path
-                                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.18 6.18l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 17z" />
-                            </svg>
-                            <span>{{ $contactPhone }}</span>
-                        </div>
-                        <div class="contact-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                                <circle cx="12" cy="10" r="3" />
-                            </svg>
-                            <span>{{ $contactAddress }}</span>
-                        </div>
-                        <div class="contact-item">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="2">
-                                <circle cx="12" cy="12" r="10" />
-                                <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                            <span>Waktu respons: Hari kerja, pukul 08.00–16.00 WITA</span>
+                            <p class="leading-relaxed">Data hanya dibagikan kepada instansi pemerintah terkait (BSSN,
+                                Kominfo, Kepolisian) untuk penegakan hukum atau koordinasi penanganan insiden siber
+                                nasional, berdasarkan dasar hukum yang sah.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-        </main>
+            {{-- 06 Hak Pengguna --}}
+            <section id="hak-pengguna" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">06</span>
+                    </div>
+                    <div class="w-full">
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Hak Anda sebagai Subjek Data</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">Sesuai UU PDP, Anda memiliki hak-hak
+                            berikut terkait data pribadi Anda:</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            @foreach ([['Akses', 'Meminta salinan data pribadi yang kami simpan tentang Anda.'], ['Koreksi', 'Meminta perbaikan data yang tidak akurat atau tidak lengkap.'], ['Penghapusan', 'Meminta penghapusan data dalam kondisi yang diatur undang-undang.'], ['Keberatan', 'Mengajukan keberatan atas pemrosesan data dalam situasi tertentu.']] as [$label, $desc])
+                                <div class="border border-gray-100 rounded-xl p-4 text-center">
+                                    <span
+                                        class="inline-block bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full mb-2">{{ $label }}</span>
+                                    <p class="text-xs text-gray-500 leading-relaxed">{{ $desc }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="text-sm text-gray-500 mt-4">Untuk menggunakan hak-hak Anda, silakan hubungi kami
+                            melalui kontak pada bagian 9.</p>
+                    </div>
+                </div>
+            </section>
 
-        {{-- Back to form --}}
-        <div class="privacy-footer">
-            <a href="{{ url()->previous() }}" class="btn-back">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="2">
-                    <line x1="19" y1="12" x2="5" y2="12" />
-                    <polyline points="12 19 5 12 12 5" />
+            {{-- 07 Cookies --}}
+            <section id="cookies" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">07</span>
+                    </div>
+                    <div class="w-full">
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Cookies &amp; Teknologi Pelacakan</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            Portal CSIRT Bali menggunakan cookies yang <strong class="text-gray-800">diperlukan secara
+                                teknis</strong> untuk memastikan fungsi sistem berjalan dengan baik. Kami tidak
+                            menggunakan cookies pihak ketiga untuk tujuan periklanan atau analitik komersial.
+                        </p>
+                        <div class="overflow-x-auto rounded-xl border border-gray-100">
+                            <table class="w-full text-sm">
+                                <thead class="bg-slate-800 text-white">
+                                    <tr>
+                                        <th class="text-left px-4 py-3 text-xs font-semibold tracking-wider">Nama
+                                            Cookie</th>
+                                        <th class="text-left px-4 py-3 text-xs font-semibold tracking-wider">Tujuan
+                                        </th>
+                                        <th class="text-left px-4 py-3 text-xs font-semibold tracking-wider">Masa
+                                            Berlaku</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    @foreach ([['XSRF-TOKEN', 'Perlindungan CSRF pada formulir', 'Sesi browser'], ['csirt_session', 'Manajemen sesi pengguna', '2 jam'], ['remember_token', 'Autentikasi persisten (opsional)', '30 hari']] as [$name, $purpose, $duration])
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-4 py-3">
+                                                <code
+                                                    class="bg-slate-100 text-blue-700 text-xs px-2 py-0.5 rounded font-mono">{{ $name }}</code>
+                                            </td>
+                                            <td class="px-4 py-3 text-gray-600">{{ $purpose }}</td>
+                                            <td class="px-4 py-3 text-gray-500 text-xs">{{ $duration }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {{-- 08 Perubahan Kebijakan --}}
+            <section id="perubahan" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">08</span>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Perubahan Kebijakan</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-2">
+                            Kami berhak memperbarui Kebijakan Privasi ini sewaktu-waktu. Perubahan signifikan akan
+                            diinformasikan melalui notifikasi di portal kami atau melalui email ke alamat terdaftar,
+                            minimal <strong class="text-gray-800">14 hari</strong> sebelum perubahan berlaku.
+                        </p>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Penggunaan layanan kami setelah tanggal efektif perubahan dianggap sebagai persetujuan Anda
+                            terhadap kebijakan yang telah diperbarui.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {{-- 09 Kontak --}}
+            <section id="kontak" class="bg-white rounded-2xl shadow-2xl p-7">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <span class="text-xs font-bold text-blue-600">09</span>
+                    </div>
+                    <div class="w-full">
+                        <h2 class="text-base font-bold text-gray-900 mb-3">Hubungi Kami</h2>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            Jika Anda memiliki pertanyaan atau ingin menggunakan hak-hak Anda, silakan hubungi <strong
+                                class="text-gray-800">Data Protection Officer (DPO)</strong> CSIRT Bali:
+                        </p>
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 space-y-3">
+                            <div class="flex items-center gap-3 text-sm text-gray-700">
+                                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                <a href="mailto:{{ $contactEmail }}"
+                                    class="text-blue-600 hover:underline">{{ $contactEmail }}</a>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-700">
+                                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                </svg>
+                                <span>{{ $contactPhone }}</span>
+                            </div>
+                            <div class="flex items-start gap-3 text-sm text-gray-700">
+                                <svg class="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span>{{ $contactAddress }}</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-700">
+                                <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Senin–Jumat, 08.00–16.00 WITA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>{{-- end .space-y-4 --}}
+
+        {{-- Footer --}}
+        <div class="mt-10 flex flex-col items-center gap-3">
+            <a href="{{ url()->previous() }}"
+                class="inline-flex items-center gap-2 py-2.5 px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm transition-colors shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
                 Kembali ke Formulir
             </a>
-            <p class="privacy-footer__copy">© {{ date('Y') }} CSIRT Bali — Dinas Komunikasi, Informatika dan Statistik
-                Provinsi Bali</p>
+            <div class="flex items-center gap-2 text-xs text-blue-300/70">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                        clip-rule="evenodd" />
+                </svg>
+                © {{ date('Y') }} CSIRT Bali — Dinas Komunikasi, Informatika dan Statistik Provinsi Bali
+            </div>
         </div>
 
     </div>
-@endsection
 
-@push('styles')
-    <style>
-        :root {
-            --csirt-navy: #0d1b2a;
-            --csirt-blue: #1a56db;
-            --csirt-cyan: #0ea5e9;
-            --csirt-light: #f0f6ff;
-            --csirt-border: #dbeafe;
-            --csirt-text: #1e293b;
-            --csirt-muted: #64748b;
-            --csirt-green: #059669;
-            --csirt-orange: #d97706;
-            --csirt-purple: #7c3aed;
-        }
+</body>
 
-        /* ── Layout ── */
-        .privacy-page {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 2rem 1.5rem 4rem;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            color: var(--csirt-text);
-        }
-
-        /* ── Hero ── */
-        .privacy-hero {
-            text-align: center;
-            padding: 3.5rem 1rem 2.5rem;
-            border-bottom: 1px solid var(--csirt-border);
-            margin-bottom: 2rem;
-        }
-
-        .privacy-hero__badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--csirt-blue);
-            background: var(--csirt-light);
-            border: 1px solid var(--csirt-border);
-            border-radius: 999px;
-            padding: 0.3rem 1rem;
-            margin-bottom: 1.25rem;
-        }
-
-        .badge-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: var(--csirt-blue);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                opacity: 1
-            }
-
-            50% {
-                opacity: .4
-            }
-        }
-
-        .privacy-hero__title {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-            margin: 0 0 0.5rem;
-            color: var(--csirt-navy);
-        }
-
-        .privacy-hero__title .accent {
-            color: var(--csirt-blue);
-        }
-
-        .privacy-hero__sub {
-            font-size: 1rem;
-            color: var(--csirt-muted);
-            margin: 0 0 1.25rem;
-        }
-
-        .privacy-hero__meta {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 0.8rem;
-            color: var(--csirt-muted);
-            flex-wrap: wrap;
-        }
-
-        .privacy-hero__meta svg {
-            vertical-align: middle;
-            margin-right: 0.25rem;
-        }
-
-        .divider {
-            opacity: .3;
-        }
-
-        /* ── Table of Contents ── */
-        .toc {
-            background: var(--csirt-light);
-            border: 1px solid var(--csirt-border);
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-bottom: 2.5rem;
-        }
-
-        .toc__header {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            color: var(--csirt-blue);
-            margin-bottom: 0.875rem;
-        }
-
-        .toc__nav {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 0.25rem 1.5rem;
-        }
-
-        .toc__link {
-            font-size: 0.875rem;
-            color: var(--csirt-text);
-            text-decoration: none;
-            padding: 0.25rem 0;
-            border-bottom: 1px dotted transparent;
-            transition: color .15s, border-color .15s;
-        }
-
-        .toc__link:hover {
-            color: var(--csirt-blue);
-            border-bottom-color: var(--csirt-blue);
-        }
-
-        /* ── Policy Section ── */
-        .policy-section {
-            position: relative;
-            padding: 2rem 0 2rem 3.5rem;
-            border-bottom: 1px solid var(--csirt-border);
-        }
-
-        .policy-section:last-of-type {
-            border-bottom: none;
-        }
-
-        .section-number {
-            position: absolute;
-            left: 0;
-            top: 2rem;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            color: var(--csirt-blue);
-            opacity: .5;
-        }
-
-        .section-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--csirt-navy);
-            margin: 0 0 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid var(--csirt-light);
-        }
-
-        .section-body p {
-            font-size: 0.9375rem;
-            line-height: 1.7;
-            color: #334155;
-            margin: 0 0 0.875rem;
-        }
-
-        .section-body p:last-child {
-            margin-bottom: 0;
-        }
-
-        .mt-4 {
-            margin-top: 1rem !important;
-        }
-
-        /* ── Callout ── */
-        .policy-callout {
-            display: flex;
-            gap: 0.75rem;
-            align-items: flex-start;
-            border-radius: 8px;
-            padding: 1rem 1.25rem;
-            margin-top: 1rem;
-            font-size: 0.875rem;
-            line-height: 1.6;
-        }
-
-        .policy-callout p {
-            margin: 0;
-        }
-
-        .policy-callout svg {
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        .policy-callout--info {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            color: #1e40af;
-        }
-
-        .policy-callout--info svg {
-            stroke: #2563eb;
-        }
-
-        .policy-callout--warning {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            color: #92400e;
-        }
-
-        .policy-callout--warning svg {
-            stroke: #d97706;
-        }
-
-        /* ── Data Grid ── */
-        .data-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .data-card {
-            border: 1px solid var(--csirt-border);
-            border-radius: 10px;
-            padding: 1rem;
-            background: #fff;
-        }
-
-        .data-card__icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            background: var(--csirt-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 0.625rem;
-            color: var(--csirt-blue);
-        }
-
-        .data-card h3 {
-            font-size: 0.8125rem;
-            font-weight: 700;
-            margin: 0 0 0.5rem;
-            color: var(--csirt-navy);
-        }
-
-        .data-card ul {
-            padding-left: 1rem;
-            margin: 0;
-            font-size: 0.8125rem;
-            color: var(--csirt-muted);
-            line-height: 1.7;
-        }
-
-        /* ── Usage List ── */
-        .usage-list {
-            margin-top: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .usage-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.625rem;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #334155;
-        }
-
-        .usage-check {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: #dcfce7;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            color: var(--csirt-green);
-        }
-
-        /* ── Security Measures ── */
-        .security-measures {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .measure {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-            padding: 1rem;
-            border: 1px solid var(--csirt-border);
-            border-radius: 10px;
-            background: #fff;
-        }
-
-        .measure__icon {
-            width: 38px;
-            height: 38px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .measure__icon--green {
-            background: #dcfce7;
-            color: #059669;
-        }
-
-        .measure__icon--blue {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .measure__icon--orange {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .measure__icon--purple {
-            background: #ede9fe;
-            color: #6d28d9;
-        }
-
-        .measure strong {
-            display: block;
-            font-size: 0.9rem;
-            margin-bottom: 0.2rem;
-            color: var(--csirt-navy);
-        }
-
-        .measure p {
-            font-size: 0.85rem;
-            margin: 0;
-            color: var(--csirt-muted);
-            line-height: 1.5;
-        }
-
-        /* ── Rights Grid ── */
-        .rights-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .right-card {
-            border: 1px solid var(--csirt-border);
-            border-radius: 10px;
-            padding: 1rem;
-            background: #fff;
-        }
-
-        .right-label {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            background: var(--csirt-light);
-            color: var(--csirt-blue);
-            border-radius: 999px;
-            padding: 0.2rem 0.6rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .right-card p {
-            font-size: 0.8375rem;
-            color: var(--csirt-muted);
-            margin: 0;
-            line-height: 1.6;
-        }
-
-        /* ── Cookie Table ── */
-        .cookie-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            margin-top: 1rem;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid var(--csirt-border);
-        }
-
-        .cookie-table thead {
-            background: var(--csirt-navy);
-            color: #fff;
-        }
-
-        .cookie-table th {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.8rem;
-            letter-spacing: 0.04em;
-        }
-
-        .cookie-table td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--csirt-border);
-            color: #334155;
-        }
-
-        .cookie-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .cookie-table tbody tr:nth-child(even) {
-            background: var(--csirt-light);
-        }
-
-        .cookie-table code {
-            font-size: 0.8rem;
-            background: #f1f5f9;
-            padding: 0.1rem 0.4rem;
-            border-radius: 4px;
-            font-family: monospace;
-            color: var(--csirt-blue);
-        }
-
-        /* ── Contact Block ── */
-        .contact-block {
-            background: var(--csirt-light);
-            border: 1px solid var(--csirt-border);
-            border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            margin-top: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.625rem;
-            font-size: 0.9rem;
-            color: var(--csirt-text);
-        }
-
-        .contact-item svg {
-            flex-shrink: 0;
-            margin-top: 2px;
-            stroke: var(--csirt-blue);
-        }
-
-        .contact-item a {
-            color: var(--csirt-blue);
-            text-decoration: none;
-        }
-
-        .contact-item a:hover {
-            text-decoration: underline;
-        }
-
-        /* ── Footer ── */
-        .privacy-footer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            padding: 2rem 0 0;
-            margin-top: 1rem;
-            border-top: 1px solid var(--csirt-border);
-            text-align: center;
-        }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: var(--csirt-blue);
-            background: var(--csirt-light);
-            border: 1px solid var(--csirt-border);
-            border-radius: 8px;
-            padding: 0.625rem 1.25rem;
-            text-decoration: none;
-            transition: background .15s;
-        }
-
-        .btn-back:hover {
-            background: #dbeafe;
-        }
-
-        .privacy-footer__copy {
-            font-size: 0.8rem;
-            color: var(--csirt-muted);
-            margin: 0;
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 600px) {
-            .policy-section {
-                padding-left: 0;
-            }
-
-            .section-number {
-                display: none;
-            }
-
-            .toc__nav {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .data-grid,
-            .rights-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .cookie-table {
-                font-size: 0.78rem;
-            }
-
-            .cookie-table th,
-            .cookie-table td {
-                padding: 0.5rem 0.625rem;
-            }
-        }
-    </style>
-@endpush
+</html>
