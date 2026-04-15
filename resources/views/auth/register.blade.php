@@ -86,8 +86,10 @@
                         <label for="terms" class="text-sm text-gray-600">
                             Saya menyetujui bahwa informasi yang saya berikan adalah benar dan dapat
                             dipertanggungjawabkan.
-                            Data akan digunakan sesuai <a href="#" class="text-blue-600 underline">kebijakan
-                                privasi</a> CSIRT Bali.
+                            Data akan digunakan sesuai <a href="{{ route('privacy.index') }}"
+                                class="text-blue-600 underline" target="_blank">
+                                kebijakan privasi
+                            </a> CSIRT Bali.
                         </label>
                     </div>
 

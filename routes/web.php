@@ -8,7 +8,7 @@ use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Public\ReportController;
-
+use App\Http\Controllers\PrivacyController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Auth;
 // PUBLIC ROUTES
 // =====================
 Route::get('/', fn() => redirect()->route('login'));
+
+Route::get('/kebijakan-privasi', [PrivacyController::class, 'index'])
+    ->name('privacy.index');
 
 // Halaman maintenance — dapat diakses tanpa auth (untuk public yang di-redirect)
 Route::get('/maintenance', fn() => view('maintenance'))->name('maintenance');
