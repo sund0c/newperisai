@@ -49,6 +49,9 @@ class HistoricalReportController extends Controller
                 'ticket_number'      => $ticketNumber,
                 'user_id'            => $user->id,
                 'title'              => '(historis)',        // default karena field dinonaktifkan
+                'reporter_name'      => $user->name,
+                'reporter_email'     => $user->email,
+                'reporter_org'       => $user->organization,
                 'description'        => '',
                 'affected_system'    => null,               // field dinonaktifkan
                 'poc_video_url'      => '',

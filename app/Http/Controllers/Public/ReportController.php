@@ -100,6 +100,9 @@ class ReportController extends Controller
                 'severity_reporter'      => $request->severity,
                 'incident_type_reporter' => $request->incident_type,
                 'status'                 => 'submitted',
+                'reporter_name'  => auth()->user()->name,
+                'reporter_email' => auth()->user()->email,
+                'reporter_org'   => auth()->user()->organization,
             ]);
 
             AuditLog::create([

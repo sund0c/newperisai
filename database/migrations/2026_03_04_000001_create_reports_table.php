@@ -10,15 +10,25 @@ return new class extends Migration {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
 
-
             $table->string('validation_file')->nullable();
             $table->string('validation_file_original')->nullable();
 
             // Nomor tiket unik: BALIPROV-CSIRT-YYYY-XXXX
             $table->string('ticket_number', 30)->unique();
 
-            // Pelapor
-            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            // Relasi ke akun — nullable karena akun bisa dihapus
+            // nullOnDelete: user dihapus → user_id jadi NULL, report TETAP ADA
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
+            // Snapshot identitas pelapor — diisi saat laporan dibuat, tidak pernah diubah.
+            // Ketika akun dihapus, kolom ini di-overwrite menjadi "Anonim"
+            // sehingga tiket tetap terbaca oleh support/csirt/dpo.
+            $table->string('reporter_name')->nullable();
+            $table->string('reporter_email')->nullable();
+            $table->string('reporter_org')->nullable();
 
             // Informasi laporan
             $table->text('title');
@@ -83,7 +93,10 @@ return new class extends Migration {
             $table->text('admin_notes')->nullable();
 
             // Handler (support/admin yang menangani)
-            $table->foreignId('handled_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('handled_by')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
 
             // Timestamp per tahap
             $table->timestamp('handled_at')->nullable();      // mulai ditangani
@@ -105,7 +118,9 @@ return new class extends Migration {
 
         Schema::create('report_attachments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('report_id')->constrained('reports')->cascadeOnDelete();
+            $table->foreignId('report_id')
+                ->constrained('reports')
+                ->cascadeOnDelete(); // attachment ikut terhapus jika report dihapus — wajar
 
             $table->enum('type', ['image', 'document']);
 

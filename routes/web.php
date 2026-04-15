@@ -93,12 +93,14 @@ Route::middleware(['auth', 'verified', '2fa'])->group(function () {
 // AUTHENTICATED ROUTES (terproteksi penuh)
 // maintenance.check diterapkan di sini — bypass untuk non-public
 // =====================
-Route::middleware(['auth', 'verified', '2fa', 'password.expiry', 'maintenance.check'])->group(function () {
+Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expiry', 'maintenance.check'])->group(function () {
 
     // Profile & Security Settings
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::patch('/profile/info', [ProfileController::class, 'updateInfo'])->name('profile.update-info');
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.update-password');
+    Route::post('/profile/delete-request', [ProfileController::class, 'requestDeletion'])->name('profile.delete-request');
+    Route::post('/profile/cancel-deletion', [ProfileController::class, 'cancelDeletion'])->name('profile.cancel-deletion');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
