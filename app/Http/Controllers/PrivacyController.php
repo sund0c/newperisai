@@ -30,7 +30,8 @@ class PrivacyController extends Controller
             // Informasi kontak DPO
             'contactEmail'   => 'csirt@baliprov.go.id',
             'contactPhone'   => '(0361) 225859',
-            'contactAddress' => 'Jl. DI Panjautan No 7 Denpasar, Bali 80235',
+            'contactAddress' => 'Jl. DI Panjaitan No 7 Denpasar, Bali 80235',
+            'contactMap' => 'https://maps.app.goo.gl/9vn8TywzrLv6eTf27',
         ]);
     }
 }

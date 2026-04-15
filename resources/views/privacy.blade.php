@@ -364,7 +364,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                <span>{{ $contactAddress }}</span>
+                                <span><a href="{{ $contactMap }}"
+                                        class="text-blue-600 hover:underline">{{ $contactAddress }}</a></span>
                             </div>
                             <div class="flex items-center gap-3 text-sm text-gray-700">
                                 <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor"
