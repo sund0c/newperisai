@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kebijakan Privasi - CSIRT Bali</title>
+    <title>Kebijakan Privasi - Aduan CSIRT Bali</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -37,7 +37,7 @@
             <div
                 class="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-full px-4 py-1.5 text-xs font-semibold text-blue-300 uppercase tracking-widest mb-5">
                 <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse"></span>
-                Dokumen Resmi
+                WAJIB DIKETAHUI
             </div>
             <h1 class="text-4xl font-bold text-white mb-2">Kebijakan Privasi</h1>
             <p class="text-blue-300 text-sm mb-5">Aduan Insiden &amp; Kerentanan — Pemerintah Provinsi Bali</p>
@@ -91,7 +91,7 @@
                     <div>
                         <h2 class="text-base font-bold text-gray-900 mb-3">Pendahuluan</h2>
                         <p class="text-sm text-gray-600 leading-relaxed mb-3">
-                            CSIRT Bali (<em>Computer Security Incident Response Team</em> Provinsi Bali) berkomitmen
+                            Pemerintah Provinsi Bali berkomitmen
                             untuk melindungi privasi dan keamanan data pribadi setiap individu yang menggunakan layanan
                             pelaporan insiden keamanan siber kami.
                         </p>
@@ -107,9 +107,9 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <p class="leading-relaxed">Dengan menggunakan layanan kami, Anda menyetujui pengumpulan dan
-                                penggunaan informasi sesuai kebijakan ini. Jika Anda tidak menyetujui, mohon tidak
-                                menggunakan layanan kami.</p>
+                            <p class="leading-relaxed">Dengan menggunakan layanan Aduan CSIRT ini berarti Anda sudah
+                                menyetujui pengumpulan dan
+                                penggunaan informasi sesuai kebijakan ini. </p>
                         </div>
                     </div>
                 </div>
@@ -128,7 +128,7 @@
                             keamanan siber, antara lain:
                         </p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            @foreach ([['Identitas', ['Nama lengkap', 'Nomor identitas (NIK/NIP)', 'Jabatan / instansi']], ['Kontak', ['Alamat email', 'Nomor telepon', 'Alamat instansi']], ['Insiden', ['Deskripsi insiden', 'Timestamp kejadian', 'Sistem / aset terdampak', 'Bukti pendukung (log, screenshot)']], ['Teknis', ['Alamat IP pengirim', 'User-agent browser', 'Log akses sistem']]] as [$label, $items])
+                            @foreach ([['Identitas', ['Nama lengkap']], ['Kontak', ['Alamat email', 'Nomor telepon', 'Organisasi']], ['Insiden', ['Deskripsi insiden', 'Timestamp kejadian', 'Sistem / aset terdampak', 'Bukti pendukung (PoC)']], ['Teknis', ['Alamat IP pengirim', 'User-agent browser', 'Log akses sistem']]] as [$label, $items])
                                 <div class="border border-gray-100 rounded-xl p-4">
                                     <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
                                         {{ $label }}</p>
@@ -191,7 +191,7 @@
                             melindungi data Anda dari akses tidak sah, perubahan, pengungkapan, atau penghancuran.
                         </p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            @foreach ([['green', 'Enkripsi Data', 'Data sensitif dienkripsi dengan AES-256 saat penyimpanan dan TLS 1.3 saat transmisi.'], ['blue', 'Kontrol Akses', 'Akses dibatasi hanya untuk personel CSIRT Bali yang berwenang sesuai tugas resmi.'], ['orange', 'Pemantauan 24/7', 'Sistem pemantauan aktif mendeteksi dan merespons potensi ancaman keamanan data.'], ['purple', 'Retensi 5 Tahun', 'Data disimpan 5 tahun sejak tanggal laporan, kemudian dihapus secara aman.']] as [$color, $title, $desc])
+                            @foreach ([['green', 'Enkripsi Data', 'Data sensitif yaitu No. Telpon Anda, dienkripsi menggunakan SANDIDATA BSSN saat penyimpanan dan TLS saat transmisi.'], ['blue', 'Kontrol Akses', 'Akses dibatasi hanya untuk personel CSIRT Bali yang berwenang sesuai tugas resmi.'], ['orange', 'Pemantauan 24/7', 'Sistem pemantauan aktif mendeteksi dan merespons potensi ancaman keamanan data.'], ['purple', 'Retensi 5 Tahun', 'Data disimpan 5 tahun sejak tanggal laporan, kemudian dihapus secara aman.']] as [$color, $title, $desc])
                                 <div class="border border-gray-100 rounded-xl p-4">
                                     <div class="flex items-center gap-2 mb-1.5">
                                         <span
@@ -275,7 +275,7 @@
                                 teknis</strong> untuk memastikan fungsi sistem berjalan dengan baik. Kami tidak
                             menggunakan cookies pihak ketiga untuk tujuan periklanan atau analitik komersial.
                         </p>
-                        <div class="overflow-x-auto rounded-xl border border-gray-100">
+                        {{-- <div class="overflow-x-auto rounded-xl border border-gray-100">
                             <table class="w-full text-sm">
                                 <thead class="bg-slate-800 text-white">
                                     <tr>
@@ -300,7 +300,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </section>
@@ -396,7 +396,7 @@
                         d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
                         clip-rule="evenodd" />
                 </svg>
-                © {{ date('Y') }} CSIRT Bali — Dinas Komunikasi, Informatika dan Statistik Provinsi Bali
+                {{-- © {{ date('Y') }} CSIRT Bali — Dinas Komunikasi, Informatika dan Statistik Provinsi Bali --}}
             </div>
         </div>
 

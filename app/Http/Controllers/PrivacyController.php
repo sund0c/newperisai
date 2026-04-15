@@ -14,8 +14,8 @@ class PrivacyController extends Controller
         return view('privacy', [
 
             // Tanggal kebijakan
-            'effectiveDate' => '1 Januari 2024',
-            'lastUpdated'   => '15 April 2025',
+            'effectiveDate' => '1 Januari 2025',
+            'lastUpdated'   => '4 April 2025',
 
             // Daftar tujuan penggunaan data
             'usages' => [
@@ -28,9 +28,9 @@ class PrivacyController extends Controller
             ],
 
             // Informasi kontak DPO
-            'contactEmail'   => 'dpo@csirt.baliprov.go.id',
-            'contactPhone'   => '(0361) 123-4567',
-            'contactAddress' => 'Jl. Basuki Rahmat No. 1, Denpasar, Bali 80232',
+            'contactEmail'   => 'csirt@baliprov.go.id',
+            'contactPhone'   => '(0361) 225859',
+            'contactAddress' => 'Jl. DI Panjautan No 7 Denpasar, Bali 80235',
         ]);
     }
 }
