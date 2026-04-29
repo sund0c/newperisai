@@ -6,6 +6,9 @@ use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Mail;
+use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
+use Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +19,30 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // ── Fix SSL verify untuk SMTP via internal proxy ─────────────
+        Mail::extend('smtp', function () {
+            $stream = new SocketStream();
+            $stream->setStreamOptions([
+                'ssl' => [
+                    'verify_peer'       => false,
+                    'verify_peer_name'  => false,
+                    'allow_self_signed' => true,
+                ],
+            ]);
+
+            $transport = new EsmtpTransport(
+                config('mail.mailers.smtp.host'),
+                config('mail.mailers.smtp.port'),
+                false,
+                null,
+                null,
+                $stream
+            );
+            $transport->setUsername(config('mail.mailers.smtp.username'));
+            $transport->setPassword(config('mail.mailers.smtp.password'));
+            return $transport;
+        });
+
         // ── Verifikasi Email ─────────────────────────────────────────
         VerifyEmail::toMailUsing(function ($notifiable, $url) {
             return (new MailMessage)
