@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Middleware\SandidataMiddleware;
+//use App\Http\Middleware\SandidataMiddleware;
 
 class ProfileController extends Controller
 {
@@ -40,19 +40,17 @@ class ProfileController extends Controller
         $request->validate([
             'name'         => ['required', 'string', 'max:255'],
             'phone'        => ['nullable', 'string', 'max:20'],
-            'organization' => ['required', 'string', 'max:255'],
         ]);
 
-        $old = $user->only(['name', 'phone', 'organization']);
+        $old = $user->only(['name', 'phone']);
 
-        $phone = $request->phone
-            ? SandidataMiddleware::encryptValue(strip_tags($request->phone))
-            : null;
+        // $phone = $request->phone
+        //     ? SandidataMiddleware::encryptValue(strip_tags($request->phone))
+        //     : null;
 
         $user->update([
             'name'         => strip_tags($request->name),
-            'phone'        => $phone,
-            'organization' => strip_tags($request->organization),
+            'phone'        => strip_tags($request->phone),
         ]);
 
         AuditLog::create([

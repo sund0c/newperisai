@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CSIRT Bali</title>
+    <title>Login - PERISAI-PROVBALI</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -18,8 +18,8 @@
             <div class="inline-flex items-center justify-center w-16 h-16 ">
                 <img src="{{ asset('images/logo.png') }}" alt="CSIRT Bali" class="h-16 w-auto object-contain mb-4">
             </div>
-            <h1 class="text-2xl font-bold text-white">Aduan Insiden & Kerentanan</h1>
-            <p class="text-blue-300 text-sm mt-1">PEMERINTAH PROVINSI BALI</p>
+            <h1 class="text-2xl font-bold text-white">PERISAI-PROVBALI</h1>
+            <p class="text-blue-300 text-sm mt-1">PEngelolaan RIsiko Aset Informasi Pemprov Bali</p>
         </div>
 
         <!-- Card -->
@@ -80,13 +80,13 @@
                 </div>
             </form>
 
-            <div class="mt-6 pt-6 border-t border-gray-100 text-center">
+            {{-- <div class="mt-6 pt-6 border-t border-gray-100 text-center">
                 <p class="text-sm text-gray-500">
                     Belum punya akun?
                     <a href="{{ route('register') }}" class="text-blue-600 hover:text-blue-700 font-medium">Daftar
                         sekarang</a>
                 </p>
-            </div>
+            </div> --}}
         </div>
 
         <!-- Security Notice -->

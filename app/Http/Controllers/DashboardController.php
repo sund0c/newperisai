@@ -15,14 +15,14 @@ class DashboardController extends Controller
             return view('admin.dashboard', [
                 'maintenanceActive' => Setting::maintenanceActive(),
             ]);
-        } elseif ($user->hasRole('support')) {
-            return view('support.dashboard');
-        } elseif ($user->hasRole('csirt')) {
-            return view('csirt.dashboard');
-        } elseif ($user->hasRole('dpo')) {
-            return view('dpo.dashboard');
+        } elseif ($user->hasRole('opd')) {
+            return view('opd.dashboard');
+        } elseif ($user->hasRole('auditor')) {
+            return view('auditor.dashboard');
+        } elseif ($user->hasRole('verifikator')) {
+            return view('verifikator.dashboard');
         } else {
-            return view('public.dashboard');
+            return view('opd.dashboard');
         }
     }
 }

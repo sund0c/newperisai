@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\User;
+use App\Models\Opd;
+use App\Notifications\WelcomeUserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -14,8 +16,8 @@ class UserController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::with('roles')->withTrashed();
-
+        $query = User::with('roles', 'opd')->withTrashed();
+        $opds = Opd::orderBy('namaopd')->get();
         if ($request->role) {
             $query->role($request->role);
         }
@@ -24,7 +26,7 @@ class UserController extends Controller
             $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
                     ->orWhere('email', 'like', '%' . $request->search . '%')
-                    ->orWhere('organization', 'like', '%' . $request->search . '%');
+                    ->orWhereHas('opd', fn($q) => $q->where('namaopd', 'like', '%' . $request->search . '%'));
             });
         }
 
@@ -47,6 +49,7 @@ class UserController extends Controller
 
         return view('admin.users.index', compact(
             'users',
+            'opds',
             'roles',
             'totalAll',
             'totalActive',
@@ -58,63 +61,95 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'         => 'required|string|max:255',
-            'email'        => 'required|email|unique:users,email',
-            'role'         => 'required|in:support,admin,csirt,dpo,public',
-            'organization' => 'required_if:role,public|nullable|string|max:255',
+            'roles'   => 'required|array|min:1',
+            'roles.*' => 'string|exists:roles,name',
+            'opd_id'  => 'nullable|exists:opds,id|required_if:roles.*,opd',
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email|unique:users',
         ]);
 
-        // Role non-public: organisasi otomatis CSIRT Provinsi Bali
-        $organization = $validated['role'] === 'public'
-            ? strip_tags($validated['organization'])
-            : 'CSIRT Provinsi Bali';
-
-        // Password placeholder acak — user harus pakai "Lupa Password" untuk set password sendiri
         $user = User::create([
-            'name'                 => strip_tags($validated['name']),
-            'email'                => $validated['email'],
-            'password'             => Hash::make(Str::random(32)),
-            'organization'         => $organization,
-            'email_verified_at'    => now(),
-            'is_active'            => true,
+            'name'              => strip_tags($validated['name']),
+            'email'             => $validated['email'],
+            'password'          => Hash::make(Str::random(32)),
+            'opd_id'            => in_array('opd', $request->roles) ? $request->opd_id : 1,
+            'email_verified_at' => now(),
+            'is_active'         => true,
             'must_change_password' => false,
         ]);
 
-        $user->assignRole($validated['role']);
+        $user->syncRoles($request->roles);
 
         AuditLog::create([
             'user_id'    => auth()->id(),
             'action'     => 'user_created',
             'model_type' => 'User',
             'model_id'   => $user->id,
-            'new_values' => ['email' => $user->email, 'role' => $validated['role']],
+            'new_values' => ['email' => $user->email, 'roles' => $request->roles],
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
 
-        return back()->with('success', "User {$user->name} berhasil dibuat dengan role {$validated['role']}.");
+        // Kirim welcome email
+        $user->notify(new WelcomeUserNotification($user));
+
+        // Kirim link reset password via Password Broker
+        \Illuminate\Support\Facades\Password::broker()->sendResetLink(
+            ['email' => $user->email]
+        );
+
+        return back()->with('success', "User {$user->name} berhasil dibuat.");
     }
 
-    public function toggleActive(User $user, Request $request)
-    {
-        if ($user->id === auth()->id()) {
-            return back()->withErrors(['error' => 'Tidak bisa menonaktifkan akun sendiri.']);
-        }
+    // public function toggleActive(User $user, Request $request)
+    // {
+    //     if ($user->id === auth()->id()) {
+    //         return back()->withErrors(['error' => 'Tidak bisa menonaktifkan akun sendiri.']);
+    //     }
 
-        $user->update(['is_active' => !$user->is_active]);
+    //     $user->update(['is_active' => !$user->is_active]);
+
+    //     AuditLog::create([
+    //         'user_id'    => auth()->id(),
+    //         'action'     => $user->is_active ? 'user_activated' : 'user_deactivated',
+    //         'model_type' => 'User',
+    //         'model_id'   => $user->id,
+    //         'ip_address' => $request->ip(),
+    //         'user_agent' => $request->userAgent(),
+    //     ]);
+
+    //     $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+    //     return back()->with('success', "User {$user->name} berhasil {$status}.");
+    // }
+
+    public function update(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'roles'   => 'required|array|min:1',
+            'roles.*' => 'string|exists:roles,name',
+            'opd_id'  => 'nullable|exists:opds,id|required_if:roles.*,opd',
+            'name'    => 'required|string|max:255',
+        ]);
+
+        $user->update([
+            'name'   => strip_tags($validated['name']),
+            'opd_id' => in_array('opd', $request->roles) ? $request->opd_id : 1,
+        ]);
+
+        $user->syncRoles($request->roles);
 
         AuditLog::create([
             'user_id'    => auth()->id(),
-            'action'     => $user->is_active ? 'user_activated' : 'user_deactivated',
+            'action'     => 'user_updated',
             'model_type' => 'User',
             'model_id'   => $user->id,
+            'new_values' => ['name' => $user->name, 'roles' => $request->roles],
             'ip_address' => $request->ip(),
             'user_agent' => $request->userAgent(),
         ]);
 
-        $status = $user->is_active ? 'diaktifkan' : 'dinonaktifkan';
-
-        return back()->with('success', "User {$user->name} berhasil {$status}.");
+        return back()->with('success', "User {$user->name} berhasil diperbarui.");
     }
 
     public function resetPassword(User $user, Request $request)

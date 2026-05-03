@@ -18,14 +18,14 @@ class UserSeeder extends Seeder
         // =====================
         $admins = [
             [
-                'name'                 => 'Admin CSIRT Bali',
+                'name'                 => 'Admin PERISAI',
                 'email'                => 'putu.sundika@baliprov.go.id',
-                'password'             => Hash::make(env('SEEDER_ADMIN1_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
+                'password'             => Hash::make(env('SEEDER_ADMIN_PASSWORD')),
+                'opd_id'         => 1,
                 'is_active'            => true,
                 'email_verified_at' => null,
                 'password_changed_at'  => now(),
-                'must_change_password' => true,
+                'must_change_password' => false,
             ],
 
         ];
@@ -40,18 +40,18 @@ class UserSeeder extends Seeder
         }
 
         // =====================
-        // SUPPORT USERS (3)
+        // VERIFICATOR USERS
         // =====================
         $supports = [
             [
-                'name'                 => 'Support-01',
-                'email'                => 'bidpersandianbali@gmail.com',
-                'password'             => Hash::make(env('SEEDER_SUPPORT1_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
+                'name'                 => 'Verifikator-01',
+                'email'                => 'verifikator1@baliprov.go.id',
+                'password'             => Hash::make(env('SEEDER_VERIFIKATOR_PASSWORD')),
+                'opd_id'         => 1,
                 'is_active'            => true,
                 'email_verified_at' => null,
                 'password_changed_at'  => now(),
-                'must_change_password' => true,
+                'must_change_password' => false,
             ],
 
         ];
@@ -59,27 +59,53 @@ class UserSeeder extends Seeder
         foreach ($supports as $data) {
             $user = User::firstOrCreate(['email' => $data['email']], $data);
             $user->markEmailAsVerified();
-            $user->assignRole('support');
+            $user->assignRole('verifikator');
             PasswordHistory::firstOrCreate(
                 ['user_id' => $user->id, 'password' => $data['password']]
             );
         }
 
         // =====================
-        // PUBLIC USERS (3) — hanya untuk development/testing
-        // Hapus blok ini sebelum deploy ke production
+        // AUDITOR USERS
+        // =====================
+        $supports = [
+            [
+                'name'                 => 'Auditor-01',
+                'email'                => 'auditor1@baliprov.go.id',
+                'password'             => Hash::make(env('SEEDER_AUDITOR_PASSWORD')),
+                'opd_id'         => 1,
+                'is_active'            => true,
+                'email_verified_at' => null,
+                'password_changed_at'  => now(),
+                'must_change_password' => false,
+            ],
+
+        ];
+
+        foreach ($supports as $data) {
+            $user = User::firstOrCreate(['email' => $data['email']], $data);
+            $user->markEmailAsVerified();
+            $user->assignRole('auditor');
+            PasswordHistory::firstOrCreate(
+                ['user_id' => $user->id, 'password' => $data['password']]
+            );
+        }
+
+
+        // =====================
+        // PUBLIC OPD
         // =====================
         if (app()->environment('local', 'development', 'staging')) {
             $publics = [
                 [
-                    'name'                 => 'Putu Sundika',
-                    'email'                => 'putu.sundika@gmail.com',
-                    'password'             => Hash::make(env('SEEDER_PUBLIC1_PASSWORD')),
-                    'organization'         => 'personal',
+                    'name'                 => 'OPD A',
+                    'email'                => 'diskominfos@baliprov.go.id',
+                    'password'             => Hash::make(env('SEEDER_OPD_PASSWORD')),
+                    'opd_id'         => 2,
                     'is_active'            => true,
                     'email_verified_at' => null,
                     'password_changed_at'  => now(),
-                    'must_change_password' => true,
+                    'must_change_password' => false,
                 ],
 
             ];
@@ -87,93 +113,11 @@ class UserSeeder extends Seeder
             foreach ($publics as $data) {
                 $user = User::firstOrCreate(['email' => $data['email']], $data);
                 $user->markEmailAsVerified();
-                $user->assignRole('public');
+                $user->assignRole('opd');
                 PasswordHistory::firstOrCreate(
                     ['user_id' => $user->id, 'password' => $data['password']]
                 );
             }
-        }
-
-        // =====================
-        // CSIRT USERS (3)
-        // =====================
-        $csirts = [
-            [
-                'name'                 => 'CSIRT-01',
-                'email'                => 'anantaw81@gmail.com',
-                'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
-                'is_active'            => true,
-                'email_verified_at' => null,
-                'password_changed_at'  => now(),
-                'must_change_password' => true,
-            ],
-            [
-                'name'                 => 'CSIRT-02',
-                'email'                => 'arircbm@gmail.com',
-                'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
-                'is_active'            => true,
-                'email_verified_at' => null,
-                'password_changed_at'  => now(),
-                'must_change_password' => true,
-            ],
-            [
-                'name'                 => 'CSIRT-03',
-                'email'                => 'esamahadi.office@gmail.com',
-                'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
-                'is_active'            => true,
-                'email_verified_at' => null,
-                'password_changed_at'  => now(),
-                'must_change_password' => true,
-            ],
-            [
-                'name'                 => 'CSIRT-04',
-                'email'                => 'OmanJaya53@gmail.com',
-                'password'             => Hash::make(env('SEEDER_CSIRT1_PASSWORD')),
-                'organization'         => 'CSIRT Provinsi Bali',
-                'is_active'            => true,
-                'email_verified_at' => null,
-                'password_changed_at'  => now(),
-                'must_change_password' => true,
-            ],
-
-        ];
-
-        foreach ($csirts as $data) {
-            $user = User::firstOrCreate(['email' => $data['email']], $data);
-            $user->markEmailAsVerified();
-            $user->assignRole('csirt');
-            PasswordHistory::firstOrCreate(
-                ['user_id' => $user->id, 'password' => $data['password']]
-            );
-        }
-
-        // =====================
-        // DPO USERS (3)
-        // =====================
-        $dpo = [
-            [
-                'name'                 => 'DPO-01',
-                'email'                => 'widiartha.made@gmail.com',
-                'password'             => Hash::make(env('SEEDER_DPO1_PASSWORD')),
-                'organization'         => 'DPO Provinsi Bali',
-                'is_active'            => true,
-                'email_verified_at' => null,
-                'password_changed_at'  => now(),
-                'must_change_password' => true,
-            ],
-
-        ];
-
-        foreach ($dpo as $data) {
-            $user = User::firstOrCreate(['email' => $data['email']], $data);
-            $user->markEmailAsVerified();
-            $user->assignRole('dpo');
-            PasswordHistory::firstOrCreate(
-                ['user_id' => $user->id, 'password' => $data['password']]
-            );
         }
     }
 }

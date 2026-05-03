@@ -46,6 +46,13 @@ class FortifyServiceProvider extends ServiceProvider
                 // if (!$user->hasVerifiedEmail()) {
                 //     return null; // email belum diverifikasi
                 // }
+
+                // Set last login
+                $user->update([
+                    'last_login_at' => now(),
+                    'last_login_ip' => $request->ip(),
+                ]);
+
                 return $user;
             }
         });

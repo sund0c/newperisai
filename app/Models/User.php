@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Traits\HasRoles;
 use Carbon\Carbon;
-use App\Http\Middleware\SandidataMiddleware;
+//use App\Http\Middleware\SandidataMiddleware;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -27,7 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'phone',
-        'organization',
+        'opd_id',
         'google2fa_secret',
         'google2fa_enabled',
         'is_active',
@@ -80,14 +80,18 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasRole('admin');
     }
 
-    public function isSupport(): bool
+    public function isOpd(): bool
     {
-        return $this->hasRole('support');
+        return $this->hasRole('opd');
     }
 
-    public function isPublic(): bool
+    public function isAuditor(): bool
     {
-        return $this->hasRole('public');
+        return $this->hasRole('auditor');
+    }
+    public function isVerifikator(): bool
+    {
+        return $this->hasRole('verifikator');
     }
 
     // ════════════════════════════════════════════════════════════════════
@@ -213,19 +217,18 @@ class User extends Authenticatable implements MustVerifyEmail
         }
     }
 
-    public function reports(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(\App\Models\Report::class, 'user_id');
-    }
-
-
-    public function getPhoneAttribute($value): string
-    {
-        return SandidataMiddleware::decryptValue($value ?? '');
-    }
+    // public function getPhoneAttribute($value): string
+    // {
+    //     return SandidataMiddleware::decryptValue($value ?? '');
+    // }
 
     public function hasVerifiedEmail(): bool
     {
         return $this->email_verified_at !== null;
+    }
+
+    public function opd()
+    {
+        return $this->belongsTo(Opd::class);
     }
 }

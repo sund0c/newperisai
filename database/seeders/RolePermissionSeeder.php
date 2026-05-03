@@ -15,27 +15,13 @@ class RolePermissionSeeder extends Seeder
 
         // Permissions
         $permissions = [
-            // Ticket permissions
-            'ticket.create',
-            'ticket.view.own',
-            'ticket.view.all',
-            'ticket.update.status',
-            'ticket.assign',
-            'ticket.delete',
+
             // User management
             'user.view',
             'user.create',
             'user.edit',
             'user.delete',
-            // Reports
-            'report.view',
-            'report.export',
-            // CSIRT mitigasi
-            'csirt.view',
-            'csirt.process',
-            // DPO  mitigasi
-            'dpo.view',
-            'dpo.process',
+
             // System
             'system.settings',
             'audit.view',
@@ -45,38 +31,24 @@ class RolePermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $perm]);
         }
 
-        // PUBLIC — hanya bisa buat dan lihat tiket sendiri
-        $publicRole = Role::firstOrCreate(['name' => 'public']);
-        $publicRole->syncPermissions([
+
+        $opdRole = Role::firstOrCreate(['name' => 'opd']);
+        /*$opdRole->syncPermissions([
             'ticket.create',
             'ticket.view.own',
-        ]);
+        ]);*/
 
-        // SUPPORT — validasi tiket, lihat semua tiket
-        $supportRole = Role::firstOrCreate(['name' => 'support']);
-        $supportRole->syncPermissions([
-            'ticket.view.all',
-            'ticket.update.status',
-            'ticket.assign',
-            'report.view',
-            'csirt.view', // bisa lihat progress CSIRT di detail tiket
-        ]);
+        $verifikatorRole = Role::firstOrCreate(['name' => 'verifikator']);
+        /*$opdRole->syncPermissions([
+            'ticket.create',
+            'ticket.view.own',
+        ]);*/
 
-        // CSIRT — hanya akses proses mitigasi, tidak terhubung ke ticketing public
-        $csirtRole = Role::firstOrCreate(['name' => 'csirt']);
-        $csirtRole->syncPermissions([
-            'csirt.view',
-            'csirt.process',
-            'ticket.view.all', // baca detail tiket untuk keperluan mitigasi
-        ]);
-
-        // DPO — hanya akses proses mitigasi, tidak terhubung ke ticketing public
-        $dpoRole = Role::firstOrCreate(['name' => 'dpo']);
-        $dpoRole->syncPermissions([
-            'dpo.view',
-            'dpo.process',
-            'ticket.view.all', // baca detail tiket untuk keperluan mitigasi
-        ]);
+        $auditorRole = Role::firstOrCreate(['name' => 'auditor']);
+        /*$opdRole->syncPermissions([
+            'ticket.create',
+            'ticket.view.own',
+        ]);*/
 
         // ADMIN — akses penuh
         $adminRole = Role::firstOrCreate(['name' => 'admin']);

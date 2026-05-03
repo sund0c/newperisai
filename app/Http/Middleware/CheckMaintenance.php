@@ -13,7 +13,7 @@ class CheckMaintenance
      * Role yang tetap bisa mengakses sistem saat maintenance.
      * Public user akan diarahkan ke halaman maintenance.
      */
-    private const BYPASS_ROLES = ['admin', 'support', 'csirt', 'dpo'];
+    private const BYPASS_ROLES = ['admin', 'auditor', 'verifiator'];
 
     public function handle(Request $request, Closure $next): Response
     {

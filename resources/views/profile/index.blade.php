@@ -8,7 +8,7 @@
 
     @php $activeTab = session('active_tab', 'info') @endphp
 
-    <div class="max-w-3xl">
+    <div class="w-full">
 
         {{-- Banner: permintaan penghapusan aktif --}}
         @if ($deletionRequest)
@@ -71,7 +71,8 @@
                 class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all">
                 Keamanan (2FA)
             </button>
-            <button onclick="switchTab('danger')" id="tab-btn-danger"
+            {{-- <button onclick="switchTab('danger')" id="tab-btn-danger" --}}
+            <button id="tab-btn-danger"
                 class="tab-btn px-4 py-2 text-sm font-medium rounded-lg transition-all text-red-500">
                 Hapus Akun
             </button>
@@ -82,7 +83,7 @@
             <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100">
                     <h2 class="text-base font-semibold text-gray-900">Informasi Akun</h2>
-                    <p class="text-sm text-gray-500 mt-0.5">Perbarui nama, nomor telepon, dan instansi Anda.</p>
+                    <p class="text-sm text-gray-500 mt-0.5">Perbarui nama dan nomor telepon</p>
                 </div>
                 <form action="{{ route('profile.update-info') }}" method="POST" class="px-6 py-5 space-y-4">
                     @csrf
@@ -128,13 +129,13 @@
                                 placeholder="08xxxxxxxxxx">
                         </div>
 
-                        <div>
+                        {{-- <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1.5">Instansi/Organisasi <span
                                     class="text-red-500">*</span></label>
                             <input type="text" name="organization"
                                 value="{{ old('organization', $user->organization) }}" required
                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
+                        </div> --}}
                     </div>
 
                     <div class="pt-2">
@@ -300,7 +301,8 @@
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-green-800">2FA Aktif</p>
-                                <p class="text-xs text-green-700 mt-0.5">Akun Anda dilindungi dengan Google Authenticator.
+                                <p class="text-xs text-green-700 mt-0.5">Akun Anda dilindungi dengan 2FA (Two Factor
+                                    Authenticator).
                                 </p>
                             </div>
                         </div>

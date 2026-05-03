@@ -2,7 +2,7 @@
 
 @section('title', 'Manajemen User')
 @section('page-title', 'Manajemen User')
-@section('page-subtitle', 'Kelola akun admin, support, CSIRT, DPO, dan user publik')
+@section('page-subtitle', 'Kelola akun admin, auditor, verifikator dan OPD')
 
 @section('content')
 
@@ -103,7 +103,7 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Nama</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                                Email</th>
+                                Email / No HP</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 Instansi</th>
                             <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
@@ -124,15 +124,9 @@
                                 $isDeleted = $user->trashed();
                                 $isSelf = $user->id === auth()->id();
                                 $roleName = $user->roles->first()?->name ?? '-';
-                                $roleColors = [
-                                    'admin' => 'red',
-                                    'support' => 'purple',
-                                    'csirt' => 'indigo',
-                                    'dpo' => 'teal',
-                                    'public' => 'blue',
-                                ];
-                                $roleColor = $roleColors[$roleName] ?? 'gray';
+
                             @endphp
+
                             <tr class="hover:bg-gray-50 transition-colors {{ $isDeleted ? 'opacity-50' : '' }}">
                                 <td class="px-4 py-3">
                                     <p class="font-medium text-gray-900">
@@ -151,14 +145,40 @@
                                         <span
                                             class="ml-1 px-1.5 py-0.5 bg-yellow-100 text-yellow-600 text-xs rounded">Unverified</span>
                                     @endif
+                                    @if ($user->phone)
+                                        <p class="text-xs text-gray-400">{{ $user->phone }}</p>
+                                    @endif
                                 </td>
-                                <td class="px-4 py-3 text-xs text-gray-600">{{ $user->organization ?? '-' }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-600">{{ $user->opd->namaopd ?? '-' }}</td>
                                 <td class="px-4 py-3 text-center">
-                                    <span
-                                        class="inline-flex px-2.5 py-1 rounded-full text-xs font-semibold
-                                               bg-{{ $roleColor }}-100 text-{{ $roleColor }}-700">
-                                        {{ ucfirst($roleName) }}
-                                    </span>
+                                    <div class="flex flex-wrap justify-center gap-1">
+                                        @foreach ($user->roles as $role)
+                                            @php
+                                                $badgeClass = match ($role->name) {
+                                                    'admin' => 'bg-red-100 text-red-700',
+                                                    'verifikator' => 'bg-purple-100 text-purple-700',
+                                                    'auditor' => 'bg-indigo-100 text-indigo-700',
+                                                    'opd' => 'bg-teal-100 text-teal-700',
+                                                    default => 'bg-gray-100 text-gray-700',
+                                                };
+                                                $badgeLabel = match ($role->name) {
+                                                    'admin' => 'ADM',
+                                                    'verifikator' => 'VER',
+                                                    'auditor' => 'AUD',
+                                                    'opd' => 'OPD',
+                                                    default => strtoupper(substr($role->name, 0, 3)),
+                                                };
+                                            @endphp
+                                            <span
+                                                class="inline-flex px-2 py-1 rounded text-xs font-bold tracking-widest {{ $badgeClass }}">
+                                                {{ $badgeLabel }}
+                                            </span>
+                                        @endforeach
+
+                                        @if ($user->roles->isEmpty())
+                                            <span class="text-xs text-gray-400">—</span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     @if ($isDeleted)
@@ -174,16 +194,13 @@
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     @if ($user->hasTwoFactorEnabled())
-                                        <span
-                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M10 1l2.928 5.978L19 8.09l-4.5 4.381L15.856 19 10 16.02 4.144 19l1.356-6.528L1 8.09l6.072-1.112L10 1z" />
-                                            </svg>
-                                            Aktif
-                                        </span>
+                                        <svg class="w-4 h-4 text-green-500 mx-auto" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                                                d="M5 13l4 4L19 7" />
+                                        </svg>
                                     @else
-                                        <span class="text-xs text-gray-400">—</span>
+                                        <span class="text-gray-300 text-sm font-medium">—</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
@@ -206,6 +223,15 @@
                                                 </button>
                                             </form>
                                         @else
+                                            {{-- Edit --}}
+                                            @if (!$isSelf)
+                                                <button type="button"
+                                                    onclick="openEditModal({{ $user->id }}, '{{ $user->name }}', '{{ $user->email }}', {{ $user->opd_id ?? 'null' }}, {{ json_encode($user->roles->pluck('name')) }})"
+                                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-colors">
+                                                    Edit
+                                                </button>
+                                            @endif
+
                                             {{-- Reset Password --}}
                                             @if (!$isSelf)
                                                 <form action="{{ route('admin.users.reset-password', $user) }}"
@@ -222,7 +248,7 @@
                                             @endif
 
                                             {{-- Toggle Aktif --}}
-                                            @if (!$isSelf)
+                                            {{-- @if (!$isSelf)
                                                 <form action="{{ route('admin.users.toggle-active', $user) }}"
                                                     method="POST"
                                                     onsubmit="return confirm('{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} user {{ $user->name }}?')">
@@ -237,7 +263,7 @@
                                                         {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                                                     </button>
                                                 </form>
-                                            @endif
+                                            @endif --}}
 
                                             {{-- Hapus --}}
                                             @if (!$isSelf)
@@ -271,19 +297,152 @@
         @endif
     </div>
 
+
+    {{-- ════ MODAL EDIT USER ════ --}}
+    <div id="modalEditUser" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+        onclick="if(event.target===this) this.classList.add('hidden')">
+        <div class="bg-white rounded-2xl border border-gray-300 shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+
+            <div
+                class="px-6 py-4 bg-gray-50 border-b border-gray-200 rounded-t-2xl flex items-center justify-between sticky top-0 z-10">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800">Edit User</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Perbarui data dan role user.</p>
+                </div>
+                <button onclick="document.getElementById('modalEditUser').classList.add('hidden')"
+                    class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200
+                       text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form id="formEditUser" method="POST" class="px-6 py-5 space-y-4">
+                @csrf
+                @method('PATCH')
+
+                {{-- Role --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-2">
+                        Role <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach ([
+            'admin' => 'Admin',
+            'verifikator' => 'Verifikator',
+            'auditor' => 'Auditor',
+            'opd' => 'OPD',
+        ] as $roleValue => $roleLabel)
+                            <label
+                                class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-200
+                                      hover:bg-gray-50 cursor-pointer transition-all select-none
+                                      has-[:checked]:border-blue-400 has-[:checked]:bg-blue-50">
+                                <input type="checkbox" name="roles[]" value="{{ $roleValue }}"
+                                    class="edit-role-checkbox w-4 h-4 rounded accent-blue-600"
+                                    onchange="handleEditRoleChange()">
+                                <span class="text-sm text-gray-700">{{ $roleLabel }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- OPD --}}
+                <div id="fieldEditOpd" class="hidden">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        OPD <span class="text-red-500">*</span>
+                    </label>
+                    <select name="opd_id" id="editOpdSelect"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white
+                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Pilih OPD --</option>
+                        @foreach ($opds as $opd)
+                            <option value="{{ $opd->id }}">{{ $opd->namaopd }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Nama --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Nama Lengkap <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" name="name" id="editName" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                {{-- Email --}}
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                    <input type="email" id="editEmail" disabled
+                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                    <p class="mt-1 text-xs text-gray-400">Email tidak dapat diubah.</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-1">
+                    <button type="button" onclick="document.getElementById('modalEditUser').classList.add('hidden')"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors">
+                        Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(id, name, email, opdId, roles) {
+            // Set action form
+            document.getElementById('formEditUser').action = `/admin/users/${id}/update`;
+
+            // Isi nama & email
+            document.getElementById('editName').value = name;
+            document.getElementById('editEmail').value = email;
+
+            // Set checkbox roles
+            document.querySelectorAll('.edit-role-checkbox').forEach(function(cb) {
+                cb.checked = roles.includes(cb.value);
+            });
+
+            // Set OPD
+            var opdSelect = document.getElementById('editOpdSelect');
+            opdSelect.value = opdId ?? '';
+            handleEditRoleChange();
+
+            document.getElementById('modalEditUser').classList.remove('hidden');
+        }
+
+        function handleEditRoleChange() {
+            var opdChecked = document.querySelector('.edit-role-checkbox[value="opd"]').checked;
+            var fieldOpd = document.getElementById('fieldEditOpd');
+            var opdSelect = document.getElementById('editOpdSelect');
+
+            fieldOpd.classList.toggle('hidden', !opdChecked);
+            opdSelect.required = opdChecked;
+            if (!opdChecked) opdSelect.value = '';
+        }
+    </script>
+
+
     {{-- ════ MODAL TAMBAH USER ════ --}}
     <div id="modalTambahUser" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
         onclick="if(event.target===this) this.classList.add('hidden')">
-        <div class="bg-white rounded-2xl border border-gray-300 shadow-2xl ring-1 ring-black/10 w-full max-w-md">
+        <div
+            class="bg-white rounded-2xl border border-gray-300 shadow-2xl ring-1 ring-black/10 w-full max-w-md max-h-[90vh] overflow-y-auto">
 
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 rounded-t-2xl flex items-center justify-between">
+            <div
+                class="px-6 py-4 bg-gray-50 border-b border-gray-200 rounded-t-2xl flex items-center justify-between sticky top-0 z-10">
                 <div>
                     <h3 class="text-sm font-semibold text-gray-800">Tambah User Baru</h3>
-                    <p class="text-xs text-gray-500 mt-0.5">User akan menerima email untuk set password.</p>
+                    {{-- <p class="text-xs text-gray-500 mt-0.5">User akan menerima email untuk set password.</p> --}}
                 </div>
                 <button onclick="document.getElementById('modalTambahUser').classList.add('hidden')"
                     class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200
-                           text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                       text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -293,52 +452,80 @@
             <form method="POST" action="{{ route('admin.users.store') }}" class="px-6 py-5 space-y-4">
                 @csrf
 
-                {{-- Role dulu --}}
-                <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Role <span class="text-red-500">*</span>
-                    </label>
-                    <select name="role" id="roleSelect" required
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white
-                               focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">-- Pilih Role --</option>
-                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="support" {{ old('role') === 'support' ? 'selected' : '' }}>Support</option>
-                        <option value="csirt" {{ old('role') === 'csirt' ? 'selected' : '' }}>CSIRT</option>
-                        <option value="dpo" {{ old('role') === 'dpo' ? 'selected' : '' }}>DPO</option>
-                        <option value="public" {{ old('role') === 'public' ? 'selected' : '' }}>Public</option>
-                    </select>
+                {{-- Role — checkbox multi-select --}}
+                <div class="grid grid-cols-2 gap-2">
+                    @foreach ([
+            'admin' => 'Admin',
+            'verifikator' => 'Verifikator',
+            'auditor' => 'Auditor',
+            'opd' => 'OPD',
+        ] as $roleValue => $roleLabel)
+                        <label
+                            class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-gray-200
+                      hover:bg-gray-50 cursor-pointer transition-all select-none
+                      has-[:checked]:border-blue-400 has-[:checked]:bg-blue-50">
+                            <input type="checkbox" name="roles[]" value="{{ $roleValue }}"
+                                class="role-checkbox w-4 h-4 rounded accent-blue-600"
+                                {{ in_array($roleValue, old('roles', [])) ? 'checked' : '' }}
+                                onchange="handleRoleChange()">
+                            <span class="text-sm text-gray-700">{{ $roleLabel }}</span>
+                        </label>
+                    @endforeach
                 </div>
 
+                {{-- Dropdown OPD --}}
+                <div id="fieldOpd" class="hidden">
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        OPD <span class="text-red-500">*</span>
+                    </label>
+                    <select name="opd_id" id="opdSelect"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white
+               focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Pilih OPD --</option>
+                        @foreach ($opds as $opd)
+                            <option value="{{ $opd->id }}" {{ old('opd_id') == $opd->id ? 'selected' : '' }}>
+                                {{ $opd->namaopd }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('opd_id')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <script>
+                    function handleRoleChange() {
+                        var opdChecked = document.querySelector('.role-checkbox[value="opd"]').checked;
+                        var fieldOpd = document.getElementById('fieldOpd');
+                        var opdSelect = document.getElementById('opdSelect');
+
+                        fieldOpd.classList.toggle('hidden', !opdChecked);
+                        opdSelect.required = opdChecked;
+                        if (!opdChecked) opdSelect.value = '';
+                    }
+                    handleRoleChange();
+                </script>
+
+                {{-- Nama --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Nama Lengkap <span class="text-red-500">*</span>
                     </label>
                     <input type="text" name="name" value="{{ old('name') }}" required autofocus
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                               focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Nama lengkap">
                 </div>
 
+                {{-- Email --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Email <span class="text-red-500">*</span>
                     </label>
                     <input type="email" name="email" value="{{ old('email') }}" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                               focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="email@domain.com">
-                </div>
-
-                {{-- Field organisasi: muncul hanya jika role=public --}}
-                <div id="fieldOrganisasi" class="hidden">
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Instansi/Organisasi <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="organization" id="organizationInput" value="{{ old('organization') }}"
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                               focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Nama instansi pelapor">
                 </div>
 
                 <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
@@ -358,25 +545,7 @@
                 </div>
             </form>
 
-            <script>
-                (function() {
-                    var roleSelect = document.getElementById('roleSelect');
-                    var fieldOrganisasi = document.getElementById('fieldOrganisasi');
-                    var orgInput = document.getElementById('organizationInput');
 
-                    function handleRoleChange() {
-                        var isPublic = roleSelect.value === 'public';
-                        fieldOrganisasi.classList.toggle('hidden', !isPublic);
-                        orgInput.required = isPublic;
-                        if (!isPublic) orgInput.value = '';
-                    }
-
-                    roleSelect.addEventListener('change', handleRoleChange);
-
-                    // Inisialisasi saat modal dibuka (untuk old() value setelah validasi error)
-                    handleRoleChange();
-                })();
-            </script>
         </div>
     </div>
 

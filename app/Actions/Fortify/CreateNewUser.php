@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
-use App\Http\Middleware\SandidataMiddleware;
+//use App\Http\Middleware\SandidataMiddleware;
 
 
 class CreateNewUser implements CreatesNewUsers
@@ -36,10 +36,10 @@ class CreateNewUser implements CreatesNewUsers
 
         return DB::transaction(function () use ($input) {
 
-            $phone = null;
-            $phone = !empty($input['phone'])
-                ? SandidataMiddleware::encryptValue($input['phone'])
-                : null;
+            // $phone = null;
+            // $phone = !empty($input['phone'])
+            //     ? SandidataMiddleware::encryptValue($input['phone'])
+            //     : null;
 
             $hashedPassword = Hash::make($input['password']);
 

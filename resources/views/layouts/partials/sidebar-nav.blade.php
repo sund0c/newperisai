@@ -46,11 +46,38 @@
     Dashboard
 </a>
 
-{{-- ═══════════════ ADMIN ═══════════════ --}}
 @role('admin')
-    <div class="pt-3">
-        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Administrasi</p>
-
+    {{-- SYSTEM --}}
+    <div class="pt-4 mt-4 border-t border-slate-700">
+        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">System</p>
+        <a href="{{ route('admin.opd.index') }}"
+            class="{{ $navClass }} {{ request()->routeIs('admin.opd.*') ? $activeClass : $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 21h18M3 10h18M3 7l9-4 9 4M4 10h1v11H4V10zm5 0h1v11H9V10zm5 0h1v11h-1V10zm5 0h1v11h-1V10z" />
+            </svg>
+            Perangkat Daerah
+        </a>
+        <a href="{{ route('admin.klasifikasi.index') }}"
+            class="{{ $navClass }} {{ request()->routeIs('admin.klasifikasi.*') ? $activeClass : $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A2 2 0 013 10V5a2 2 0 012-2z" />
+            </svg>
+            Klasifikasi Aset
+        </a>
+        <a href="{{ route('admin.periods.index') }}"
+            class="{{ $navClass }} {{ request()->routeIs('admin.periods.*') ? $activeClass : $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <rect x="3" y="4" width="18" height="17" rx="2" stroke-width="2" />
+                <line x1="3" y1="9" x2="21" y2="9" stroke-width="2" />
+                <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round" />
+                <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round" />
+                <text x="12" y="19" text-anchor="middle" font-size="7" font-weight="700" fill="currentColor"
+                    stroke="none">25</text>
+            </svg>
+            Periode Waktu
+        </a>
         <a href="{{ route('admin.users.index') }}"
             class="{{ $navClass }} {{ request()->routeIs('admin.users.*') ? $activeClass : $inactiveClass }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,110 +86,78 @@
             </svg>
             Manajemen User
         </a>
+    </div>
 
-        <a href="{{ route('support.reports.index') }}"
-            class="{{ $navClass }} {{ request()->routeIs('support.reports.*') ? $activeClass : $inactiveClass }}">
+    {{-- ASET --}}
+    <div class="pt-4 mt-4 border-t border-slate-700">
+        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Aset</p>
+        <a href="{{ route('admin.assets.index') }}"
+            class="{{ $navClass }} {{ request()->routeIs('admin.assets.*') ? $activeClass : $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+            Aset Inventory
+        </a>
+
+        <a href="{{ route('admin.users.index') }}" class="{{ $navClass }} {{ $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Kritikalitas Aset
+        </a>
+        <a href="{{ route('admin.users.index') }}" class="{{ $navClass }} {{ $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            Infra Informasi Vital
+        </a>
+        <a href="{{ route('admin.users.index') }}" class="{{ $navClass }} {{ $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            Kategorisasi SE
+        </a>
+    </div>
+
+    {{-- PELINDUNGAN DATA PRIBADI --}}
+    <div class="pt-4 mt-4 border-t border-slate-700">
+        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Pelindungan Data Pribadi</p>
+        <a href="{{ route('admin.users.index') }}" class="{{ $navClass }} {{ $inactiveClass }}">
+            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            DIR
+        </a>
+        <a href="{{ route('admin.users.index') }}" class="{{ $navClass }} {{ $inactiveClass }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
-            Semua Tiket
+            RoPA
         </a>
-
-        <a href="#" class="{{ $navClass }} {{ $inactiveClass }}">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Laporan & Statistik
-        </a>
-
-        <a href="#" class="{{ $navClass }} {{ $inactiveClass }}">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-            Audit Log
-        </a>
-    </div>
-@endrole
-
-{{-- ═══════════════ SUPPORT ═══════════════ --}}
-@role('support')
-    <div class="pt-3">
-        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Penanganan Tiket</p>
-
-        <a href="{{ route('support.reports.index') }}"
-            class="{{ $navClass }} {{ request()->routeIs('support.reports.*') ? $activeClass : $inactiveClass }}">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-            Semua Tiket
-            @php
-                $pendingCount = \App\Models\Report::whereIn('status', [
-                    'submitted',
-                    'validated',
-                    'certificate',
-                ])->count();
-            @endphp
-            @if ($pendingCount > 0)
-                <span class="ml-auto bg-blue-100 text-blue-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                    {{ $pendingCount }}
-                </span>
-            @endif
-        </a>
-
-        <a href="{{ route('support.users.index') }}"
-   class="{{ $navClass }} {{ request()->routeIs('support.users.*') ? $activeClass : $inactiveClass }}">
-    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-    </svg>
-    User Publik
-</a>
-
-    </div>
-@endrole
-
-{{-- ═══════════════ CSIRT ═══════════════ --}}
-@role('csirt')
-    <div class="pt-3">
-        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Mitigasi</p>
-
-        <a href="{{ route('csirt.reports.index') }}"
-            class="{{ $navClass }} {{ request()->routeIs('csirt.reports.*') ? $activeClass : $inactiveClass }}">
+        <a href="{{ route('admin.users.index') }}" class="{{ $navClass }} {{ $inactiveClass }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
-            Tiket Mitigasi
-            @php
-                $csirtPending = \App\Models\CsirtProcess::whereIn('status', ['notified', 'in_progress'])->count();
-            @endphp
-            @if ($csirtPending > 0)
-                <span class="ml-auto bg-indigo-100 text-indigo-700 text-xs font-medium px-2 py-0.5 rounded-full">
-                    {{ $csirtPending }}
-                </span>
-            @endif
+            DPIA
         </a>
     </div>
-@endrole
 
-{{-- ═══════════════ PUBLIC ═══════════════ --}}
-@role('public')
-    <div class="pt-3">
-        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Laporan Saya</p>
-
-
-
-        <a href="{{ route('public.reports.index') }}"
-            class="{{ $navClass }} {{ request()->routeIs('public.reports.index') || request()->routeIs('public.reports.show') ? $activeClass : $inactiveClass }}">
+    {{-- AUDIT --}}
+    <div class="pt-4 mt-4 border-t border-slate-700">
+        <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Audit</p>
+        <a href="{{ route('admin.users.index') }}" class="{{ $navClass }} {{ $inactiveClass }}">
             <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            Laporan Saya
+            Risk Register
         </a>
     </div>
 @endrole

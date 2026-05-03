@@ -5,9 +5,12 @@ use App\Http\Controllers\Auth\TwoFactorController;
 use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\MaintenanceController;
+use App\Http\Controllers\Admin\OpdController;
+use App\Http\Controllers\Admin\PeriodController;
+use App\Http\Controllers\Admin\KlasifikasiAsetController;
+use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\Public\ReportController;
 use App\Http\Controllers\PrivacyController;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -111,86 +114,35 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             ->name('users.toggle-active');
         Route::post('users/{user}/reset-password', [UserController::class, 'resetPassword'])
             ->name('users.reset-password');
-
+        Route::patch('users/{user}/update', [UserController::class, 'update'])->name('admin.users.update');
         Route::patch('users/{user}/restore', [UserController::class, 'restore'])
             ->name('users.restore')
             ->withTrashed();
-
         // Maintenance toggle
         Route::post('/maintenance/toggle', [MaintenanceController::class, 'toggle'])
             ->name('maintenance.toggle');
-    });
 
-    // SUPPORT PANEL
-    Route::prefix('support')->name('support.')->middleware('role:support|admin')->group(function () {
-        Route::get('/dashboard', fn() => view('support.dashboard'))->name('dashboard');
+        Route::get('klasifikasi', [KlasifikasiAsetController::class, 'index'])->name('klasifikasi.index');
+        Route::get('klasifikasi/{klasifikasi}', [KlasifikasiAsetController::class, 'show'])->name('klasifikasi.show');
+        Route::post('klasifikasi/{klasifikasi}/subklas', [KlasifikasiAsetController::class, 'storeSubklas'])->name('klasifikasi.subklas.store');
+        Route::patch('klasifikasi/{klasifikasi}/subklas/{subklasifikasi}', [KlasifikasiAsetController::class, 'updateSubklas'])->name('klasifikasi.subklas.update');
+        Route::delete('klasifikasi/{klasifikasi}/subklas/{subklasifikasi}', [KlasifikasiAsetController::class, 'destroySubklas'])->name('klasifikasi.subklas.destroy');
+        Route::patch('klasifikasi/{klasifikasi}/subklas/{subklasifikasi}/restore', [KlasifikasiAsetController::class, 'restoreSubklas'])->name('klasifikasi.subklas.restore');
 
-        Route::get('/tiket/{report}/validation-file', [\App\Http\Controllers\Support\ReportController::class, 'showValidationFile'])
-            ->name('reports.validation-file');
+        Route::get('opd', [OpdController::class, 'index'])->name('opd.index');
+        Route::post('opd', [OpdController::class, 'store'])->name('opd.store');
+        Route::patch('opd/{opd}', [OpdController::class, 'update'])->name('opd.update');
+        Route::delete('opd/{opd}', [OpdController::class, 'destroy'])->name('opd.destroy');
+        Route::patch('opd/{id}/restore', [OpdController::class, 'restore'])->name('opd.restore');
 
-        // Tiket
-        Route::get('/tiket', [\App\Http\Controllers\Support\ReportController::class, 'index'])->name('reports.index');
-        Route::get('/tiket/{report}', [\App\Http\Controllers\Support\ReportController::class, 'show'])->name('reports.show');
-        Route::post('/tiket/{report}/validate', [\App\Http\Controllers\Support\ReportController::class, 'startValidation'])->name('reports.validate');
-        Route::post('/tiket/{report}/result', [\App\Http\Controllers\Support\ReportController::class, 'setResult'])->name('reports.result');
-        Route::post('/tiket/{report}/certificate', [\App\Http\Controllers\Support\ReportController::class, 'uploadCertificate'])->name('reports.certificate');
+        Route::get('periods', [PeriodController::class, 'index'])->name('periods.index');
+        Route::post('periods', [PeriodController::class, 'store'])->name('periods.store');
+        Route::delete('periods/{period}', [PeriodController::class, 'destroy'])->name('periods.destroy');
+        Route::patch('periods/{period}/activate', [PeriodController::class, 'activate'])
+            ->name('periods.activate');
 
-        // File downloads
-        Route::get('/tiket/{report}/certificate/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadCertificate'])->name('certificate.download');
-        Route::get('/csirt/{csirtProcess}/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadMitigation'])->name('csirt.download');
-        Route::get('/dpo/{dpoProcess}/download', [\App\Http\Controllers\Support\AttachmentController::class, 'downloadDpoMitigation'])
-            ->name('dpo.download');
-        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
-
-        Route::get('/users', [\App\Http\Controllers\Support\UserController::class, 'index'])->name('users.index');
-        Route::get('/users/create', [\App\Http\Controllers\Support\UserController::class, 'create'])->name('users.create');
-        Route::get('/users/{user}', [\App\Http\Controllers\Support\UserController::class, 'show'])->name('users.show');
-        Route::post('/users', [\App\Http\Controllers\Support\UserController::class, 'store'])->name('users.store');
-        Route::get('/users/{user}/historical/create', [\App\Http\Controllers\Support\HistoricalReportController::class, 'create'])->name('users.historical.create');
-        Route::post('/users/{user}/historical', [\App\Http\Controllers\Support\HistoricalReportController::class, 'store'])->name('users.historical.store');
-
-        Route::post('/users/{user}/reset-password', [\App\Http\Controllers\Support\UserController::class, 'resetPassword'])->name('users.reset-password');
-    });
-
-    // CSIRT PANEL
-    Route::prefix('csirt')->name('csirt.')->middleware('role:csirt')->group(function () {
-        Route::get('/dashboard', fn() => view('csirt.dashboard'))->name('dashboard');
-        Route::get('/tiket', [\App\Http\Controllers\Csirt\ReportController::class, 'index'])->name('reports.index');
-        Route::get('/tiket/{csirtProcess}', [\App\Http\Controllers\Csirt\ReportController::class, 'show'])->name('reports.show');
-        Route::post('/tiket/{csirtProcess}/start', [\App\Http\Controllers\Csirt\ReportController::class, 'start'])->name('reports.start');
-        Route::post('/tiket/{csirtProcess}/close', [\App\Http\Controllers\Csirt\ReportController::class, 'close'])->name('reports.close');
-        Route::get('/tiket/{csirtProcess}/download', [\App\Http\Controllers\Csirt\ReportController::class, 'download'])->name('reports.download');
-        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
-        Route::post('reports/{csirtProcess}/activity', [\App\Http\Controllers\Csirt\ReportController::class, 'addActivity'])->name('csirt.reports.activity');
-        Route::post('tiket/{csirtProcess}/activity', [\App\Http\Controllers\Csirt\ReportController::class, 'addActivity'])->name('reports.activity');
-        Route::get('/tiket/{report}/validation-file', [\App\Http\Controllers\Csirt\ReportController::class, 'showValidationFile'])->name('reports.validation-file');
-    });
-
-    // DPO PANEL
-    Route::prefix('dpo')->name('dpo.')->middleware('role:dpo')->group(function () {
-        Route::get('/dashboard', fn() => view('dpo.dashboard'))->name('dashboard');
-        Route::get('/tiket', [\App\Http\Controllers\Dpo\ReportController::class, 'index'])->name('reports.index');
-        Route::get('/tiket/{dpoProcess}', [\App\Http\Controllers\Dpo\ReportController::class, 'show'])->name('reports.show');
-        Route::post('/tiket/{dpoProcess}/start', [\App\Http\Controllers\Dpo\ReportController::class, 'start'])->name('reports.start');
-        Route::post('/tiket/{dpoProcess}/close', [\App\Http\Controllers\Dpo\ReportController::class, 'close'])->name('reports.close');
-        Route::get('/tiket/{dpoProcess}/download', [\App\Http\Controllers\Dpo\ReportController::class, 'download'])->name('reports.download');
-        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Support\AttachmentController::class, 'show'])->name('attachments.show');
-        Route::post('reports/{dpoProcess}/activity', [\App\Http\Controllers\Dpo\ReportController::class, 'addActivity'])->name('dpo.reports.activity');
-        Route::post('tiket/{dpoProcess}/activity', [\App\Http\Controllers\Dpo\ReportController::class, 'addActivity'])->name('reports.activity');
-        Route::get('/tiket/{report}/validation-file', [\App\Http\Controllers\Dpo\ReportController::class, 'showValidationFile'])->name('reports.validation-file');
-    });
-
-    // PUBLIC USER AREA
-    Route::middleware('role:public')->group(function () {
-        Route::get('/laporan', fn() => view('public.dashboard'))->name('public.dashboard');
-        Route::resource('laporan', ReportController::class)
-            ->only(['index', 'create', 'store', 'show'])
-            ->names('public.reports')
-            ->parameters(['laporan' => 'report']);
-
-        Route::get('/attachments/{attachment}', [\App\Http\Controllers\Public\AttachmentController::class, 'show'])
-            ->name('public.attachments.show');
-        Route::get('/laporan/{report}/certificate', [\App\Http\Controllers\Public\AttachmentController::class, 'downloadCertificate'])
-            ->name('public.certificate.download');
+        Route::resource('assets', AssetController::class);
+        Route::patch('assets/{id}/restore', [AssetController::class, 'restore'])
+            ->name('assets.restore');
     });
 });

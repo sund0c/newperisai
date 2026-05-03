@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'CSIRT Bali') - Sistem Aduan</title>
+    <title>@yield('title', 'PERISAI-PROVBALI')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -31,8 +31,8 @@
                     <img src="{{ asset('images/logo.png') }}" alt="CSIRT Bali" class="h-8 w-auto object-contain mb-4">
                 </div>
                 <div>
-                    <p class="text-white font-semibold text-sm">Aduan CSIRT</p>
-                    <p class="text-slate-400 text-xs">Pemprov Bali</p>
+                    <p class="text-white font-semibold text-sm">PERISAI Pemprov Bali</p>
+                    {{-- <p class="text-slate-400 text-xs">Pemprov Bali</p> --}}
                 </div>
             </div>
             <button @click="sidebarOpen = false" class="lg:hidden text-slate-400 hover:text-white">
@@ -61,7 +61,7 @@
         <!-- Navigation -->
         <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1">
 
-            <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu Utama</p>
+            {{-- <p class="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Menu Utama</p> --}}
 
             @include('layouts.partials.sidebar-nav')
         </nav>
@@ -124,28 +124,7 @@
             </div>
         </header>
 
-        <!-- Flash Messages -->
-        <div class="px-6 pt-4">
-            @if (session('success'))
-                <div
-                    class="flex items-center gap-2 p-4 mb-4 text-sm text-green-800 bg-green-50 border border-green-200 rounded-lg">
-                    <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-                    </svg>
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if ($errors->any())
-                <div class="p-4 mb-4 text-sm text-red-800 bg-red-50 border border-red-200 rounded-lg">
-                    <ul class="list-disc list-inside space-y-1">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-        </div>
+
 
         <!-- Page Content -->
         <main class="flex-1 px-6 pb-8">
