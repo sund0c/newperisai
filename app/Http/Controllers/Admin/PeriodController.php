@@ -2,58 +2,126 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\JenisPeriode;
 use App\Http\Controllers\Controller;
-use App\Models\Period;
+use App\Models\AssetPeriod;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PeriodController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Period::query()
-            ->orderBy('tahun', 'desc');
-        $periods = $query->get();
+        $periods = AssetPeriod::query()
+            ->orderBy('jenis_periode')
+            ->orderBy('tanggal_mulai', 'desc')
+            ->get()
+            ->groupBy('jenis_periode');
+
         return view('admin.periods.index', compact('periods'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'tahun'     => ['required', 'integer', 'min:2025', 'max:2099', 'unique:asset_periods,tahun'],
-            'is_active' => ['nullable', 'boolean'],
+            'nama_periode'    => ['required', 'string', 'max:100'],
+            'jenis_periode'   => ['required', Rule::enum(JenisPeriode::class)],
+            'tanggal_mulai'   => ['required', 'date'],
+            'tanggal_selesai' => ['required', 'date', 'after:tanggal_mulai'],
         ]);
 
-        if ($request->boolean('is_active')) {
-            Period::query()->update(['is_active' => false]);
+        if (AssetPeriod::hasOverlap(
+            $request->jenis_periode,
+            $request->tanggal_mulai,
+            $request->tanggal_selesai
+        )) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'tanggal_mulai' => 'Periode overlap dengan periode '
+                        . JenisPeriode::from($request->jenis_periode)->label()
+                        . ' yang sudah ada.',
+                ]);
         }
 
-        Period::create([
-            'tahun'     => $request->tahun,
-            'is_active' => $request->boolean('is_active'),
-        ]);
+        AssetPeriod::create($request->only([
+            'nama_periode',
+            'jenis_periode',
+            'tanggal_mulai',
+            'tanggal_selesai',
+        ]));
 
-        return back()->with('success', "Periode {$request->tahun} berhasil ditambahkan.");
+        return redirect()
+            ->route('admin.periods.index')
+            ->with('success', 'Periode berhasil ditambahkan.');
     }
 
-
-    public function destroy(Period $period)
+    public function update(Request $request, AssetPeriod $period)
     {
-        // Cek apakah period sedang digunakan asset_instances
-        if ($period->assetInstances()->exists()) {
-            return back()->with(
-                'error',
-                "Periode {$period->tahun} tidak dapat dihapus karena sedang digunakan oleh data aset."
-            );
+        $request->validate([
+            'nama_periode'    => ['required', 'string', 'max:100'],
+            'jenis_periode'   => ['required', Rule::enum(JenisPeriode::class)],
+            'tanggal_mulai'   => ['required', 'date'],
+            'tanggal_selesai' => ['required', 'date', 'after:tanggal_mulai'],
+        ]);
+
+        if (AssetPeriod::hasOverlap(
+            $request->jenis_periode,
+            $request->tanggal_mulai,
+            $request->tanggal_selesai,
+            $period->id
+        )) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'tanggal_mulai' => 'Periode overlap dengan periode '
+                        . JenisPeriode::from($request->jenis_periode)->label()
+                        . ' yang sudah ada.',
+                ]);
+        }
+
+        $period->update($request->only([
+            'nama_periode',
+            'jenis_periode',
+            'tanggal_mulai',
+            'tanggal_selesai',
+        ]));
+
+        return redirect()
+            ->route('admin.periods.index')
+            ->with('success', 'Periode berhasil diperbarui.');
+    }
+
+    public function activate(AssetPeriod $period)
+    {
+        $period->activate();
+
+        return redirect()
+            ->route('admin.periods.index')
+            ->with('success', "Periode \"{$period->nama_periode}\" berhasil diaktifkan.");
+    }
+
+    public function deactivate(AssetPeriod $period)
+    {
+        $period->deactivate();
+
+        return redirect()
+            ->route('admin.periods.index')
+            ->with('success', "Periode \"{$period->nama_periode}\" berhasil dinonaktifkan.");
+    }
+
+    public function destroy(AssetPeriod $period)
+    {
+        if ($period->is_active) {
+            return back()->withErrors([
+                'period' => 'Periode aktif tidak dapat dihapus. Nonaktifkan terlebih dahulu.',
+            ]);
         }
 
         $period->delete();
-        return back()->with('success', "Periode {$period->tahun} berhasil dihapus.");
-    }
 
-    public function activate(Period $period)
-    {
-        Period::query()->update(['is_active' => false]);
-        $period->update(['is_active' => true]);
-        return back()->with('success', "Periode {$period->tahun} diaktifkan.");
+        return redirect()
+            ->route('admin.periods.index')
+            ->with('success', 'Periode berhasil dihapus.');
     }
 }

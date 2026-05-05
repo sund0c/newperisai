@@ -68,7 +68,7 @@
                         <tr>
                             <th
                                 class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">
-                                ID</th>
+                                #</th>
                             <th
                                 class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-56">
                                 Nama Sub Klasifikasi</th>
@@ -81,10 +81,10 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
-                        @foreach ($subklasifikasis as $index => $sub)
+                        @foreach ($subklasifikasis as $sub)
                             @php $isDeleted = $sub->trashed(); @endphp
                             <tr class="hover:bg-gray-50 transition-colors {{ $isDeleted ? 'opacity-50' : '' }}">
-                                <td class="px-4 py-3 text-xs text-gray-400">{{ $index + 1 }}</td>
+                                <td class="px-4 py-3 text-xs text-gray-400">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3 font-medium text-gray-900">{{ $sub->subklasifikasiaset }}</td>
                                 <td class="px-4 py-3 text-xs text-gray-500">{{ $sub->penjelasan ?? '—' }}</td>
                                 <td class="px-4 py-3 text-center">
@@ -116,10 +116,10 @@
                                         @else
                                             {{-- Edit --}}
                                             <button type="button"
-                                                onclick="openEditSubklas({{ $sub->id }}, '{{ addslashes($sub->subklasifikasiaset) }}', '{{ addslashes($sub->penjelasan ?? '') }}')"
+                                                onclick="openEditSubklas('{{ $sub->id }}', '{{ addslashes($sub->subklasifikasiaset) }}', '{{ addslashes($sub->penjelasan ?? '') }}')"
                                                 class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                       bg-blue-50 text-blue-600 hover:bg-blue-100
-                                                       border border-blue-200 transition-colors">
+           bg-blue-50 text-blue-600 hover:bg-blue-100
+           border border-blue-200 transition-colors">
                                                 Edit
                                             </button>
                                             {{-- Hapus --}}

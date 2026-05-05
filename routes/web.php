@@ -137,9 +137,10 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
 
         Route::get('periods', [PeriodController::class, 'index'])->name('periods.index');
         Route::post('periods', [PeriodController::class, 'store'])->name('periods.store');
+        Route::patch('periods/{period}', [PeriodController::class, 'update'])->name('periods.update');
+        Route::patch('periods/{period}/activate', [PeriodController::class, 'activate'])->name('periods.activate');
+        Route::patch('periods/{period}/deactivate', [PeriodController::class, 'deactivate'])->name('periods.deactivate');
         Route::delete('periods/{period}', [PeriodController::class, 'destroy'])->name('periods.destroy');
-        Route::patch('periods/{period}/activate', [PeriodController::class, 'activate'])
-            ->name('periods.activate');
 
         Route::resource('assets', AssetController::class);
         Route::patch('assets/{id}/restore', [AssetController::class, 'restore'])

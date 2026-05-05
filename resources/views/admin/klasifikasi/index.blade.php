@@ -37,7 +37,7 @@
                         <tr>
                             <th
                                 class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">
-                                ID</th>
+                                #</th>
                             <th
                                 class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-12">
                                 Kode</th>
@@ -47,28 +47,27 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @foreach ($klasifikasis as $index => $item)
-                            <tr class="hover:bg-gray-50 transition-colors cursor-pointer"
-                                onclick="window.location='{{ route('admin.klasifikasi.show', $item) }}'">
-
-                                <td class="px-4 py-3 text-xs text-gray-400">{{ $item->id }}</td>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-4 py-3 text-xs text-gray-400 text-center">
+                                    <a href="{{ route('admin.klasifikasi.show', $item) }}"
+                                        class="block">{{ $loop->iteration }}</a>
+                                </td>
 
                                 <td class="px-4 py-3">
-                                    <span
-                                        class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-mono font-semibold text-gray-700">
-                                        {{ $item->kodeklas }}
-                                    </span>
+                                    <a href="{{ route('admin.klasifikasi.show', $item) }}" class="block">
+                                        <span
+                                            class="inline-flex items-center rounded-md bg-gray-100 px-2.5 py-1 text-xs font-mono font-semibold text-gray-700">
+                                            {{ $item->kodeklas }}
+                                        </span>
+                                    </a>
                                 </td>
 
                                 <td class="px-4 py-3">
                                     <a href="{{ route('admin.klasifikasi.show', $item) }}"
-                                        class="font-medium text-gray-900 hover:text-blue-600 transition-colors"
-                                        onclick="event.stopPropagation()">
+                                        class="block font-medium text-gray-900 hover:text-blue-600 transition-colors">
                                         {{ $item->klasifikasiaset }}
                                     </a>
                                 </td>
-
-
-
                             </tr>
                         @endforeach
                     </tbody>
