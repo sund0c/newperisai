@@ -5,6 +5,9 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\KlasifikasiAset;
 use App\Models\SubKlasifikasiAset;
+use App\Models\TahunAktif;
+
+
 
 
 class KlasifikasiSeeder extends Seeder
@@ -12,6 +15,19 @@ class KlasifikasiSeeder extends Seeder
     public function run(): void
     {
 
+        $tahuns = [
+            ['tahun' => 2026, 'is_active' => true],
+            ['tahun' => 2027, 'is_active' => false],
+        ];
+
+        foreach ($tahuns as $item) {
+            TahunAktif::firstOrCreate(
+                ['tahun' => $item['tahun']],
+                ['is_active' => $item['is_active']]
+            );
+        }
+
+        $this->command->info('  ✓ tahunaktifs — ' . count($tahuns) . ' record(s) seeded.');
         // 1. Insert klasifikasi
         $data = [
             ['kodeklas' => 'DI', 'klasifikasiaset' => 'Data dan Informasi'],

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\OpdController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\KlasifikasiAsetController;
 use App\Http\Controllers\Admin\AssetController;
+use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PrivacyController;
@@ -142,8 +143,16 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
         Route::patch('periods/{period}/deactivate', [PeriodController::class, 'deactivate'])->name('periods.deactivate');
         Route::delete('periods/{period}', [PeriodController::class, 'destroy'])->name('periods.destroy');
 
-        Route::resource('assets', AssetController::class);
-        Route::patch('assets/{id}/restore', [AssetController::class, 'restore'])
-            ->name('assets.restore');
+        Route::get('tahunaktif',                             [TahunAktifController::class, 'index'])->name('tahunaktif.index');
+        Route::post('tahunaktif',                            [TahunAktifController::class, 'store'])->name('tahunaktif.store');
+        Route::patch('tahunaktif/{tahunAktif}/activate',      [TahunAktifController::class, 'activate'])->name('tahunaktif.activate');
+        Route::patch('tahunaktif/{tahunAktif}/deactivate',    [TahunAktifController::class, 'deactivate'])->name('tahunaktif.deactivate');
+        Route::delete('tahunaktif/{tahunAktif}',              [TahunAktifController::class, 'destroy'])->name('tahunaktif.destroy');
+
+        Route::get('assets',                     [AssetController::class, 'index'])->name('assets.index');
+        Route::post('assets',                    [AssetController::class, 'store'])->name('assets.store');
+        Route::put('assets/{asset}',              [AssetController::class, 'update'])->name('assets.update');
+        Route::delete('assets/{asset}',           [AssetController::class, 'destroy'])->name('assets.destroy');
+        Route::patch('assets/{id}/restore',       [AssetController::class, 'restore'])->name('assets.restore');
     });
 });

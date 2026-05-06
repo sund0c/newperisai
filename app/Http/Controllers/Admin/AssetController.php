@@ -47,8 +47,11 @@ class AssetController extends Controller
 
         $assets          = $query->paginate(20)->withQueryString();
         $opds            = Opd::orderBy('namaopd')->get();
-        $subKlasifikasis = SubKlasifikasiAset::orderBy('klasifikasi')->orderBy('nama')->get()->groupBy('klasifikasi');
-
+        $subKlasifikasis = SubKlasifikasiAset::with('klasifikasi')
+            ->orderBy('klasifikasi_aset_id')
+            ->orderBy('subklasifikasiaset')
+            ->get()
+            ->groupBy(fn($sub) => $sub->klasifikasi->klasifikasiaset ?? 'Lainnya');
         return view('admin.assets.index', compact(
             'assets',
             'opds',
