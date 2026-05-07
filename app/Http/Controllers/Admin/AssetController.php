@@ -34,8 +34,8 @@ class AssetController extends Controller
 
         if ($klasifikasi = $request->klasifikasi) {
             $query->whereHas(
-                'subKlasifikasi',
-                fn($q) => $q->where('klasifikasi', $klasifikasi)
+                'subKlasifikasi.klasifikasi',
+                fn($q) => $q->where('klasifikasiaset', $klasifikasi)
             );
         }
 
@@ -58,12 +58,15 @@ class AssetController extends Controller
             ->get()
             ->groupBy(fn($sub) => $sub->klasifikasi->klasifikasiaset ?? 'Lainnya');
 
+        $totalAset = Asset::where('tahunaktif_id', $tahunContext?->id)->count();
+
         return view('admin.assets.index', compact(
             'assets',
             'opds',
             'subKlasifikasis',
             'sortBy',
             'direction',
+            'totalAset',
         ));
         // tahunContext sudah di-share via middleware, tidak perlu compact
     }

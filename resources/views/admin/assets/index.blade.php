@@ -29,266 +29,266 @@
 
     {{-- Filter & Toolbar --}}
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-4">
-        <form method="GET" action="{{ route('admin.assets.index') }}" class="px-6 py-4 flex flex-wrap items-end gap-3">
+        <form method="GET" action="{{ route('admin.assets.index') }}">
+            <div class="px-6 py-4 flex items-center gap-3">
 
-            {{-- Search --}}
-            <div class="flex-1 min-w-[200px]">
-                <div class="relative">
+                {{-- Search --}}
+                <div class="flex-1">
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="Cari nama atau kode aset..."
-                        class="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm
-                   focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
+
+                {{-- Filter OPD --}}
+                <div class="flex-1">
+                    <select name="opd_id"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua OPD</option>
+                        @foreach ($opds as $opd)
+                            <option value="{{ $opd->id }}" {{ request('opd_id') == $opd->id ? 'selected' : '' }}>
+                                {{ $opd->namaopd }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Filter Klasifikasi --}}
+                <div class="flex-1">
+                    <select name="klasifikasi"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Klasifikasi</option>
+                        @foreach ($subKlasifikasis->keys() as $namaKlas)
+                            <option value="{{ $namaKlas }}"
+                                {{ request('klasifikasi') === $namaKlas ? 'selected' : '' }}>
+                                {{ $namaKlas }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Filter Status --}}
+                <div class="w-36 shrink-0">
+                    <select name="status"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">Semua Status</option>
+                        <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
+                        <option value="deleted" {{ request('status') === 'deleted' ? 'selected' : '' }}>Dihapus</option>
+                    </select>
+                </div>
+
+                {{-- Tombol --}}
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="submit"
+                        class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors">
+                        Terapkan
+                    </button>
+                    @if (request()->hasAny(['search', 'opd_id', 'klasifikasi', 'status']))
+                        <a href="{{ route('admin.assets.index') }}"
+                            class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-colors">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+
             </div>
+        </form>
+    </div>
 
-            {{-- Filter OPD --}}
-            <div class="min-w-[180px]">
-                <select name="opd_id"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-               focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Semua OPD</option>
-                    @foreach ($opds as $opd)
-                        <option value="{{ $opd->id }}" {{ request('opd_id') === $opd->id ? 'selected' : '' }}>
-                            {{ $opd->namaopd }}
-                        </option>
-                    @endforeach
-                </select>
+
+    {{-- Tabel --}}
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+        {{-- Header --}}
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div>
+                <p class="text-sm font-semibold text-gray-700">Daftar Aset</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+
+                    Menampilkan <span class="font-medium text-gray-600">{{ $assets->total() }}</span> aset
+                    dari total <span class="font-medium text-gray-600">{{ $totalAset }}</span> aset
+                </p>
             </div>
-
-            {{-- Filter Klasifikasi --}}
-            <div class="min-w-[180px]">
-                <select name="klasifikasi"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-               focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Semua Klasifikasi</option>
-                    @foreach ($subKlasifikasis->keys() as $namaKlas)
-                        <option value="{{ $namaKlas }}" {{ request('klasifikasi') === $namaKlas ? 'selected' : '' }}>
-                            {{ $namaKlas }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            {{-- Filter Status --}}
-            <div class="min-w-[140px]">
-                <select name="status"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-               focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Semua Status</option>
-                    <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
-                    <option value="deleted" {{ request('status') === 'deleted' ? 'selected' : '' }}>Dihapus</option>
-                </select>
-            </div>
-
-            {{-- Buttons --}}
-            <div class="flex items-end gap-2">
-                <button type="submit"
-                    class="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium rounded-lg transition-colors">
-                    Terapkan
-                </button>
-                @if (request()->hasAny(['search', 'opd_id', 'klasifikasi', 'status']))
-                    <a href="{{ route('admin.assets.index') }}"
-                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 text-sm font-medium rounded-lg transition-colors">
-                        Reset
-                    </a>
-                @endif
-            </div>
-
-            {{-- Spacer --}}
-            <div class="flex-1"></div>
-
-            {{-- Tambah Aset --}}
             <button type="button" onclick="document.getElementById('modalTambah').classList.remove('hidden')"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700
-                       text-white text-sm font-semibold rounded-lg transition-colors shrink-0">
+                   text-white text-sm font-semibold rounded-lg transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
                 Tambah Aset
             </button>
+        </div>
 
-        </form>
-    </div>
-
-    {{-- Tabel --}}
-    <div class="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-
-        @if ($assets->isEmpty())
-            <div class="px-6 py-12 text-center">
-                <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                        d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z
-                                                                                                                                                                   M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
-                </svg>
-                <p class="text-sm text-gray-400">Belum ada aset ditemukan.</p>
-            </div>
-        @else
-            <table class="w-full min-w-[900px] text-sm">
-                <thead class="border-b border-gray-100 bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-10">#
-                        </th>
-
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">
-                            @php $isSortKode = $sortBy === 'kode_aset'; @endphp
-                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'kode_aset', 'direction' => $isSortKode && $direction === 'asc' ? 'desc' : 'asc']) }}"
-                                class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortKode ? 'text-blue-600' : '' }}">
-                                Kode Aset
-                                @if ($isSortKode)
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="{{ $direction === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
-                                    </svg>
-                                @endif
-                            </a>
-                        </th>
-
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            @php $isSortNama = $sortBy === 'nama_aset'; @endphp
-                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_aset', 'direction' => $isSortNama && $direction === 'asc' ? 'desc' : 'asc']) }}"
-                                class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortNama ? 'text-blue-600' : '' }}">
-                                Nama Aset
-                                @if ($isSortNama)
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="{{ $direction === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
-                                    </svg>
-                                @endif
-                            </a>
-                        </th>
-
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-48">
-                            OPD</th>
-
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-56">
-                            Klasifikasi / Sub Klasifikasi
-                        </th>
-
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">
-                            Status</th>
-
-                        <th class="px-6 py-3 w-36"></th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @foreach ($assets as $asset)
-                        @php $isDeleted = $asset->trashed(); @endphp
-                        <tr class="hover:bg-gray-50 transition-colors {{ $isDeleted ? 'opacity-50' : '' }}">
-
-                            {{-- No --}}
-                            <td class="px-6 py-3 text-xs text-gray-400">
-                                {{ ($assets->currentPage() - 1) * $assets->perPage() + $loop->iteration }}
-                            </td>
-
-                            {{-- Kode --}}
-                            <td class="px-6 py-3 whitespace-nowrap">
-                                <span
-                                    class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
-                                    {{ $asset->kode_aset }}
-                                </span>
-                            </td>
-
-                            {{-- Nama --}}
-                            <td class="px-6 py-3 font-medium text-gray-900 max-w-[200px]">
-                                <span class="line-clamp-2">{{ $asset->nama_aset }}</span>
-                                <div class="text-xs font-medium text-gray-700">
-                                    {{ $asset->nama_aset ?? '-' }}
-                                </div>
-                                <div class="text-xs text-gray-400 mt-0.5">
-                                    {{ $asset->keterangan ?? '-' }}
-                                </div>
-                            </td>
-
-                            {{-- OPD --}}
-                            <td class="px-6 py-3 text-xs text-gray-600 max-w-[140px]">
-                                <span class="line-clamp-2">{{ $asset->opd->namaopd ?? '-' }}</span>
-                            </td>
-
-                            {{-- Klasifikasi / Sub Klasifikasi --}}
-                            <td class="px-6 py-3">
-                                <div class="text-xs font-medium text-gray-700">
-                                    {{ $asset->subKlasifikasi->klasifikasi->klasifikasiaset ?? '-' }}
-                                </div>
-                                <div class="text-xs text-gray-400 mt-0.5">
-                                    {{ $asset->subKlasifikasi->subklasifikasiaset ?? '-' }}
-                                </div>
-                            </td>
-
-                            {{-- Status --}}
-                            <td class="px-6 py-3">
-                                @if ($isDeleted)
-                                    <span
-                                        class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                                        Dihapus
-                                    </span>
-                                @else
-                                    <span
-                                        class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                        Aktif
-                                    </span>
-                                @endif
-                            </td>
-
-                            {{-- Aksi --}}
-                            <td class="px-6 py-3 text-right whitespace-nowrap">
-                                <div class="flex items-center justify-end gap-1">
-                                    @if ($isDeleted)
-                                        <form action="{{ route('admin.assets.restore', $asset->id) }}" method="POST"
-                                            onsubmit="return confirm('Pulihkan aset {{ addslashes($asset->kode_aset) }}?')">
-                                            @csrf @method('PATCH')
-                                            <button type="submit"
-                                                class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                       bg-green-50 text-green-600 hover:bg-green-100
-                                       border border-green-200 transition-colors">
-                                                Pulihkan
-                                            </button>
-                                        </form>
-                                    @else
-                                        <button type="button" data-id="{{ $asset->id }}"
-                                            data-opd="{{ $asset->opd_id }}"
-                                            data-subklas="{{ $asset->sub_klasifikasi_id }}"
-                                            data-kode="{{ $asset->kode_aset }}" data-nama="{{ $asset->nama_aset }}"
-                                            data-keterangan="{{ $asset->keterangan }}" onclick="openEdit(this)"
-                                            class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                   bg-blue-50 text-blue-600 hover:bg-blue-100
-                                   border border-blue-200 transition-colors">
-                                            Edit
-                                        </button>
-                                        <form action="{{ route('admin.assets.destroy', $asset) }}" method="POST"
-                                            onsubmit="return confirm('Arsipkan aset {{ addslashes($asset->kode_aset) }} - {{ addslashes($asset->nama_aset) }}? Data tidak akan hilang permanen.')">
-                                            @csrf @method('DELETE')
-                                            <button type="submit"
-                                                class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                       bg-red-50 text-red-600 hover:bg-red-100
-                                       border border-red-200 transition-colors">
-                                                Hapus
-                                            </button>
-                                        </form>
-                                    @endif
-                                </div>
-                            </td>
-
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            {{-- Pagination --}}
-            @if ($assets->hasPages())
-                <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-4">
-                    <p class="text-xs text-gray-400">
-                        Menampilkan {{ $assets->firstItem() }}–{{ $assets->lastItem() }}
-                        dari {{ $assets->total() }} aset
-                    </p>
-                    {{ $assets->links() }}
+        <div class="overflow-x-auto">
+            @if ($assets->isEmpty())
+                <div class="px-6 py-12 text-center">
+                    <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z
+                                                                   M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
+                    </svg>
+                    <p class="text-sm text-gray-400">Belum ada aset ditemukan.</p>
                 </div>
             @else
-                <div class="px-6 py-3 border-t border-gray-100">
-                    <p class="text-xs text-gray-400">Total: {{ $assets->total() }} aset</p>
-                </div>
-            @endif
-        @endif
+                <table class="w-full min-w-[900px] text-sm">
+                    <thead class="border-b border-gray-100 bg-gray-50">
+                        <tr>
+                            <th
+                                class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-10">
+                                #</th>
+                            <th
+                                class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-36 whitespace-nowrap">
+                                @php $isSortKode = $sortBy === 'kode_aset'; @endphp
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'kode_aset', 'direction' => $isSortKode && $direction === 'asc' ? 'desc' : 'asc']) }}"
+                                    class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortKode ? 'text-blue-600' : '' }}">
+                                    Kode Aset
+                                    @if ($isSortKode)
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="{{ $direction === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                                @php $isSortNama = $sortBy === 'nama_aset'; @endphp
+                                <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_aset', 'direction' => $isSortNama && $direction === 'asc' ? 'desc' : 'asc']) }}"
+                                    class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortNama ? 'text-blue-600' : '' }}">
+                                    Nama Aset
+                                    @if ($isSortNama)
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="{{ $direction === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7' }}" />
+                                        </svg>
+                                    @endif
+                                </a>
+                            </th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">
+                                OPD</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">
+                                Klas / Sub Klas</th>
+                            <th
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">
+                                Status</th>
+                            <th class="px-6 py-3 w-36"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach ($assets as $asset)
+                            @php $isDeleted = $asset->trashed(); @endphp
+                            <tr class="hover:bg-gray-50 transition-colors {{ $isDeleted ? 'opacity-50' : '' }}">
 
+                                {{-- No --}}
+                                <td class="px-3 py-3 text-xs text-gray-400">
+                                    {{ ($assets->currentPage() - 1) * $assets->perPage() + $loop->iteration }}
+                                </td>
+
+                                {{-- Kode --}}
+                                <td class="px-3 py-3 whitespace-nowrap">
+                                    <span
+                                        class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                                        {{ $asset->kode_aset }}
+                                    </span>
+                                </td>
+
+                                {{-- Nama + Keterangan --}}
+                                <td class="px-6 py-3 max-w-[200px]">
+                                    <div class="text-xs font-medium text-gray-700">{{ $asset->nama_aset ?? '-' }}</div>
+                                    <div class="text-xs text-gray-400 mt-0.5 line-clamp-2">{{ $asset->keterangan ?? '-' }}
+                                    </div>
+                                </td>
+
+                                {{-- OPD --}}
+                                <td class="px-6 py-3 text-xs text-gray-600 max-w-[140px]">
+                                    <span class="line-clamp-2">{{ $asset->opd->namaopd ?? '-' }}</span>
+                                </td>
+
+                                {{-- Klasifikasi / Sub Klasifikasi --}}
+                                <td class="px-6 py-3">
+                                    <div class="text-xs font-medium text-gray-700">
+                                        {{ $asset->subKlasifikasi->klasifikasi->klasifikasiaset ?? '-' }}
+                                    </div>
+                                    <div class="text-xs text-gray-400 mt-0.5">
+                                        {{ $asset->subKlasifikasi->subklasifikasiaset ?? '-' }}
+                                    </div>
+                                </td>
+
+                                {{-- Status --}}
+                                <td class="px-6 py-3">
+                                    @if ($isDeleted)
+                                        <span
+                                            class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Dihapus</span>
+                                    @else
+                                        <span
+                                            class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Aktif</span>
+                                    @endif
+                                </td>
+
+                                {{-- Aksi --}}
+                                <td class="px-6 py-3 text-right whitespace-nowrap">
+                                    <div class="flex items-center justify-end gap-1">
+                                        @if ($isDeleted)
+                                            <form action="{{ route('admin.assets.restore', $asset->id) }}" method="POST"
+                                                onsubmit="return confirm('Pulihkan aset {{ addslashes($asset->kode_aset) }}?')">
+                                                @csrf @method('PATCH')
+                                                <button type="submit"
+                                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold
+                                                       bg-green-50 text-green-600 hover:bg-green-100
+                                                       border border-green-200 transition-colors">
+                                                    Pulihkan
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button type="button" data-id="{{ $asset->id }}"
+                                                data-opd="{{ $asset->opd_id }}"
+                                                data-subklas="{{ $asset->sub_klasifikasi_id }}"
+                                                data-kode="{{ $asset->kode_aset }}" data-nama="{{ $asset->nama_aset }}"
+                                                data-keterangan="{{ $asset->keterangan }}" onclick="openEdit(this)"
+                                                class="px-3 py-1.5 rounded-lg text-xs font-semibold
+                                                   bg-blue-50 text-blue-600 hover:bg-blue-100
+                                                   border border-blue-200 transition-colors">
+                                                Edit
+                                            </button>
+                                            <form action="{{ route('admin.assets.destroy', $asset) }}" method="POST"
+                                                onsubmit="return confirm('Arsipkan aset {{ addslashes($asset->kode_aset) }}? Data tidak akan hilang permanen.')">
+                                                @csrf @method('DELETE')
+                                                <button type="submit"
+                                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold
+                                                       bg-red-50 text-red-600 hover:bg-red-100
+                                                       border border-red-200 transition-colors">
+                                                    Hapus
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </td>
+
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+
+                {{-- Pagination --}}
+                @if ($assets->hasPages())
+                    <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between gap-4">
+                        <p class="text-xs text-gray-400">
+                            Menampilkan {{ $assets->firstItem() }}–{{ $assets->lastItem() }}
+                            dari {{ $assets->total() }} aset
+                        </p>
+                        {{ $assets->links() }}
+                    </div>
+                @else
+                    <div class="px-6 py-3 border-t border-gray-100">
+                        <p class="text-xs text-gray-400">Total: {{ $assets->total() }} aset</p>
+                    </div>
+                @endif
+            @endif
+        </div>
     </div>
 
 
