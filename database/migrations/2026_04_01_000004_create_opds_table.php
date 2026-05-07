@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('opds', function (Blueprint $table) {
-            $table->uuid('id')->primary();
+            $table->unsignedBigInteger('id')->primary();
+            $table->string('kode_opd', 20)->unique()->nullable(); // untuk mapping SSO nanti
             $table->string('namaopd')->unique();
             $table->softDeletes();
             $table->timestamps();

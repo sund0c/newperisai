@@ -111,23 +111,25 @@
     </div>
 
     {{-- Tabel --}}
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
         @if ($assets->isEmpty())
             <div class="px-6 py-12 text-center">
                 <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z
-                                       M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z
+                                                                                                                                                                   M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
                 </svg>
                 <p class="text-sm text-gray-400">Belum ada aset ditemukan.</p>
             </div>
         @else
-            <table class="w-full text-sm">
+            <table class="w-full min-w-[900px] text-sm">
                 <thead class="border-b border-gray-100 bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-8">#
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-10">#
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">
                             @php $isSortKode = $sortBy === 'kode_aset'; @endphp
                             <a href="{{ request()->fullUrlWithQuery(['sort' => 'kode_aset', 'direction' => $isSortKode && $direction === 'asc' ? 'desc' : 'asc']) }}"
                                 class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortKode ? 'text-blue-600' : '' }}">
@@ -140,6 +142,7 @@
                                 @endif
                             </a>
                         </th>
+
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                             @php $isSortNama = $sortBy === 'nama_aset'; @endphp
                             <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_aset', 'direction' => $isSortNama && $direction === 'asc' ? 'desc' : 'asc']) }}"
@@ -153,21 +156,24 @@
                                 @endif
                             </a>
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">OPD
+
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-48">
+                            OPD</th>
+
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-56">
+                            Klasifikasi / Sub Klasifikasi
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                            Klasifikasi</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Sub
-                            Klasifikasi</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status
-                        </th>
-                        <th class="px-6 py-3 w-44"></th>
+
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">
+                            Status</th>
+
+                        <th class="px-6 py-3 w-36"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
                     @foreach ($assets as $asset)
-                        <tr
-                            class="hover:bg-gray-50 transition-colors {{ $asset->trashed() ? 'opacity-60 bg-red-50/30' : '' }}">
+                        @php $isDeleted = $asset->trashed(); @endphp
+                        <tr class="hover:bg-gray-50 transition-colors {{ $isDeleted ? 'opacity-50' : '' }}">
 
                             {{-- No --}}
                             <td class="px-6 py-3 text-xs text-gray-400">
@@ -175,7 +181,7 @@
                             </td>
 
                             {{-- Kode --}}
-                            <td class="px-6 py-3">
+                            <td class="px-6 py-3 whitespace-nowrap">
                                 <span
                                     class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
                                     {{ $asset->kode_aset }}
@@ -183,39 +189,41 @@
                             </td>
 
                             {{-- Nama --}}
-                            <td class="px-6 py-3 font-medium text-gray-900 max-w-xs">
+                            <td class="px-6 py-3 font-medium text-gray-900 max-w-[200px]">
                                 <span class="line-clamp-2">{{ $asset->nama_aset }}</span>
+                                <div class="text-xs font-medium text-gray-700">
+                                    {{ $asset->nama_aset ?? '-' }}
+                                </div>
+                                <div class="text-xs text-gray-400 mt-0.5">
+                                    {{ $asset->keterangan ?? '-' }}
+                                </div>
                             </td>
 
                             {{-- OPD --}}
-                            <td class="px-6 py-3 text-xs text-gray-600 max-w-[160px]">
+                            <td class="px-6 py-3 text-xs text-gray-600 max-w-[140px]">
                                 <span class="line-clamp-2">{{ $asset->opd->namaopd ?? '-' }}</span>
                             </td>
 
-                            {{-- Klasifikasi --}}
-                            <td class="px-6 py-3 text-xs text-gray-600">
-                                {{ $asset->subKlasifikasi->klasifikasi ?? '-' }}
-                            </td>
-
-                            {{-- Sub Klasifikasi --}}
-                            <td class="px-6 py-3 text-xs text-gray-600">
-                                {{ $asset->subKlasifikasi->nama ?? '-' }}
+                            {{-- Klasifikasi / Sub Klasifikasi --}}
+                            <td class="px-6 py-3">
+                                <div class="text-xs font-medium text-gray-700">
+                                    {{ $asset->subKlasifikasi->klasifikasi->klasifikasiaset ?? '-' }}
+                                </div>
+                                <div class="text-xs text-gray-400 mt-0.5">
+                                    {{ $asset->subKlasifikasi->subklasifikasiaset ?? '-' }}
+                                </div>
                             </td>
 
                             {{-- Status --}}
                             <td class="px-6 py-3">
-                                @if ($asset->trashed())
+                                @if ($isDeleted)
                                     <span
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
-                                                 text-xs font-semibold bg-red-100 text-red-600">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                        class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
                                         Dihapus
                                     </span>
                                 @else
                                     <span
-                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full
-                                                 text-xs font-semibold bg-green-100 text-green-700">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                        class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
                                         Aktif
                                     </span>
                                 @endif
@@ -223,49 +231,40 @@
 
                             {{-- Aksi --}}
                             <td class="px-6 py-3 text-right whitespace-nowrap">
-                                <div class="flex items-center justify-end gap-2">
-
-                                    @if ($asset->trashed())
-                                        {{-- Restore --}}
+                                <div class="flex items-center justify-end gap-1">
+                                    @if ($isDeleted)
                                         <form action="{{ route('admin.assets.restore', $asset->id) }}" method="POST"
-                                            onsubmit="return confirm('Pulihkan aset {{ addslashes($asset->nama_aset) }}?')">
+                                            onsubmit="return confirm('Pulihkan aset {{ addslashes($asset->kode_aset) }}?')">
                                             @csrf @method('PATCH')
                                             <button type="submit"
                                                 class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                       bg-emerald-50 text-emerald-600 hover:bg-emerald-100
-                                                       border border-emerald-200 transition-colors">
+                                       bg-green-50 text-green-600 hover:bg-green-100
+                                       border border-green-200 transition-colors">
                                                 Pulihkan
                                             </button>
                                         </form>
                                     @else
-                                        {{-- Edit --}}
-                                        <button type="button"
-                                            onclick="openEdit(
-                                                '{{ $asset->id }}',
-                                                '{{ addslashes($asset->opd_id) }}',
-                                                '{{ addslashes($asset->sub_klasifikasi_id) }}',
-                                                '{{ addslashes($asset->kode_aset) }}',
-                                                '{{ addslashes($asset->nama_aset) }}'
-                                            )"
+                                        <button type="button" data-id="{{ $asset->id }}"
+                                            data-opd="{{ $asset->opd_id }}"
+                                            data-subklas="{{ $asset->sub_klasifikasi_id }}"
+                                            data-kode="{{ $asset->kode_aset }}" data-nama="{{ $asset->nama_aset }}"
+                                            data-keterangan="{{ $asset->keterangan }}" onclick="openEdit(this)"
                                             class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                   bg-blue-50 text-blue-600 hover:bg-blue-100
-                                                   border border-blue-200 transition-colors">
+                                   bg-blue-50 text-blue-600 hover:bg-blue-100
+                                   border border-blue-200 transition-colors">
                                             Edit
                                         </button>
-
-                                        {{-- Hapus --}}
                                         <form action="{{ route('admin.assets.destroy', $asset) }}" method="POST"
-                                            onsubmit="return confirm('Hapus aset {{ addslashes($asset->nama_aset) }}? Data ini akan diarsipkan.')">
+                                            onsubmit="return confirm('Arsipkan aset {{ addslashes($asset->kode_aset) }} - {{ addslashes($asset->nama_aset) }}? Data tidak akan hilang permanen.')">
                                             @csrf @method('DELETE')
                                             <button type="submit"
                                                 class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                       bg-red-50 text-red-600 hover:bg-red-100
-                                                       border border-red-200 transition-colors">
+                                       bg-red-50 text-red-600 hover:bg-red-100
+                                       border border-red-200 transition-colors">
                                                 Hapus
                                             </button>
                                         </form>
                                     @endif
-
                                 </div>
                             </td>
 
@@ -353,7 +352,7 @@
                                 @foreach ($items as $sub)
                                     <option value="{{ $sub->id }}"
                                         {{ old('sub_klasifikasi_id') === $sub->id ? 'selected' : '' }}>
-                                        {{ $sub->nama }}
+                                        {{ $sub->subklasifikasiaset }}
                                     </option>
                                 @endforeach
                             </optgroup>
@@ -365,24 +364,7 @@
                 </div>
 
                 {{-- Kode & Nama --}}
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">
-                            Kode Aset <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="kode_aset" value="{{ old('kode_aset') }}" placeholder="cth: PL-001"
-                            maxlength="30"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                            oninput="this.value=this.value.toUpperCase()" required />
-                        @error('kode_aset')
-                            <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div class="col-span-1">
-                        {{-- placeholder supaya grid 2 col terasa seimbang --}}
-                    </div>
-                </div>
+
 
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -397,6 +379,20 @@
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Keterangan
+                    </label>
+                    <textarea name="keterangan" rows="3"
+                        placeholder="Deskripsi singkat aset, fungsi, lokasi, atau informasi tambahan..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ old('keterangan') }}</textarea>
+                    @error('keterangan')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
 
                 <div class="flex items-center justify-end gap-3 pt-1">
                     <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')"
@@ -437,6 +433,15 @@
             <form id="formEdit" method="POST" class="px-6 py-5 space-y-4">
                 @csrf @method('PUT')
 
+                {{-- Kode Aset — readonly, immutable --}}
+                <div class="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+                    <span class="text-xs text-gray-400">Kode Aset</span>
+                    <span id="editKodeAsetDisplay"
+                        class="font-mono text-xs font-semibold text-gray-700 bg-white border border-gray-200 px-2 py-0.5 rounded">
+                    </span>
+                    <span class="ml-auto text-xs text-gray-400 italic">Tidak dapat diubah</span>
+                </div>
+
                 {{-- OPD --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
@@ -444,7 +449,7 @@
                     </label>
                     <select id="editOpdId" name="opd_id"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                               focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required>
                         <option value="">-- Pilih OPD --</option>
                         @foreach ($opds as $opd)
@@ -460,30 +465,17 @@
                     </label>
                     <select id="editSubKlasifikasiId" name="sub_klasifikasi_id"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                               focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required>
                         <option value="">-- Pilih Sub Klasifikasi --</option>
                         @foreach ($subKlasifikasis as $klasifikasi => $items)
                             <optgroup label="{{ $klasifikasi }}">
                                 @foreach ($items as $sub)
-                                    <option value="{{ $sub->id }}">{{ $sub->nama }}</option>
+                                    <option value="{{ $sub->id }}">{{ $sub->subklasifikasiaset }}</option>
                                 @endforeach
                             </optgroup>
                         @endforeach
                     </select>
-                </div>
-
-                {{-- Kode Aset --}}
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600 mb-1">
-                            Kode Aset <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="editKodeAset" name="kode_aset" maxlength="30"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                            oninput="this.value=this.value.toUpperCase()" required />
-                    </div>
                 </div>
 
                 {{-- Nama Aset --}}
@@ -493,9 +485,23 @@
                     </label>
                     <input type="text" id="editNamaAset" name="nama_aset" maxlength="200"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                               focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required />
                 </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">
+                        Keterangan
+                    </label>
+                    <textarea id="editKeterangan" name="keterangan" rows="3"
+                        placeholder="Deskripsi singkat aset, fungsi, lokasi, atau informasi tambahan..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+               focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                    @error('keterangan')
+                        <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+
 
                 <div class="flex items-center justify-end gap-3 pt-1">
                     <button type="button" onclick="document.getElementById('modalEdit').classList.add('hidden')"
@@ -519,25 +525,25 @@
     @endif
 
     <script>
-        function openEdit(id, opdId, subKlasId, kode, nama) {
+        function openEdit(btn) {
+            const id = btn.dataset.id;
+            const opdId = btn.dataset.opd;
+            const subKlas = btn.dataset.subklas;
+            const kode = btn.dataset.kode;
+            const nama = btn.dataset.nama;
+            const keterangan = btn.dataset.keterangan;
+
             document.getElementById('formEdit').action =
                 '{{ route('admin.assets.update', '__ID__') }}'.replace('__ID__', id);
 
+            document.getElementById('editKodeAsetDisplay').textContent = kode;
             document.getElementById('editOpdId').value = opdId;
-            document.getElementById('editSubKlasifikasiId').value = subKlasId;
-            document.getElementById('editKodeAset').value = kode;
+            document.getElementById('editSubKlasifikasiId').value = subKlas;
             document.getElementById('editNamaAset').value = nama;
+            document.getElementById('editKeterangan').value = keterangan;
 
             document.getElementById('modalEdit').classList.remove('hidden');
         }
-
-        // Tutup modal dengan Escape
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.getElementById('modalTambah').classList.add('hidden');
-                document.getElementById('modalEdit').classList.add('hidden');
-            }
-        });
     </script>
 
 @endsection

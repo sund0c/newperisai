@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\KlasifikasiAsetController;
 use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\TahunAktifController;
+use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PrivacyController;
@@ -109,7 +110,9 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // ADMIN PANEL
-    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+    //    Route::prefix('admin')->name('admin.')->middleware('role:admin')->group(function () {
+    Route::prefix('admin')->name('admin.')->middleware(['role:admin', 'tahun.context'])->group(function () {
+
         Route::resource('users', UserController::class)->only(['index', 'store', 'destroy']);
         Route::patch('users/{user}/toggle-active', [UserController::class, 'toggleActive'])
             ->name('users.toggle-active');
@@ -143,14 +146,17 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
         Route::patch('periods/{period}/deactivate', [PeriodController::class, 'deactivate'])->name('periods.deactivate');
         Route::delete('periods/{period}', [PeriodController::class, 'destroy'])->name('periods.destroy');
 
-        Route::get('tahunaktif',                             [TahunAktifController::class, 'index'])->name('tahunaktif.index');
-        Route::post('tahunaktif',                            [TahunAktifController::class, 'store'])->name('tahunaktif.store');
-        Route::patch('tahunaktif/{tahunAktif}/activate',      [TahunAktifController::class, 'activate'])->name('tahunaktif.activate');
-        Route::patch('tahunaktif/{tahunAktif}/deactivate',    [TahunAktifController::class, 'deactivate'])->name('tahunaktif.deactivate');
-        Route::delete('tahunaktif/{tahunAktif}',              [TahunAktifController::class, 'destroy'])->name('tahunaktif.destroy');
+        Route::get('tahunaktif',                          [TahunAktifController::class, 'index'])->name('tahunaktif.index');
+        Route::post('tahunaktif',                         [TahunAktifController::class, 'store'])->name('tahunaktif.store');
+        Route::post('tahunaktif/set-context',             [TahunContextController::class, 'setContext'])->name('tahunaktif.set-context'); // ← HARUS sebelum /{tahunAktif}
+        Route::patch('tahunaktif/{tahunAktif}/activate',  [TahunAktifController::class, 'activate'])->name('tahunaktif.activate');
+        Route::patch('tahunaktif/{tahunAktif}/deactivate', [TahunAktifController::class, 'deactivate'])->name('tahunaktif.deactivate');
+        Route::delete('tahunaktif/{tahunAktif}',          [TahunAktifController::class, 'destroy'])->name('tahunaktif.destroy');
+
 
         Route::get('assets',                     [AssetController::class, 'index'])->name('assets.index');
         Route::post('assets',                    [AssetController::class, 'store'])->name('assets.store');
+        Route::get('assets/generate-kode', [AssetController::class, 'generateKode'])->name('assets.generate-kode');
         Route::put('assets/{asset}',              [AssetController::class, 'update'])->name('assets.update');
         Route::delete('assets/{asset}',           [AssetController::class, 'destroy'])->name('assets.destroy');
         Route::patch('assets/{id}/restore',       [AssetController::class, 'restore'])->name('assets.restore');

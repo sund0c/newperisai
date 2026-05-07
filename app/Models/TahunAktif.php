@@ -57,4 +57,9 @@ class TahunAktif extends Model
     {
         $this->update(['is_active' => false]);
     }
+
+    public function assets()
+    {
+        return $this->hasMany(Asset::class);
+    }
 }

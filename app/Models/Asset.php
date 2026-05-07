@@ -12,10 +12,12 @@ class Asset extends Model
     use HasUuids, SoftDeletes;
 
     protected $fillable = [
+        'tahunaktif_id',     // ← tambah ini
         'opd_id',
         'sub_klasifikasi_id',
         'kode_aset',
         'nama_aset',
+        'keterangan',
         'created_by',
         'updated_by',
     ];

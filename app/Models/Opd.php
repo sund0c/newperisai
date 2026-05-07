@@ -9,17 +9,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Opd extends Model
 {
-    use HasFactory, SoftDeletes, HasUuids;
+    use SoftDeletes;
+    // HasUuids dihapus — sekarang pakai auto-increment biasa
 
-    protected $fillable = ['namaopd'];
+    protected $fillable = [
+        'id',        // ← allow mass assign karena ID dari SSO nanti
+        'kode_opd',
+        'namaopd',
+    ];
 
-    public function users()
-    {
-        return $this->hasMany(User::class);
-    }
-
-    public function assets()
-    {
-        return $this->hasMany(Asset::class);
-    }
+    public $incrementing = false; // ID di-set manual dari SSO, bukan auto
 }

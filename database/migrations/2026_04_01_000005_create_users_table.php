@@ -14,19 +14,15 @@ return new class extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->text('phone')->nullable();
-            $table->foreignUuid('opd_id')->nullable()->constrained('opds')->nullOnDelete(); // ← foreignUuid
+            $table->foreignId('opd_id')->nullable()->constrained('opds')->nullOnDelete(); // ← fix
 
             // ── Password Rotation ──────────────────────────────────────────
-            // Kapan password terakhir diganti (di-set saat register & setiap ganti password)
             $table->timestamp('password_changed_at')->nullable();
-            // Apakah user sedang dipaksa ganti password (admin reset / expired)
             $table->boolean('must_change_password')->default(false);
 
-            // ── 2FA Google Authenticator (default: TIDAK aktif) ────────────
-            $table->text('google2fa_secret')->nullable();        // enkripsi di aplikasi
-            $table->boolean('google2fa_enabled')->default(false);  // user aktifkan sendiri
-
-
+            // ── 2FA Google Authenticator ───────────────────────────────────
+            $table->text('google2fa_secret')->nullable();
+            $table->boolean('google2fa_enabled')->default(false);
 
             // ── Status akun ────────────────────────────────────────────────
             $table->boolean('is_active')->default(true);

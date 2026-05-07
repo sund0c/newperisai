@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             //'sandidata' => \App\Http\Middleware\SandidataMiddleware::class,
             'maintenance.check' => \App\Http\Middleware\CheckMaintenance::class,
             'account.deletion' => \App\Http\Middleware\ProcessAccountDeletion::class,
+            'tahun.context' => \App\Http\Middleware\ResolveTahunContext::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
