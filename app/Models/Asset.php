@@ -42,6 +42,11 @@ class Asset extends Model
         return $this->belongsTo(User::class, 'updated_by');
     }
 
+    public function tahunAktif()
+    {
+        return $this->belongsTo(TahunAktif::class, 'tahunaktif_id');
+    }
+
     // public function instances()
     // {
     //     return $this->hasMany(AssetInstance::class);

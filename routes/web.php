@@ -154,6 +154,8 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
         Route::delete('tahunaktif/{tahunAktif}',          [TahunAktifController::class, 'destroy'])->name('tahunaktif.destroy');
 
 
+        Route::get('/assets/export-pdf', [AssetController::class, 'exportPdf'])
+            ->name('assets.export-pdf');
         Route::get('assets',                     [AssetController::class, 'index'])->name('assets.index');
         Route::post('assets',                    [AssetController::class, 'store'])->name('assets.store');
         Route::get('assets/generate-kode', [AssetController::class, 'generateKode'])->name('assets.generate-kode');

@@ -6,8 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Models\Asset;
 use App\Models\Opd;
 use App\Models\TahunAktif;
+use App\Models\KlasifikasiAset;
 use App\Models\SubKlasifikasiAset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Str;
 
 class AssetController extends Controller
 {
@@ -52,6 +55,9 @@ class AssetController extends Controller
 
         $assets          = $query->paginate(20)->withQueryString();
         $opds            = Opd::orderBy('namaopd')->get();
+        $opds         = Opd::orderBy('namaopd')->get();
+        $klasifikasis = KlasifikasiAset::orderBy('klasifikasiaset')->get();
+
         $subKlasifikasis = SubKlasifikasiAset::with('klasifikasi')
             ->orderBy('klasifikasi_aset_id')
             ->orderBy('subklasifikasiaset')
@@ -64,11 +70,11 @@ class AssetController extends Controller
             'assets',
             'opds',
             'subKlasifikasis',
+            'klasifikasis',
             'sortBy',
             'direction',
             'totalAset',
         ));
-        // tahunContext sudah di-share via middleware, tidak perlu compact
     }
 
     public function store(Request $request)
@@ -234,5 +240,121 @@ class AssetController extends Controller
         $asset = Asset::onlyTrashed()->findOrFail($id);
         $asset->restore();
         return back()->with('success', "Aset {$asset->nama_aset} berhasil dipulihkan.");
+    }
+
+    public function exportPdf(Request $request)
+    {
+        // ── 1. Validasi input ────────────────────────────────
+        $request->validate([
+            'tahun'          => ['required', 'exists:tahunaktifs,id'],
+            'opd_id'         => ['nullable', 'exists:opds,id'],
+            'klasifikasi_id' => ['nullable', 'exists:klasifikasi_asets,id'],
+            'status'         => ['nullable', 'in:aktif,hapus'],
+        ]);
+
+        // ── 2. Query data ────────────────────────────────────
+        $query = Asset::with(['subKlasifikasi.klasifikasi', 'opd']);
+
+        // Filter: status (aktif = tidak trashed, hapus = hanya trashed)
+        $status = $request->input('status', '');
+        if ($status === 'hapus') {
+            $query->onlyTrashed();
+        } elseif ($status === 'aktif') {
+            // default — withoutTrashed sudah default di Eloquent
+        }
+        // jika kosong (semua): tampilkan aktif + hapus
+        // Uncomment baris berikut jika ingin "semua" benar-benar semua:
+        // elseif ($status === '') { $query->withTrashed(); }
+
+        // Filter: tahun
+        $query->where('tahunaktif_id', $request->input('tahun'));
+
+        // Filter: OPD
+        if ($request->filled('opd_id')) {
+            $query->where('opd_id', $request->input('opd_id'));
+        }
+
+        // Filter: Klasifikasi — lewat relasi subKlasifikasi
+        if ($request->filled('klasifikasi_id')) {
+            $query->whereHas('subKlasifikasi', function ($q) use ($request) {
+                $q->where('klasifikasi_aset_id', $request->input('klasifikasi_id'));
+            });
+        }
+
+        $assets = $query->orderBy('kode_aset')->get();
+
+        // ── 3. Siapkan data untuk Python script ─────────────
+        $tahun      = \App\Models\TahunAktif::findOrFail($request->input('tahun'));
+        $opd        = $request->filled('opd_id')
+            ? \App\Models\Opd::find($request->input('opd_id'))
+            : null;
+        $klasifikasi = $request->filled('klasifikasi_id')
+            ? \App\Models\KlasifikasiAset::find($request->input('klasifikasi_id'))
+            : null;
+
+        // Serialisasi ke array sederhana untuk dikirim ke Python
+        $rows = $assets->map(function ($a, $idx) {
+            return [
+                'no'             => $idx + 1,
+                'kode_aset'      => $a->kode_aset ?? '-',
+                'nama_aset'      => $a->nama_aset ?? '-',
+                'keterangan'     => $a->keterangan ?? '',
+                'klasifikasi'    => $a->subKlasifikasi->klasifikasi->klasifikasiaset ?? '-',
+                'sub_klasifikasi' => $a->subKlasifikasi->subklasifikasiaset ?? '-',
+                'opd'            => $a->opd->namaopd ?? '-',
+                'status'         => is_null($a->deleted_at) ? 'Aktif' : 'Dihapus',
+            ];
+        })->values()->toArray();
+
+        $meta = [
+            'tahun'        => $tahun->tahun,
+            'opd'          => $opd?->namaopd ?? 'Semua OPD',
+            'pemilik_aset' => $opd?->namaopd ?? 'PEMERINTAH PROVINSI BALI',  // ← baru
+            'klasifikasi'  => $klasifikasi?->klasifikasiaset ?? 'Semua Klasifikasi',
+            'status_label' => match ($status) {
+                'aktif'  => 'Aktif',
+                'hapus'  => 'Dihapus',
+                default  => 'Semua',
+            },
+            'generated_at' => now()->locale('id')->isoFormat('dddd, D MMMM YYYY HH:mm'),
+            'total'        => count($rows),
+        ];
+
+        // ── 4. Jalankan Python script untuk generate PDF ─────
+        $payload  = json_encode(['meta' => $meta, 'rows' => $rows]);
+        $script   = base_path('scripts/generate_asset_pdf.py');
+        $tmpFile  = sys_get_temp_dir() . '/perisai_asset_' . Str::random(8) . '.pdf';
+
+        // $process = \Symfony\Component\Process\Process::fromShellCommandline(
+        //     "python3 {$script} '{$tmpFile}'",
+        //     null,
+        //     null,
+        //     $payload,   // stdin
+        //     60          // timeout 60 detik
+        // );
+        // $process->run();
+        $process = new \Symfony\Component\Process\Process([
+            '/opt/homebrew/bin/python3',   // ← ganti dengan output `which python3`
+            $script,
+            $tmpFile,
+        ]);
+        $process->setInput($payload);
+        $process->setTimeout(60);
+        $process->run();
+
+        if (!$process->isSuccessful() || !file_exists($tmpFile)) {
+            \Log::error('PDF generation failed', [
+                'stderr' => $process->getErrorOutput(),
+                'stdout' => $process->getOutput(),
+            ]);
+            abort(500, 'Gagal generate PDF. Periksa log server.');
+        }
+
+        $filename = 'PERISAI_Aset_' . $tahun->tahun . '_' . now()->format('Ymd_His') . '.pdf';
+
+        return response()->file($tmpFile, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => "inline; filename=\"{$filename}\"",
+        ])->deleteFileAfterSend(true);
     }
 }

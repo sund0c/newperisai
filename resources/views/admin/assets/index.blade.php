@@ -37,14 +37,14 @@
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="Cari nama atau kode aset..."
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                               focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
 
                 {{-- Filter OPD --}}
                 <div class="flex-1">
                     <select name="opd_id"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua OPD</option>
                         @foreach ($opds as $opd)
                             <option value="{{ $opd->id }}" {{ request('opd_id') == $opd->id ? 'selected' : '' }}>
@@ -58,7 +58,7 @@
                 <div class="flex-1">
                     <select name="klasifikasi"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Klasifikasi</option>
                         @foreach ($subKlasifikasis->keys() as $namaKlas)
                             <option value="{{ $namaKlas }}"
@@ -73,7 +73,7 @@
                 <div class="w-36 shrink-0">
                     <select name="status"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                           focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Status</option>
                         <option value="active" {{ request('status') === 'active' ? 'selected' : '' }}>Aktif</option>
                         <option value="deleted" {{ request('status') === 'deleted' ? 'selected' : '' }}>Dihapus</option>
@@ -102,24 +102,42 @@
     {{-- Tabel --}}
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
-        {{-- Header --}}
+        {{-- Header tabel: judul kiri, tombol kanan --}}
         <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
                 <p class="text-sm font-semibold text-gray-700">Daftar Aset</p>
                 <p class="text-xs text-gray-400 mt-0.5">
-
                     Menampilkan <span class="font-medium text-gray-600">{{ $assets->total() }}</span> aset
                     dari total <span class="font-medium text-gray-600">{{ $totalAset }}</span> aset
                 </p>
             </div>
-            <button type="button" onclick="document.getElementById('modalTambah').classList.remove('hidden')"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700
-                   text-white text-sm font-semibold rounded-lg transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Tambah Aset
-            </button>
+
+            {{-- Action buttons --}}
+            <div class="flex items-center gap-2">
+
+                {{-- ── Tombol Export PDF ── --}}
+                <button type="button" onclick="document.getElementById('modalExportPdf').classList.remove('hidden')"
+                    class="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-red-200
+                           bg-red-50 hover:bg-red-100 text-red-700 text-sm font-medium transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 13h4M10 17h4M10 9h1" />
+                    </svg>
+                    Export PDF
+                </button>
+
+                {{-- ── Tombol Tambah Aset ── --}}
+                <button type="button" onclick="document.getElementById('modalTambah').classList.remove('hidden')"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700
+                           text-white text-sm font-semibold rounded-lg transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Tambah Aset
+                </button>
+
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -127,8 +145,8 @@
                 <div class="px-6 py-12 text-center">
                     <svg class="w-10 h-10 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor"
                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z
-                                                                   M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M20 7H4a2 2 0 00-2 2v6a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
                     </svg>
                     <p class="text-sm text-gray-400">Belum ada aset ditemukan.</p>
                 </div>
@@ -183,12 +201,10 @@
                             @php $isDeleted = $asset->trashed(); @endphp
                             <tr class="hover:bg-gray-50 transition-colors {{ $isDeleted ? 'opacity-50' : '' }}">
 
-                                {{-- No --}}
                                 <td class="px-3 py-3 text-xs text-gray-400">
                                     {{ ($assets->currentPage() - 1) * $assets->perPage() + $loop->iteration }}
                                 </td>
 
-                                {{-- Kode --}}
                                 <td class="px-3 py-3 whitespace-nowrap">
                                     <span
                                         class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
@@ -196,19 +212,16 @@
                                     </span>
                                 </td>
 
-                                {{-- Nama + Keterangan --}}
                                 <td class="px-6 py-3 max-w-[200px]">
                                     <div class="text-xs font-medium text-gray-700">{{ $asset->nama_aset ?? '-' }}</div>
                                     <div class="text-xs text-gray-400 mt-0.5 line-clamp-2">{{ $asset->keterangan ?? '-' }}
                                     </div>
                                 </td>
 
-                                {{-- OPD --}}
                                 <td class="px-6 py-3 text-xs text-gray-600 max-w-[140px]">
                                     <span class="line-clamp-2">{{ $asset->opd->namaopd ?? '-' }}</span>
                                 </td>
 
-                                {{-- Klasifikasi / Sub Klasifikasi --}}
                                 <td class="px-6 py-3">
                                     <div class="text-xs font-medium text-gray-700">
                                         {{ $asset->subKlasifikasi->klasifikasi->klasifikasiaset ?? '-' }}
@@ -218,7 +231,6 @@
                                     </div>
                                 </td>
 
-                                {{-- Status --}}
                                 <td class="px-6 py-3">
                                     @if ($isDeleted)
                                         <span
@@ -229,7 +241,6 @@
                                     @endif
                                 </td>
 
-                                {{-- Aksi --}}
                                 <td class="px-6 py-3 text-right whitespace-nowrap">
                                     <div class="flex items-center justify-end gap-1">
                                         @if ($isDeleted)
@@ -238,8 +249,8 @@
                                                 @csrf @method('PATCH')
                                                 <button type="submit"
                                                     class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                       bg-green-50 text-green-600 hover:bg-green-100
-                                                       border border-green-200 transition-colors">
+                                                           bg-green-50 text-green-600 hover:bg-green-100
+                                                           border border-green-200 transition-colors">
                                                     Pulihkan
                                                 </button>
                                             </form>
@@ -250,8 +261,8 @@
                                                 data-kode="{{ $asset->kode_aset }}" data-nama="{{ $asset->nama_aset }}"
                                                 data-keterangan="{{ $asset->keterangan }}" onclick="openEdit(this)"
                                                 class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                   bg-blue-50 text-blue-600 hover:bg-blue-100
-                                                   border border-blue-200 transition-colors">
+                                                       bg-blue-50 text-blue-600 hover:bg-blue-100
+                                                       border border-blue-200 transition-colors">
                                                 Edit
                                             </button>
                                             <form action="{{ route('admin.assets.destroy', $asset) }}" method="POST"
@@ -259,8 +270,8 @@
                                                 @csrf @method('DELETE')
                                                 <button type="submit"
                                                     class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                       bg-red-50 text-red-600 hover:bg-red-100
-                                                       border border-red-200 transition-colors">
+                                                           bg-red-50 text-red-600 hover:bg-red-100
+                                                           border border-red-200 transition-colors">
                                                     Hapus
                                                 </button>
                                             </form>
@@ -316,7 +327,6 @@
             <form action="{{ route('admin.assets.store') }}" method="POST" class="px-6 py-5 space-y-4">
                 @csrf
 
-                {{-- OPD --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         OPD <span class="text-red-500">*</span>
@@ -337,7 +347,6 @@
                     @enderror
                 </div>
 
-                {{-- Sub Klasifikasi --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Sub Klasifikasi <span class="text-red-500">*</span>
@@ -363,9 +372,6 @@
                     @enderror
                 </div>
 
-                {{-- Kode & Nama --}}
-
-
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Nama Aset <span class="text-red-500">*</span>
@@ -381,18 +387,15 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Keterangan
-                    </label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>
                     <textarea name="keterangan" rows="3"
                         placeholder="Deskripsi singkat aset, fungsi, lokasi, atau informasi tambahan..."
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-               focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ old('keterangan') }}</textarea>
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none">{{ old('keterangan') }}</textarea>
                     @error('keterangan')
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-
 
                 <div class="flex items-center justify-end gap-3 pt-1">
                     <button type="button" onclick="document.getElementById('modalTambah').classList.add('hidden')"
@@ -433,7 +436,6 @@
             <form id="formEdit" method="POST" class="px-6 py-5 space-y-4">
                 @csrf @method('PUT')
 
-                {{-- Kode Aset — readonly, immutable --}}
                 <div class="flex items-center gap-3 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
                     <span class="text-xs text-gray-400">Kode Aset</span>
                     <span id="editKodeAsetDisplay"
@@ -442,14 +444,13 @@
                     <span class="ml-auto text-xs text-gray-400 italic">Tidak dapat diubah</span>
                 </div>
 
-                {{-- OPD --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         OPD <span class="text-red-500">*</span>
                     </label>
                     <select id="editOpdId" name="opd_id"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required>
                         <option value="">-- Pilih OPD --</option>
                         @foreach ($opds as $opd)
@@ -458,14 +459,13 @@
                     </select>
                 </div>
 
-                {{-- Sub Klasifikasi --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Sub Klasifikasi <span class="text-red-500">*</span>
                     </label>
                     <select id="editSubKlasifikasiId" name="sub_klasifikasi_id"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required>
                         <option value="">-- Pilih Sub Klasifikasi --</option>
                         @foreach ($subKlasifikasis as $klasifikasi => $items)
@@ -478,30 +478,26 @@
                     </select>
                 </div>
 
-                {{-- Nama Aset --}}
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">
                         Nama Aset <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="editNamaAset" name="nama_aset" maxlength="200"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-                   focus:outline-none focus:ring-2 focus:ring-blue-500"
+                               focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required />
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">
-                        Keterangan
-                    </label>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Keterangan</label>
                     <textarea id="editKeterangan" name="keterangan" rows="3"
                         placeholder="Deskripsi singkat aset, fungsi, lokasi, atau informasi tambahan..."
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
-               focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
+                               focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"></textarea>
                     @error('keterangan')
                         <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
-
 
                 <div class="flex items-center justify-end gap-3 pt-1">
                     <button type="button" onclick="document.getElementById('modalEdit').classList.add('hidden')"
@@ -517,7 +513,121 @@
         </div>
     </div>
 
-    {{-- Buka modal tambah otomatis jika ada validation error dari store --}}
+
+    {{-- ============================================================
+         MODAL EXPORT PDF
+    ============================================================ --}}
+    <div id="modalExportPdf" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+        onclick="if(event.target===this) this.classList.add('hidden')">
+        <div class="bg-white rounded-2xl border border-gray-300 shadow-2xl w-full max-w-md">
+
+            {{-- Header --}}
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 rounded-t-2xl flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-red-100">
+                        <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                        </svg>
+                    </span>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800">Export Laporan PDF</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Pilih filter sebelum generate</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modalExportPdf').classList.add('hidden')"
+                    class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200
+                           text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Form --}}
+            <form method="GET" action="{{ route('admin.assets.export-pdf') }}" target="_blank"
+                class="px-6 py-5 space-y-4">
+
+                {{-- 1. Tahun --}}
+                <div>
+                    <label for="ep_tahun" class="block text-xs font-medium text-gray-600 mb-1">
+                        Tahun <span class="text-red-500">*</span>
+                    </label>
+                    <select id="ep_tahun" name="tahun" required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                               focus:outline-none focus:ring-2 focus:ring-red-400">
+                        <option value="" disabled selected>— Pilih Tahun —</option>
+                        @foreach ($allTahun as $tahun)
+                            <option value="{{ $tahun->id }}"
+                                {{ isset($tahunContext) && $tahunContext->id === $tahun->id ? 'selected' : '' }}>
+                                {{ $tahun->tahun }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- 2. OPD --}}
+                <div>
+                    <label for="ep_opd" class="block text-xs font-medium text-gray-600 mb-1">OPD</label>
+                    <select id="ep_opd" name="opd_id"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                               focus:outline-none focus:ring-2 focus:ring-red-400">
+                        <option value="">Semua OPD</option>
+                        @foreach ($opds as $opd)
+                            <option value="{{ $opd->id }}">{{ $opd->namaopd }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- 3. Klasifikasi --}}
+                <div>
+                    <label for="ep_klas" class="block text-xs font-medium text-gray-600 mb-1">Klasifikasi</label>
+                    <select id="ep_klas" name="klasifikasi_id"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                               focus:outline-none focus:ring-2 focus:ring-red-400">
+                        <option value="">Semua Klasifikasi</option>
+                        @foreach ($klasifikasis as $klas)
+                            <option value="{{ $klas->id }}">{{ $klas->klasifikasiaset }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- 4. Status --}}
+                <div>
+                    <label for="ep_status" class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+                    <select id="ep_status" name="status"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+                               focus:outline-none focus:ring-2 focus:ring-red-400">
+                        <option value="">Semua Status</option>
+                        <option value="aktif">Aktif</option>
+                        <option value="hapus">Dihapus</option>
+                    </select>
+                </div>
+
+                {{-- Footer --}}
+                <div class="flex items-center justify-end gap-3 pt-1">
+                    <button type="button" onclick="document.getElementById('modalExportPdf').classList.add('hidden')"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center gap-1.5 px-5 py-2 bg-red-600 hover:bg-red-700
+                               text-white text-sm font-semibold rounded-lg transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Generate PDF
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+
+    {{-- Buka modal tambah otomatis jika ada validation error --}}
     @if ($errors->any())
         <script>
             document.getElementById('modalTambah').classList.remove('hidden');
