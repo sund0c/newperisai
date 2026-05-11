@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\AssetCriticality;
 
 class Asset extends Model
 {
@@ -83,5 +84,10 @@ class Asset extends Model
             'di'    => $this->detailDi,
             default => null,
         };
+    }
+
+    public function criticality(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(AssetCriticality::class, 'asset_id');
     }
 }

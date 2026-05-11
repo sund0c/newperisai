@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\KlasifikasiAsetController;
 use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\AssetDetailController;
+use App\Http\Controllers\Admin\AssetCriticalityController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\DashboardController;
@@ -173,5 +174,10 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             ->name('assets.detail.update');
         Route::get('/assets/{asset}/detail/export-pdf', [AssetDetailController::class, 'exportPdf'])
             ->name('assets.detail.export-pdf');
+
+        Route::prefix('asset-criticality')->name('asset-criticality.')->group(function () {
+            Route::get('/',                      [AssetCriticalityController::class, 'index'])->name('index');
+            Route::put('/{assetId}',             [AssetCriticalityController::class, 'update'])->name('update');
+        });
     });
 });

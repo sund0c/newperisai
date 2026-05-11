@@ -8,6 +8,7 @@
     <title>@yield('title', 'PERISAI-PROVBALI')</title>
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <style>[x-cloak] { display: none !important; }</style>
 </head>
 
 <body class="h-full bg-gray-50 font-[Inter]" x-data="{ sidebarOpen: false }">
