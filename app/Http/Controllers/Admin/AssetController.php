@@ -66,6 +66,20 @@ class AssetController extends Controller
 
         $totalAset = Asset::where('tahunaktif_id', $tahunContext?->id)->count();
 
+        // Statistik per klasifikasi (hanya aset AKTIF / tidak trashed)
+        $statsKlas = \App\Models\KlasifikasiAset::withCount([
+            'subKlasifikasi as total_aset' => function ($q) use ($tahunContext) {
+                $q->join('assets', 'assets.sub_klasifikasi_id', '=', 'sub_klasifikasi_asets.id')
+                    ->whereNull('assets.deleted_at')
+                    ->when($tahunContext, fn($q2) => $q2->where('assets.tahunaktif_id', $tahunContext->id));
+            }
+        ])->orderBy('kodeklas')->get();
+
+        $totalAktif = Asset::where('tahunaktif_id', $tahunContext?->id)
+            ->whereNull('deleted_at')
+            ->count();
+
+        // ── Tambah ke compact():
         return view('admin.assets.index', compact(
             'assets',
             'opds',
@@ -74,6 +88,8 @@ class AssetController extends Controller
             'sortBy',
             'direction',
             'totalAset',
+            'statsKlas',   // ← tambah
+            'totalAktif',  // ← tambah
         ));
     }
 

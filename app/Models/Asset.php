@@ -47,8 +47,41 @@ class Asset extends Model
         return $this->belongsTo(TahunAktif::class, 'tahunaktif_id');
     }
 
-    // public function instances()
-    // {
-    //     return $this->hasMany(AssetInstance::class);
-    // }
+    public function detailPl()
+    {
+        return $this->hasOne(AssetDetailPl::class, 'asset_id');
+    }
+
+    public function detailPk()
+    {
+        return $this->hasOne(AssetDetailPk::class, 'asset_id');
+    }
+
+    public function detailSp()
+    {
+        return $this->hasOne(AssetDetailSp::class, 'asset_id');
+    }
+
+    public function detailSk()
+    {
+        return $this->hasOne(AssetDetailSk::class, 'asset_id');
+    }
+
+    public function detailDi()
+    {
+        return $this->hasOne(AssetDetailDi::class, 'asset_id');
+    }
+
+    public function detail()
+    {
+        $kode = strtolower($this->subKlasifikasi?->klasifikasi?->kodeklas ?? '');
+        return match ($kode) {
+            'pl'    => $this->detailPl,
+            'pk'    => $this->detailPk,
+            'sp'    => $this->detailSp,
+            'sk'    => $this->detailSk,
+            'di'    => $this->detailDi,
+            default => null,
+        };
+    }
 }

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\OpdController;
 use App\Http\Controllers\Admin\PeriodController;
 use App\Http\Controllers\Admin\KlasifikasiAsetController;
 use App\Http\Controllers\Admin\AssetController;
+use App\Http\Controllers\Admin\AssetDetailController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\DashboardController;
@@ -162,5 +163,15 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
         Route::put('assets/{asset}',              [AssetController::class, 'update'])->name('assets.update');
         Route::delete('assets/{asset}',           [AssetController::class, 'destroy'])->name('assets.destroy');
         Route::patch('assets/{id}/restore',       [AssetController::class, 'restore'])->name('assets.restore');
+
+        // Asset Detail — kelengkapan data per klasifikasi
+        Route::get('/assets/{asset}/detail',  [AssetDetailController::class, 'show'])
+            ->name('assets.detail');
+        Route::post('/assets/{asset}/detail', [AssetDetailController::class, 'store'])
+            ->name('assets.detail.store');
+        Route::put('/assets/{asset}/detail',  [AssetDetailController::class, 'update'])
+            ->name('assets.detail.update');
+        Route::get('/assets/{asset}/detail/export-pdf', [AssetDetailController::class, 'exportPdf'])
+            ->name('assets.detail.export-pdf');
     });
 });

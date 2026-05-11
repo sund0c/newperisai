@@ -27,6 +27,46 @@
         </div>
     @endif
 
+
+    <div class="mb-4">
+        <div class="flex gap-3">
+
+            {{-- Total Aktif --}}
+            <div class="flex-1 min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4">
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Total Aktif</p>
+                <p class="text-3xl font-bold text-gray-800">{{ number_format($totalAktif) }}</p>
+                <p class="text-xs text-gray-400 mt-1">Tahun {{ $tahunContext?->tahun ?? '-' }}</p>
+            </div>
+
+            {{-- Per Klasifikasi --}}
+            @php
+                $colorMap = [
+                    'PL' => ['border' => 'border-blue-200', 'dot' => 'bg-blue-500'],
+                    'PK' => ['border' => 'border-violet-200', 'dot' => 'bg-violet-500'],
+                    'SP' => ['border' => 'border-amber-200', 'dot' => 'bg-amber-500'],
+                    'SK' => ['border' => 'border-green-200', 'dot' => 'bg-green-500'],
+                    'DI' => ['border' => 'border-rose-200', 'dot' => 'bg-rose-500'],
+                ];
+            @endphp
+
+            @foreach ($statsKlas as $klas)
+                @php
+                    $kode = strtoupper($klas->kodeklas ?? 'XX');
+                    $colors = $colorMap[$kode] ?? ['border' => 'border-gray-200', 'dot' => 'bg-gray-400'];
+                    $pct = $totalAktif > 0 ? round(($klas->total_aset / $totalAktif) * 100) : 0;
+                @endphp
+                <div class="flex-1 min-w-0 bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4">
+                    <div class="flex items-center justify-end mb-2">
+                        <span class="text-xs text-gray-400">{{ $pct }}%</span>
+                    </div>
+                    <p class="text-3xl font-bold text-gray-800">{{ number_format($klas->total_aset) }}</p>
+                    <p class="text-xs text-gray-400 mt-1 truncate">{{ $klas->klasifikasiaset }}</p>
+                </div>
+            @endforeach
+
+        </div>
+    </div>
+
     {{-- Filter & Toolbar --}}
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm mb-4">
         <form method="GET" action="{{ route('admin.assets.index') }}">
@@ -206,10 +246,17 @@
                                 </td>
 
                                 <td class="px-3 py-3 whitespace-nowrap">
-                                    <span
-                                        class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
-                                        {{ $asset->kode_aset }}
-                                    </span>
+                                    <a href="{{ route('admin.assets.detail', $asset) }}"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-semibold
+           bg-indigo-50 text-indigo-600 hover:bg-indigo-100
+           border border-indigo-200 transition-colors">
+
+
+                                        <span
+                                            class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
+                                            {{ $asset->kode_aset }}
+                                        </span>
+                                    </a>
                                 </td>
 
                                 <td class="px-6 py-3 max-w-[200px]">
