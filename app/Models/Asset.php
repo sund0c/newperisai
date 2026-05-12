@@ -90,4 +90,9 @@ class Asset extends Model
     {
         return $this->hasOne(AssetCriticality::class, 'asset_id');
     }
+
+    public function iiv(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\AssetIiv::class, 'asset_id');
+    }
 }
