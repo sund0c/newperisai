@@ -193,12 +193,11 @@
             @else
                 <table class="w-full min-w-[900px] text-sm">
                     <thead class="border-b border-gray-100 bg-gray-50">
+
                         <tr>
+<th class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
                             <th
-                                class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-10">
-                                #</th>
-                            <th
-                                class="px-3 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-36 whitespace-nowrap">
+                                class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-36 whitespace-nowrap">
                                 @php $isSortKode = $sortBy === 'kode_aset'; @endphp
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'kode_aset', 'direction' => $isSortKode && $direction === 'asc' ? 'desc' : 'asc']) }}"
                                     class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortKode ? 'text-blue-600' : '' }}">
@@ -211,7 +210,7 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                                 @php $isSortNama = $sortBy === 'nama_aset'; @endphp
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_aset', 'direction' => $isSortNama && $direction === 'asc' ? 'desc' : 'asc']) }}"
                                     class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortNama ? 'text-blue-600' : '' }}">
@@ -225,13 +224,13 @@
                                 </a>
                             </th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-44">
                                 OPD</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-44">
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-44">
                                 Klas / Sub Klas</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-24">
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">
                                 Status</th>
                             <th class="px-6 py-3 w-36"></th>
                         </tr>

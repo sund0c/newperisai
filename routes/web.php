@@ -178,6 +178,7 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
         Route::prefix('asset-criticality')->name('asset-criticality.')->group(function () {
             Route::get('/',                      [AssetCriticalityController::class, 'index'])->name('index');
             Route::put('/{assetId}',             [AssetCriticalityController::class, 'update'])->name('update');
+            Route::get('/export-pdf',            [AssetCriticalityController::class, 'exportPdf'])->name('export-pdf');
         });
     });
 });

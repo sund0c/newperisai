@@ -33,19 +33,19 @@ class AssetCriticality extends Model
 
     public static array $CIA_OPTIONS = [
         'C' => [
-            ['value' => '1', 'label' => 'Rendah: Informasi bersifat umum dan dapat diakses publik tanpa risiko'],
-            ['value' => '2', 'label' => 'Sedang: Mengandung informasi internal yang perlu dijaga dari pihak luar'],
-            ['value' => '3', 'label' => 'Tinggi: Mengandung data rahasia, pribadi, atau strategis; kebocoran menimbulkan dampak serius'],
+            ['value' => '1', 'label' => 'Rendah: Tidak berdampak — informasi memang bersifat publik atau tidak sensitif'],
+            ['value' => '2', 'label' => 'Sedang: Menimbulkan kerugian reputasi atau gangguan operasional internal'],
+            ['value' => '3', 'label' => 'Tinggi: Menimbulkan kerugian serius — menyangkut data pribadi, keuangan, rahasia jabatan, atau keamanan negara'],
         ],
         'I' => [
-            ['value' => '1', 'label' => 'Rendah: Tidak Signifikan'],
-            ['value' => '2', 'label' => 'Sedang: Dapat menyebabkan kesalahan data atau proses, namun masih bisa dikoreksi.'],
-            ['value' => '3', 'label' => 'Tinggi: Dapat menyebabkan kerugian besar, gangguan operasional, atau kesalahan mengambil keputusan'],
+            ['value' => '1', 'label' => 'Rendah: Tidak berdampak — kesalahan mudah dideteksi dan dikoreksi tanpa konsekuensi'],
+            ['value' => '2', 'label' => 'Sedang: Menyebabkan kesalahan proses atau data yang perlu upaya koreksi'],
+            ['value' => '3', 'label' => 'Tinggi: Menyebabkan kerugian besar, keputusan salah, atau gangguan layanan utama'],
         ],
         'A' => [
-            ['value' => '1', 'label' => 'Rendah: Tidak signifikan, masih dapat ditunda'],
-            ['value' => '2', 'label' => 'Sedang: Menghambat sebagian kegiatan, tetapi masih ada alternatif sementara'],
-            ['value' => '3', 'label' => 'Tinggi: Menghentikan layanan penting/operasional utama'],
+            ['value' => '1', 'label' => 'Rendah: Tidak berdampak — dapat ditunda atau digantikan sementara tanpa konsekuensi'],
+            ['value' => '2', 'label' => 'Sedang: Menghambat sebagian kegiatan namun masih ada alternatif atau solusi sementara'],
+            ['value' => '3', 'label' => 'Tinggi: Menghentikan layanan penting atau operasional utama pemerintahan'],
         ],
     ];
 

@@ -29,7 +29,7 @@
         <div class="flex items-center justify-between h-16 px-6 bg-slate-800 shrink-0">
             <div class="flex items-center gap-3">
                 <div class="inline-flex items-center justify-center w-8 h-8">
-                    <img src="{{ asset('images/logo.png') }}" alt="CSIRT Bali" class="h-8 w-auto object-contain mb-4">
+                    <img src="{{ asset('images/logo_perisai.svg') }}" alt="CSIRT Bali" class="h-8 w-auto object-contain mb-4">
                 </div>
                 <div>
                     <p class="text-white font-semibold text-sm">PERISAI Pemprov Bali</p>

@@ -18,17 +18,18 @@ class AssetCriticalityController extends Controller
 
     public function index(Request $request)
     {
-        // Resolve year context sama seperti AssetController
         $tahunContext = TahunAktif::find(session('tahun_context'))
             ?? TahunAktif::getActive();
 
-        // Base query: aset aktif (tidak terhapus) pada tahun context
+        $tahunId = $tahunContext?->id;
+
+        // Base query
         $query = Asset::with([
             'opd',
             'subKlasifikasi.klasifikasi',
             'criticality',
         ])
-            ->where('TahunAktif_id', $tahunContext?->id);
+            ->where('TahunAktif_id', $tahunId);
 
         // Filter: search
         if ($search = $request->search) {
@@ -44,11 +45,11 @@ class AssetCriticalityController extends Controller
             $query->where('opd_id', $opdId);
         }
 
-        // Filter: Klasifikasi (via subKlasifikasi.klasifikasi)
+        // Filter: Klasifikasi
         if ($klasifikasi = $request->klasifikasi) {
             $query->whereHas(
                 'subKlasifikasi.klasifikasi',
-                fn($q) => $q->where('klasifikasiaset', $klasifikasi)
+                fn($q) => $q->where('kodeklas', $klasifikasi)
             );
         }
 
@@ -57,7 +58,7 @@ class AssetCriticalityController extends Controller
             $query->whereHas(
                 'criticality',
                 fn($q) =>
-                $q->where('kritikalitas', $kritikalitas)
+                $q->where('kritikalitas', (int) $kritikalitas)
             );
         }
 
@@ -74,21 +75,24 @@ class AssetCriticalityController extends Controller
 
         $assets = $query->paginate(20)->withQueryString();
 
-        // Stats
-        $totalAset      = Asset::where('TahunAktif_id', $tahunContext?->id)->count();
-        $totalDinilai   = AssetCriticality::whereHas(
-            'asset',
-            fn($q) =>
-            $q->where('TahunAktif_id', $tahunContext?->id)
-        )->count();
-        $totalBelumNilai = $totalAset - $totalDinilai;
-        $totalTinggi    = AssetCriticality::whereHas(
-            'asset',
-            fn($q) =>
-            $q->where('TahunAktif_id', $tahunContext?->id)
-        )->where('kritikalitas', 3)->count();
+        // ── Stats ─────────────────────────────────────────────
+        $totalAset = Asset::where('TahunAktif_id', $tahunId)->count();
 
-        $opds        = Opd::orderBy('namaopd')->get();
+        $critBase = AssetCriticality::whereHas(
+            'asset',
+            fn($q) => $q->where('TahunAktif_id', $tahunId)
+        );
+
+        $totalTinggi  = (clone $critBase)->where('kritikalitas', 3)->count();
+        $totalSedang  = (clone $critBase)->where('kritikalitas', 2)->count();
+        $totalRendah  = (clone $critBase)->where('kritikalitas', 1)->count();
+        $totalDinilai = $totalTinggi + $totalSedang + $totalRendah;
+        $totalBelumNilai = $totalAset - $totalDinilai;
+
+        // ── OPD list ──────────────────────────────────────────
+        // Ganti 'nama_opd' jika nama kolom berbeda di tabel opds
+        $opds = Opd::orderBy('namaopd')->get();
+
         $ciaOptions  = AssetCriticality::$CIA_OPTIONS;
         $levelLabels = AssetCriticality::$LEVEL_LABELS;
         $levelColors = AssetCriticality::$LEVEL_COLORS;
@@ -100,9 +104,10 @@ class AssetCriticalityController extends Controller
             'sortBy',
             'direction',
             'totalAset',
-            'totalDinilai',
-            'totalBelumNilai',
             'totalTinggi',
+            'totalSedang',
+            'totalRendah',
+            'totalBelumNilai',
             'ciaOptions',
             'levelLabels',
             'levelColors',
@@ -123,9 +128,6 @@ class AssetCriticalityController extends Controller
             'confidentiality.required' => 'Nilai Confidentiality wajib dipilih.',
             'integrity.required'       => 'Nilai Integrity wajib dipilih.',
             'availability.required'    => 'Nilai Availability wajib dipilih.',
-            'confidentiality.in'       => 'Nilai Confidentiality tidak valid.',
-            'integrity.in'             => 'Nilai Integrity tidak valid.',
-            'availability.in'          => 'Nilai Availability tidak valid.',
         ]);
 
         $kritikalitas = AssetCriticality::computeKritikalitas(
@@ -153,5 +155,94 @@ class AssetCriticalityController extends Controller
             'success',
             "Kritikalitas aset <strong>{$asset->nama_aset}</strong> berhasil disimpan — Level: <strong>{$levelLabel}</strong>"
         );
+    }
+
+    // ── Export PDF ────────────────────────────────────────────
+
+    public function exportPdf(Request $request)
+    {
+        $tahunContext = TahunAktif::find(session('tahun_context'))
+            ?? TahunAktif::getActive();
+
+        $query = Asset::with(['opd', 'subKlasifikasi.klasifikasi', 'criticality'])
+            ->where('TahunAktif_id', $tahunContext?->id);
+
+        if ($opdId = $request->opd_id) {
+            $query->where('opd_id', $opdId);
+        }
+
+        if ($klasifikasi = $request->klasifikasi) {
+            $query->whereHas(
+                'subKlasifikasi.klasifikasi',
+                fn($q) => $q->where('kodeklas', $klasifikasi)
+            );
+        }
+
+        if ($kritikalitas = $request->kritikalitas) {
+            if ($kritikalitas === 'unassessed') {
+                $query->whereDoesntHave('criticality');
+            } else {
+                $query->whereHas(
+                    'criticality',
+                    fn($q) => $q->where('kritikalitas', (int) $kritikalitas)
+                );
+            }
+        }
+
+        $assets = $query->orderBy('kode_aset')->get();
+
+        $levelLabels = AssetCriticality::$LEVEL_LABELS;
+        $opd = $request->opd_id ? Opd::find($request->opd_id) : null;
+
+        $payload = [
+            'meta' => [
+                'tahun'        => $tahunContext?->tahun ?? '-',
+                'pemilik_aset' => $opd?->namaopd ?? 'PEMERINTAH PROVINSI BALI',
+                'opd'          => $opd?->namaopd ?? 'Semua OPD',
+                'klasifikasi'  => $request->klasifikasi ?? 'Semua',
+                'kritikalitas' => $request->kritikalitas
+                    ? ($levelLabels[(int)$request->kritikalitas] ?? ucfirst($request->kritikalitas))
+                    : 'Semua',
+                'total'        => $assets->count(),
+                'generated_at' => now()->format('d/m/Y H:i'),
+            ],
+            'rows' => $assets->map(fn($a, $i) => [
+                'no'              => $i + 1,
+                'kode_aset'       => $a->kode_aset,
+                'nama_aset'       => $a->nama_aset,
+                'keterangan'      => $a->keterangan,
+                'opd'             => $a->opd?->namaopd ?? '-',
+                'klasifikasi'     => $a->subKlasifikasi?->klasifikasi?->klasifikasiaset ?? '-',
+                'sub_klasifikasi' => $a->subKlasifikasi?->subklasifikasiaset ?? '-',
+                'confidentiality' => $a->criticality?->confidentiality,
+                'integrity'       => $a->criticality?->integrity,
+                'availability'    => $a->criticality?->availability,
+                'kritikalitas'    => $a->criticality?->kritikalitas,
+            ])->values()->toArray(),
+        ];
+
+        $tmpPdf = tempnam(sys_get_temp_dir(), 'perisai_crit_') . '.pdf';
+        $script = base_path('scripts/generate_criticality_pdf.py');
+
+        $process = new \Symfony\Component\Process\Process(
+            ['python3', $script, $tmpPdf],
+            null,
+            null,
+            json_encode($payload),
+            60
+        );
+        $process->run();
+
+        if (!$process->isSuccessful() || !file_exists($tmpPdf)) {
+            abort(500, 'Gagal generate PDF: ' . $process->getErrorOutput());
+        }
+
+        $filename = 'PERISAI_Kritikalitas_' . ($tahunContext?->tahun ?? 'ALL') . '_' . now()->format('Ymd_His') . '.pdf';
+
+
+        return response()->file($tmpPdf, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
+        ])->deleteFileAfterSend(true);
     }
 }

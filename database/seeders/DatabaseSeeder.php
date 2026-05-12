@@ -15,7 +15,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             KlasifikasiSeeder::class,
             AsetSeeder::class,
-            AsetDataSeeder::class,
+            //AsetDataSeeder::class,
         ]);
     }
 }
