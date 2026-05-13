@@ -22,24 +22,19 @@ class AssetIivController extends Controller
             ?? TahunAktif::where('is_active', true)->firstOrFail();
 
         $user    = Auth::user();
-        $isAdmin = $user->hasRole(['Super Admin', 'Admin']);
+        $isAdmin = $user->hasRole(['Super Admin', 'admin']);
 
-        // Base query: aset sesuai tahun konteks
-        // Relasi disesuaikan dengan nama yang ada di model Asset
         $query = Asset::with(['iiv', 'opd', 'subKlasifikasi.klasifikasi'])
             ->where('tahunaktif_id', $tahunContext->id);
 
-        // OPD user hanya lihat aset milik OPD-nya
         if (! $isAdmin) {
             $query->where('opd_id', $user->opd_id);
         }
 
-        // Filter: OPD (admin only)
         if ($isAdmin && $request->filled('opd_id')) {
             $query->where('opd_id', $request->opd_id);
         }
 
-        // Filter: nilai IIV (termasuk unassessed)
         if ($request->filled('nilai_iiv')) {
             if ($request->nilai_iiv === 'unassessed') {
                 $query->whereDoesntHave('iiv');
@@ -50,7 +45,6 @@ class AssetIivController extends Controller
             }
         }
 
-        // Filter: search nama/kode
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -59,22 +53,17 @@ class AssetIivController extends Controller
             });
         }
 
-        // Sort
         $sortBy  = $request->get('sort', 'kode_aset');
-        $sortDir = $request->get('dir', 'asc');
+        $sortDir = in_array($request->get('direction'), ['asc', 'desc'])
+            ? $request->get('direction') : 'asc';
 
-        $allowedSort = ['kode_aset', 'nama_aset', 'nilai_iiv'];
-        if (! in_array($sortBy, $allowedSort)) {
+        if (! in_array($sortBy, ['kode_aset', 'nama_aset', 'nilai_iiv'])) {
             $sortBy = 'kode_aset';
         }
 
         if ($sortBy === 'nilai_iiv') {
             $query->leftJoin('asset_iivs', 'assets.id', '=', 'asset_iivs.asset_id')
                 ->orderBy('asset_iivs.nilai_iiv', $sortDir)
-                ->select('assets.*');
-        } elseif ($sortBy === 'opd') {
-            $query->leftJoin('opds', 'assets.opd_id', '=', 'opds.id')
-                ->orderBy('opds.nama_opd', $sortDir)
                 ->select('assets.*');
         } else {
             $query->orderBy($sortBy, $sortDir);
@@ -87,7 +76,6 @@ class AssetIivController extends Controller
         if (! $isAdmin) {
             $statsQuery->where('opd_id', $user->opd_id);
         }
-
         $totalAset = $statsQuery->count();
 
         $iivStats = DB::table('asset_iivs')
@@ -100,14 +88,13 @@ class AssetIivController extends Controller
             ->pluck('total', 'nilai_iiv');
 
         $stats = [
-            'total'     => $totalAset,
-            'kritis'    => $iivStats->get(AssetIiv::KRITIS, 0),
-            'terbatas'  => $iivStats->get(AssetIiv::TERBATAS, 0),
-            'minor'     => $iivStats->get(AssetIiv::MINOR, 0),
-            'belum'     => $totalAset - $iivStats->sum(),
+            'total'       => $totalAset,
+            'vital'       => $iivStats->get(AssetIiv::VITAL, 0),
+            'tidak_vital' => $iivStats->get(AssetIiv::TIDAK_VITAL, 0),
+            'belum'       => $totalAset - $iivStats->sum(),
         ];
 
-        $opds    = $isAdmin ? Opd::orderBy('nama_opd')->get() : collect();
+        $opds    = $isAdmin ? Opd::orderBy('namaopd')->get() : collect();
         $options = AssetIiv::options();
 
         return view('admin.asset-iiv.index', compact(
@@ -120,11 +107,10 @@ class AssetIivController extends Controller
         ));
     }
 
-    // ── Upsert (store + update digabung) ─────────────────────────
+    // ── Update ───────────────────────────────────────────────────
 
-    public function upsert(Request $request, Asset $asset)
+    public function update(Request $request, Asset $asset)
     {
-        // Pastikan aset sesuai tahun aktif
         $tahunContext = TahunAktif::find(session('tahun_context'))
             ?? TahunAktif::where('is_active', true)->firstOrFail();
 
@@ -134,9 +120,8 @@ class AssetIivController extends Controller
             ], 403);
         }
 
-        // Otorisasi: OPD user hanya edit aset miliknya
         $user = Auth::user();
-        if (! $user->hasRole(['Super Admin', 'Admin']) && $asset->opd_id !== $user->opd_id) {
+        if (! $user->hasRole(['Super Admin', 'admin']) && $asset->opd_id !== $user->opd_id) {
             return response()->json(['message' => 'Unauthorized.'], 403);
         }
 
@@ -172,13 +157,13 @@ class AssetIivController extends Controller
         $labelMap = AssetIiv::labelMap();
 
         return response()->json([
-            'message'        => 'Penilaian IIV berhasil disimpan.',
-            'nilai_iiv'      => $iiv->nilai_iiv,
+            'message'         => 'Penilaian IIV berhasil disimpan.',
+            'nilai_iiv'       => $iiv->nilai_iiv,
             'nilai_iiv_label' => $labelMap[$iiv->nilai_iiv],
         ]);
     }
 
-    // ── Export PDF via Python/ReportLab ─────────────────────────
+    // ── Export PDF via Python/ReportLab ──────────────────────────
 
     public function exportPdf(Request $request)
     {
@@ -186,9 +171,10 @@ class AssetIivController extends Controller
             ?? TahunAktif::where('is_active', true)->firstOrFail();
 
         $user    = Auth::user();
-        $isAdmin = $user->hasRole(['Super Admin', 'Admin']);
+        $isAdmin = $user->hasRole(['Super Admin', 'admin']);
 
-        $query = Asset::with(['iiv', 'opd', 'klasifikasiAset', 'subKlasifikasiAset'])
+        // Relasi sama dengan index()
+        $query = Asset::with(['iiv', 'opd', 'subKlasifikasi.klasifikasi'])
             ->where('tahunaktif_id', $tahunContext->id);
 
         if (! $isAdmin) {
@@ -203,60 +189,52 @@ class AssetIivController extends Controller
             $query->whereHas('iiv', fn($q) => $q->where('nilai_iiv', $request->nilai_iiv));
         }
 
-        $assets   = $query->orderBy('kode_aset')->get();
-        $labelMap = AssetIiv::labelMap();
-
-        // ── Bangun payload JSON untuk Python script ──────────────
-
-        $iivStats = $assets->groupBy(fn($a) => $a->iiv?->nilai_iiv ?? 0);
+        $assets = $query->orderBy('kode_aset')->get();
 
         $filterIivLabel = match ($request->get('nilai_iiv')) {
-            '3'     => 'KRITIS',
-            '2'     => 'TERBATAS',
-            '1'     => 'MINOR',
+            '2'     => 'VITAL',
+            '1'     => 'TIDAK VITAL',
             default => 'Semua',
         };
 
         $meta = [
             'tahun'        => $tahunContext->tahun,
+            'pemilik_aset' => 'PEMERINTAH PROVINSI BALI',
             'opd'          => $request->filled('opd_id')
-                ? (Opd::find($request->opd_id)?->nama_opd ?? 'Semua OPD')
+                ? (Opd::find($request->opd_id)?->namaopd ?? 'Semua OPD')
                 : 'Semua OPD',
-            'filter_iiv'   => $filterIivLabel,
+            'nilai_iiv'    => $filterIivLabel,
             'generated_at' => now()->locale('id')->translatedFormat('l, d F Y H:i') . ' WITA',
-            'generated_by' => $user->name,
             'total'        => $assets->count(),
-            'kritis'       => $iivStats->get(AssetIiv::KRITIS,   collect())->count(),
-            'terbatas'     => $iivStats->get(AssetIiv::TERBATAS, collect())->count(),
-            'minor'        => $iivStats->get(AssetIiv::MINOR,    collect())->count(),
-            'belum'        => $iivStats->get(0,                   collect())->count(),
+            'vital'        => $assets->filter(fn($a) => $a->iiv?->nilai_iiv === AssetIiv::VITAL)->count(),
+            'tidak_vital'  => $assets->filter(fn($a) => $a->iiv?->nilai_iiv === AssetIiv::TIDAK_VITAL)->count(),
+            'belum'        => $assets->filter(fn($a) => ! $a->iiv)->count(),
         ];
 
-        $rows = $assets->values()->map(function ($asset, $idx) use ($labelMap) {
+        // Kirim nilai dimensi sebagai INTEGER agar Python bisa proses DIM_SHORT
+        $rows = $assets->values()->map(function ($asset, $idx) {
             $iiv = $asset->iiv;
-            $dimLabel = fn($v) => $labelMap[$v] ?? '—';
             return [
-                'no'                     => $idx + 1,
-                'kode_aset'              => $asset->kode_aset ?? '-',
-                'nama_aset'              => $asset->nama_aset ?? '-',
-                'sub_klasifikasi'        => optional($asset->subKlasifikasiAset)->nama_sub_klasifikasi ?? '',
-                'klasifikasi'            => optional($asset->klasifikasiAset)->nama_klasifikasi ?? '-',
-                'opd'                    => optional($asset->opd)->nama_opd ?? '-',
-                'dampak_operasional'     => $iiv ? $dimLabel($iiv->dampak_operasional)    : '—',
-                'dampak_data_informasi'  => $iiv ? $dimLabel($iiv->dampak_data_informasi) : '—',
-                'dampak_finansial'       => $iiv ? $dimLabel($iiv->dampak_finansial)      : '—',
-                'dampak_umum'            => $iiv ? $dimLabel($iiv->dampak_umum)           : '—',
-                'dampak_ketergantungan'  => $iiv ? $dimLabel($iiv->dampak_ketergantungan) : '—',
-                'nilai_iiv'              => $iiv ? ($labelMap[$iiv->nilai_iiv] ?? '—')    : '—',
+                'no'                    => $idx + 1,
+                'kode_aset'             => $asset->kode_aset ?? '-',
+                'nama_aset'             => $asset->nama_aset ?? '-',
+                'keterangan'            => $asset->keterangan ?? '',
+                'sub_klasifikasi'       => optional($asset->subKlasifikasi)->subklasifikasiaset ?? '-',
+                'klasifikasi'           => optional($asset->subKlasifikasi?->klasifikasi)->klasifikasiaset ?? '-',
+                'opd'                   => optional($asset->opd)->namaopd ?? '-',
+                'dampak_operasional'    => $iiv?->dampak_operasional,
+                'dampak_data_informasi' => $iiv?->dampak_data_informasi,
+                'dampak_finansial'      => $iiv?->dampak_finansial,
+                'dampak_umum'           => $iiv?->dampak_umum,
+                'dampak_ketergantungan' => $iiv?->dampak_ketergantungan,
+                'nilai_iiv'             => $iiv?->nilai_iiv,
             ];
         })->toArray();
 
         $payload = json_encode(['meta' => $meta, 'rows' => $rows], JSON_UNESCAPED_UNICODE);
 
-        // ── Jalankan Python script ────────────────────────────────
-
-        $script  = base_path('scripts/generate_iiv_pdf.py');
-        $tmpPdf  = sys_get_temp_dir() . '/perisai_iiv_' . \Illuminate\Support\Str::random(8) . '.pdf';
+        $script = base_path('scripts/generate_iiv_pdf.py');
+        $tmpPdf = sys_get_temp_dir() . '/perisai_iiv_' . \Illuminate\Support\Str::random(8) . '.pdf';
 
         $process = new \Symfony\Component\Process\Process(
             ['python3', $script, $tmpPdf],
@@ -277,8 +255,9 @@ class AssetIivController extends Controller
 
         $filename = 'PERISAI_IIV_' . $tahunContext->tahun . '_' . now()->format('Ymd_His') . '.pdf';
 
-        return response()->download($tmpPdf, $filename, [
-            'Content-Type' => 'application/pdf',
+        return response()->file($tmpPdf, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ])->deleteFileAfterSend(true);
     }
 }

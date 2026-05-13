@@ -1,487 +1,351 @@
 #!/usr/bin/env python3
 """
-PERISAI — IIV PDF Generator
-============================
-Script untuk generate laporan PDF Infrastruktur Informasi Vital (IIV).
-
-Dipanggil dari Laravel controller via symfony/process:
-    $process = new Process(['python3', $script, $tmpPdf], null, null, json_encode($payload), 60);
-
-Payload JSON shape (dikirim via stdin):
-{
-    "meta": {
-        "tahun"        : "2025",
-        "opd"          : "Semua OPD",
-        "filter_iiv"   : "Semua",
-        "generated_at" : "Selasa, 12 Mei 2026 10:30",
-        "generated_by" : "I Putu Admin",
-        "total"        : 42,
-        "kritis"       : 5,
-        "terbatas"     : 20,
-        "minor"        : 17,
-        "belum"        : 0
-    },
-    "rows": [
-        {
-            "no"                    : 1,
-            "kode_aset"             : "PL-0001",
-            "nama_aset"             : "SIPD",
-            "sub_klasifikasi"       : "Aplikasi Web",
-            "klasifikasi"           : "Perangkat Lunak",
-            "opd"                   : "Dinas Komunikasi dan Informatika",
-            "dampak_operasional"    : "KRITIS",
-            "dampak_data_informasi" : "TERBATAS",
-            "dampak_finansial"      : "MINOR",
-            "dampak_umum"           : "TERBATAS",
-            "dampak_ketergantungan" : "KRITIS",
-            "nilai_iiv"             : "KRITIS"
-        }
-    ]
-}
-
-Instalasi dependensi:
-    pip3 install reportlab --break-system-packages
-
-Output: PDF A4 landscape di path argv[1]
+PERISAI — Infrastruktur Informasi Vital (IIV) PDF Generator
+Same structure as generate_criticality_pdf.py
+Columns: NO | KODE ASET | NAMA ASET | SUB KLASIFIKASI | OPD | OPS | DATA | FIN | UMUM | KETERGT. | IIV
 """
 
 import sys
 import json
 import os
-from datetime import datetime
+import io
 
-# ── Cek dependensi ────────────────────────────────────────────────────────────
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.units import mm
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.utils import ImageReader
+
 try:
-    from reportlab.lib.pagesizes import A4, landscape
-    from reportlab.lib import colors
-    from reportlab.lib.units import mm
-    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
-    from reportlab.platypus import (
-        SimpleDocTemplate, Table, TableStyle, Paragraph,
-        Spacer, HRFlowable, KeepTogether
-    )
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
+    from PIL import Image as PILImage
+    HAS_PILLOW = True
 except ImportError:
-    sys.stderr.write("ERROR: reportlab tidak terinstal.\n")
-    sys.stderr.write("Jalankan: pip3 install reportlab --break-system-packages\n")
-    sys.exit(1)
+    HAS_PILLOW = False
 
-# ── Konstanta warna PERISAI ───────────────────────────────────────────────────
-NAVY        = colors.HexColor('#1e3a5f')
-NAVY_LIGHT  = colors.HexColor('#2d5382')
-SLATE       = colors.HexColor('#475569')
-SLATE_LIGHT = colors.HexColor('#94a3b8')
-WHITE       = colors.white
-ROW_ALT     = colors.HexColor('#f8fafc')
-ROW_NORMAL  = colors.white
+BLACK  = colors.black
+WHITE  = colors.white
+GRAY   = colors.HexColor('#555555')
+LGRAY  = colors.HexColor('#aaaaaa')
 
-# Warna nilai IIV
-COL_KRITIS    = colors.HexColor('#fef2f2')
-TXT_KRITIS    = colors.HexColor('#dc2626')
-BORDER_KRITIS = colors.HexColor('#fca5a5')
+PAGE_W, PAGE_H = landscape(A4)
+MARGIN = 12 * mm
 
-COL_TERBATAS    = colors.HexColor('#fff7ed')
-TXT_TERBATAS    = colors.HexColor('#ea580c')
-BORDER_TERBATAS = colors.HexColor('#fdba74')
+FS_H2      = 18
+FS_H3      = 13
+FS_DESC    = 7.5
+FS_DESC_LH = FS_DESC * 1.2
+FS_SUMMARY = 9
+FS_TH      = 8
+FS_TD      = 8
+FS_TD_SM   = 6.5
+FS_FOOTER  = 7
 
-COL_MINOR    = colors.HexColor('#f0fdf4')
-TXT_MINOR    = colors.HexColor('#16a34a')
-BORDER_MINOR = colors.HexColor('#86efac')
+FONT      = 'Helvetica'
+FONT_BOLD = 'Helvetica-Bold'
 
-COL_BELUM    = colors.HexColor('#f1f5f9')
-TXT_BELUM    = colors.HexColor('#94a3b8')
+# Nilai dimensi
+DIM_LABELS = {3: 'KRITIS', 2: 'TERBATAS', 1: 'MINOR'}
+DIM_SHORT  = {3: 'K', 2: 'T', 1: 'M'}
 
-
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
-def iiv_bg(val: str):
-    """Return background color sesuai nilai IIV."""
-    v = str(val).upper()
-    if v == 'KRITIS':   return COL_KRITIS
-    if v == 'TERBATAS': return COL_TERBATAS
-    if v == 'MINOR':    return COL_MINOR
-    return COL_BELUM
-
-def iiv_txt(val: str):
-    v = str(val).upper()
-    if v == 'KRITIS':   return TXT_KRITIS
-    if v == 'TERBATAS': return TXT_TERBATAS
-    if v == 'MINOR':    return TXT_MINOR
-    return TXT_BELUM
-
-def iiv_short(val: str) -> str:
-    v = str(val).upper()
-    if v == 'KRITIS':   return 'K'
-    if v == 'TERBATAS': return 'T'
-    if v == 'MINOR':    return 'M'
-    return '—'
+# Nilai IIV final
+IIV_LABELS = {2: 'VITAL', 1: 'TIDAK VITAL'}
 
 
-def make_styles():
-    base = getSampleStyleSheet()
+def load_image_no_bg(path):
+    if not HAS_PILLOW or not os.path.exists(path):
+        return path
+    img = PILImage.open(path).convert('RGBA')
+    data = img.getdata()
+    new_data = []
+    for r, g, b, a in data:
+        if r > 210 and g > 210 and b > 210:
+            new_data.append((255, 255, 255, 0))
+        else:
+            new_data.append((r, g, b, a))
+    img.putdata(new_data)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return ImageReader(buf)
 
-    normal = ParagraphStyle(
-        'NormalSmall',
-        parent=base['Normal'],
-        fontSize=7,
-        leading=9,
-        textColor=SLATE,
+
+def cell(text, size=FS_TD, bold=False, align=TA_LEFT, color=BLACK):
+    return Paragraph(str(text) if text else '-',
+        ParagraphStyle('c',
+            fontName=FONT_BOLD if bold else FONT,
+            fontSize=size, textColor=color,
+            leading=size * 1.2, alignment=align, wordWrap='CJK'))
+
+
+def nama_cell(nama, keterangan):
+    ket = (keterangan or '')
+    content = (
+        f"<b>{nama}</b><br/>"
+        f"<font size='{FS_TD_SM}' color='#555555'>{ket}</font>"
+    ) if ket else f"<b>{nama}</b>"
+    return Paragraph(content,
+        ParagraphStyle('nm', fontName=FONT, fontSize=FS_TD,
+                       leading=FS_TD * 1.3, textColor=BLACK, wordWrap='CJK'))
+
+
+def klas_cell(klasifikasi, sub_klas):
+    return Paragraph(
+        f"{sub_klas}<br/>"
+        f"<font size='{FS_TD_SM}' color='#555555'>{klasifikasi}</font>",
+        ParagraphStyle('kl', fontName=FONT, fontSize=FS_TD,
+                       leading=FS_TD * 1.1, textColor=BLACK, wordWrap='CJK'))
+
+
+def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
+    canvas_obj.saveState()
+
+    logo_h      = 18 * mm
+    logo_w      = 18 * mm
+    logo_gap    = 3  * mm
+    logos_total = (logo_w + logo_gap) * 2
+    bar_h       = 42 * mm
+    bar_y       = PAGE_H - bar_h
+    tx          = MARGIN
+    text_max_w  = PAGE_W - MARGIN * 2 - logos_total - 10 * mm
+
+    # H2
+    canvas_obj.setFillColor(BLACK)
+    canvas_obj.setFont(FONT_BOLD, FS_H2)
+    title_str = f"INFRASTRUKTUR INFORMASI VITAL (IIV) :: Tahun {meta.get('tahun', '')}"
+    canvas_obj.drawString(tx, PAGE_H - 14 * mm, title_str)
+
+    # H3
+    canvas_obj.setFont(FONT_BOLD, FS_H3)
+    pemilik = meta.get('pemilik_aset', 'PEMERINTAH PROVINSI BALI')
+    canvas_obj.drawString(tx, PAGE_H - 20 * mm, f"Pemilik Aset: {pemilik}")
+
+    # Description
+    desc = (
+        'Penilaian Infrastruktur Informasi Vital (IIV) dilakukan berdasarkan 5 dimensi dampak: '
+        'Operasional, Data/Informasi, Finansial, Umum/Sosial, dan Ketergantungan. '
+        'Aset dinyatakan VITAL apabila terdapat minimal 1 dimensi bernilai KRITIS, '
+        'atau minimal 3 dimensi bernilai TERBATAS. '
+        'Pemilik Aset bertanggung jawab atas keakuratan penilaian ini.'
     )
-    bold_small = ParagraphStyle(
-        'BoldSmall',
-        parent=normal,
-        fontName='Helvetica-Bold',
-        textColor=colors.HexColor('#1e293b'),
+    canvas_obj.setFont(FONT, FS_DESC)
+    canvas_obj.setFillColor(GRAY)
+
+    words   = desc.split()
+    lines   = []
+    current = ''
+    for w in words:
+        test = (current + ' ' + w).strip()
+        if canvas_obj.stringWidth(test, FONT, FS_DESC) <= text_max_w:
+            current = test
+        else:
+            if current:
+                lines.append(current)
+            current = w
+    if current:
+        lines.append(current)
+
+    line_y    = PAGE_H - 25 * mm
+    line_step = FS_DESC_LH * 0.3528
+    for ln in lines:
+        if line_y < bar_y + 2 * mm:
+            break
+        canvas_obj.drawString(tx, line_y, ln)
+        line_y -= line_step * mm
+
+    # Logos
+    logo1_x = PAGE_W - MARGIN - logos_total
+    logo2_x = logo1_x + logo_w + logo_gap
+    logo_y  = bar_y + (bar_h - logo_h) / 2
+
+    if isinstance(logo1_src, str) and not os.path.exists(logo1_src):
+        canvas_obj.setFillColor(WHITE)
+        canvas_obj.setStrokeColor(LGRAY)
+        canvas_obj.setLineWidth(0.5)
+        canvas_obj.rect(logo1_x, logo_y, logo_w, logo_h, fill=1, stroke=1)
+        canvas_obj.setFillColor(GRAY)
+        canvas_obj.setFont(FONT_BOLD, 5)
+        cx = logo1_x + logo_w / 2
+        canvas_obj.drawCentredString(cx, logo_y + logo_h / 2 + 2, 'BALIPROV')
+        canvas_obj.drawCentredString(cx, logo_y + logo_h / 2 - 4, 'CSIRT')
+    else:
+        canvas_obj.drawImage(logo1_src, logo1_x, logo_y,
+                             width=logo_w, height=logo_h,
+                             preserveAspectRatio=True, anchor='c')
+
+    if isinstance(logo2_src, str) and not os.path.exists(logo2_src):
+        badge_h = logo_h / 2 - 1
+        cx2 = logo2_x + logo_w / 2
+        canvas_obj.setFillColor(colors.HexColor('#dddddd'))
+        canvas_obj.setStrokeColor(BLACK)
+        canvas_obj.setLineWidth(0.8)
+        canvas_obj.rect(logo2_x, logo_y + badge_h + 2, logo_w, badge_h, fill=1, stroke=1)
+        canvas_obj.setFillColor(BLACK)
+        canvas_obj.setFont(FONT_BOLD, 6)
+        canvas_obj.drawCentredString(cx2, logo_y + badge_h + badge_h / 2 + 1, 'TLP:AMBER')
+        canvas_obj.setFillColor(BLACK)
+        canvas_obj.setStrokeColor(BLACK)
+        canvas_obj.rect(logo2_x, logo_y, logo_w, badge_h, fill=1, stroke=1)
+        canvas_obj.setFillColor(WHITE)
+        canvas_obj.setFont(FONT_BOLD, 6)
+        canvas_obj.drawCentredString(cx2, logo_y + badge_h / 2 - 2, '+STRICT')
+    else:
+        canvas_obj.drawImage(logo2_src, logo2_x, logo_y,
+                             width=logo_w, height=logo_h,
+                             preserveAspectRatio=True, anchor='c')
+
+    # Footer
+    canvas_obj.setFillColor(GRAY)
+    canvas_obj.setFont(FONT, FS_FOOTER)
+    canvas_obj.drawString(MARGIN, 6 * mm, f"Dicetak: {meta.get('generated_at', '')}")
+    canvas_obj.drawRightString(PAGE_W - MARGIN, 6 * mm,
+                               f"PERISAI  \u00b7  Hal {doc.page}")
+
+    canvas_obj.restoreState()
+
+
+def build_filter_summary(meta):
+    iiv_filter = meta.get('nilai_iiv', 'Semua')
+    parts = (
+        f"<b>OPD:</b> {meta.get('opd', 'Semua OPD')}  |  "
+        f"<b>Nilai IIV:</b> {iiv_filter}  |  "
+        f"<b>Total Aset:</b> {meta.get('total', 0)}  |  "
+        f"<b>Vital:</b> {meta.get('vital', 0)}  |  "
+        f"<b>Tidak Vital:</b> {meta.get('tidak_vital', 0)}  |  "
+        f"<b>Belum Dinilai:</b> {meta.get('belum', 0)}"
     )
-    center_small = ParagraphStyle(
-        'CenterSmall',
-        parent=normal,
-        alignment=TA_CENTER,
-    )
-    header_th = ParagraphStyle(
-        'HeaderTH',
-        parent=base['Normal'],
-        fontSize=7,
-        leading=9,
-        textColor=WHITE,
-        fontName='Helvetica-Bold',
-        alignment=TA_CENTER,
-    )
-    kode_style = ParagraphStyle(
-        'KodeStyle',
-        parent=normal,
-        fontName='Courier-Bold',
-        fontSize=7,
-        textColor=colors.HexColor('#4f46e5'),
-    )
-    return {
-        'normal': normal,
-        'bold': bold_small,
-        'center': center_small,
-        'th': header_th,
-        'kode': kode_style,
-    }
+    return Paragraph(parts, ParagraphStyle('fb',
+        fontName=FONT, fontSize=FS_SUMMARY,
+        textColor=BLACK, leading=FS_SUMMARY * 1.2))
 
 
-# ── Build PDF ─────────────────────────────────────────────────────────────────
-
-def build_pdf(payload: dict, output_path: str):
-    meta = payload.get('meta', {})
-    rows = payload.get('rows', [])
-
-    PAGE = landscape(A4)
-    MARGIN = 15 * mm
-
-    doc = SimpleDocTemplate(
-        output_path,
-        pagesize=PAGE,
-        leftMargin=MARGIN,
-        rightMargin=MARGIN,
-        topMargin=MARGIN,
-        bottomMargin=12 * mm,
-        title=f"Laporan IIV PERISAI {meta.get('tahun','')}",
-        author='PERISAI - Pemprov Bali',
-        subject='Infrastruktur Informasi Vital',
+def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
+    logo1_src = load_image_no_bg(logo1_path)
+    logo2_src = load_image_no_bg(logo2_path) if logo2_path.endswith('.png') else (
+        logo2_path if os.path.exists(logo2_path) else logo2_path
     )
 
-    styles = make_styles()
-    story  = []
-    W      = PAGE[0] - 2 * MARGIN  # lebar konten
+    doc = SimpleDocTemplate(output_path, pagesize=landscape(A4),
+        leftMargin=MARGIN, rightMargin=MARGIN,
+        topMargin=40 * mm, bottomMargin=13 * mm,
+        title=f"PERISAI IIV {meta.get('tahun', '')}",
+        author='PERISAI - Pemprov Bali')
 
-    # ── 1. Header ────────────────────────────────────────────────────────────
+    col_widths = [
+        10 * mm,   # NO
+        22 * mm,   # KODE ASET
+        60 * mm,   # NAMA ASET
+        38 * mm,   # SUB KLASIFIKASI
+        55 * mm,   # OPD
+        14 * mm,   # OPS
+        14 * mm,   # DATA
+        14 * mm,   # FIN
+        14 * mm,   # UMUM
+        16 * mm,   # KETERGT.
+        22 * mm,   # IIV
+    ]
 
-    # Logo placeholder (kotak navy)
-    logo_data = [[
-        Paragraph('<b>P</b>', ParagraphStyle(
-            'Logo', fontSize=22, textColor=WHITE, alignment=TA_CENTER,
-            fontName='Helvetica-Bold',
-        ))
+    hs = ParagraphStyle('th', fontName=FONT_BOLD, fontSize=FS_TH,
+                        textColor=BLACK, alignment=TA_CENTER,
+                        leading=FS_TH * 1.2, wordWrap='CJK')
+
+    table_data = [[
+        Paragraph('NO', hs),
+        Paragraph('KODE ASET', hs),
+        Paragraph('NAMA ASET', hs),
+        Paragraph('SUB\nKLASIFIKASI', hs),
+        Paragraph('OPD', hs),
+        Paragraph('OPS', hs),
+        Paragraph('DATA', hs),
+        Paragraph('FIN', hs),
+        Paragraph('UMUM', hs),
+        Paragraph('KETERGT.', hs),
+        Paragraph('IIV', hs),
     ]]
-    logo_tbl = Table(logo_data, colWidths=[14*mm], rowHeights=[14*mm])
-    logo_tbl.setStyle(TableStyle([
-        ('BACKGROUND', (0,0), (-1,-1), NAVY),
-        ('VALIGN',     (0,0), (-1,-1), 'MIDDLE'),
-        ('ALIGN',      (0,0), (-1,-1), 'CENTER'),
-        ('ROUNDEDCORNERS', [3]),
+
+    for row in rows:
+        ops_val  = row.get('dampak_operasional')
+        data_val = row.get('dampak_data_informasi')
+        fin_val  = row.get('dampak_finansial')
+        umum_val = row.get('dampak_umum')
+        ktrg_val = row.get('dampak_ketergantungan')
+        iiv_val  = row.get('nilai_iiv')
+
+        def dim_short(v):
+            try:
+                return DIM_SHORT.get(int(v), '-')
+            except (TypeError, ValueError):
+                return '-'
+
+        table_data.append([
+            cell(str(row['no']), align=TA_CENTER),
+            cell(row.get('kode_aset', ''), bold=True),
+            nama_cell(row.get('nama_aset', ''), row.get('keterangan', '')),
+            klas_cell(row.get('klasifikasi', '-'), row.get('sub_klasifikasi', '-')),
+            cell(row.get('opd', '-')),
+            cell(dim_short(ops_val),  align=TA_CENTER, bold=ops_val == 3),
+            cell(dim_short(data_val), align=TA_CENTER, bold=data_val == 3),
+            cell(dim_short(fin_val),  align=TA_CENTER, bold=fin_val == 3),
+            cell(dim_short(umum_val), align=TA_CENTER, bold=umum_val == 3),
+            cell(dim_short(ktrg_val), align=TA_CENTER, bold=ktrg_val == 3),
+            cell(IIV_LABELS.get(iiv_val, 'Belum dinilai') if iiv_val else 'Belum dinilai',
+                 bold=bool(iiv_val), align=TA_CENTER),
+        ])
+
+    tbl = Table(table_data, colWidths=col_widths, repeatRows=1)
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND',    (0, 0), (-1, 0),  WHITE),
+        ('FONTNAME',      (0, 0), (-1, 0),  FONT_BOLD),
+        ('FONTSIZE',      (0, 0), (-1, 0),  FS_TH),
+        ('ALIGN',         (0, 0), (-1, 0),  'CENTER'),
+        ('VALIGN',        (0, 0), (-1, 0),  'MIDDLE'),
+        ('BACKGROUND',    (0, 1), (-1, -1), WHITE),
+        ('FONTNAME',      (0, 1), (-1, -1), FONT),
+        ('FONTSIZE',      (0, 1), (-1, -1), FS_TD),
+        ('VALIGN',        (0, 1), (-1, -1), 'TOP'),
+        ('GRID',          (0, 0), (-1, -1), 0.75, BLACK),
+        ('BOX',           (0, 0), (-1, -1), 1.0,  BLACK),
+        ('TOPPADDING',    (0, 0), (-1, -1), 2),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('LEFTPADDING',   (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING',  (0, 0), (-1, -1), 4),
     ]))
 
-    title_para = Paragraph(
-        '<font color="#1e3a5f"><b>PERISAI</b></font>',
-        ParagraphStyle('Title', fontSize=16, fontName='Helvetica-Bold',
-                       textColor=NAVY, leading=18)
-    )
-    sub1_para = Paragraph(
-        '<b>Laporan Penilaian Infrastruktur Informasi Vital (IIV)</b>',
-        ParagraphStyle('Sub1', fontSize=9.5, fontName='Helvetica-Bold',
-                       textColor=colors.HexColor('#334155'), leading=12)
-    )
-    sub2_para = Paragraph(
-        'Pemerintah Provinsi Bali — Sistem Manajemen Keamanan Informasi',
-        ParagraphStyle('Sub2', fontSize=8, textColor=SLATE_LIGHT, leading=10)
-    )
-
-    header_tbl = Table(
-        [[logo_tbl, [title_para, sub1_para, sub2_para]]],
-        colWidths=[18*mm, W - 18*mm],
-    )
-    header_tbl.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        ('LEFTPADDING',  (1,0), (1,0), 8),
-        ('RIGHTPADDING', (0,0), (-1,-1), 0),
-        ('BOTTOMPADDING',(0,0), (-1,-1), 0),
-        ('TOPPADDING',   (0,0), (-1,-1), 0),
-    ]))
-    story.append(header_tbl)
-    story.append(HRFlowable(width=W, thickness=2.5, color=NAVY,
-                            spaceAfter=5, spaceBefore=6))
-
-    # Meta bar
-    meta_str = (
-        f"<b>Tahun:</b> {meta.get('tahun','-')}   "
-        f"<b>OPD:</b> {meta.get('opd','Semua OPD')}   "
-        f"<b>Filter IIV:</b> {meta.get('filter_iiv','Semua')}   "
-        f"<b>Dicetak:</b> {meta.get('generated_at','')}   "
-        f"<b>Oleh:</b> {meta.get('generated_by','-')}"
-    )
-    story.append(Paragraph(meta_str, ParagraphStyle(
-        'MetaBar', fontSize=7, textColor=SLATE, leading=10
-    )))
-    story.append(Spacer(1, 5*mm))
-
-    # ── 2. Stat boxes ─────────────────────────────────────────────────────────
-
-    stat_items = [
-        ('Total Aset',    str(meta.get('total',0)),    NAVY,         WHITE),
-        ('🔴 KRITIS',     str(meta.get('kritis',0)),   COL_KRITIS,   TXT_KRITIS),
-        ('🟠 TERBATAS',   str(meta.get('terbatas',0)), COL_TERBATAS, TXT_TERBATAS),
-        ('🟢 MINOR',      str(meta.get('minor',0)),    COL_MINOR,    TXT_MINOR),
-        ('⬜ Belum Dinilai', str(meta.get('belum',0)), COL_BELUM,    TXT_BELUM),
+    story = [
+        build_filter_summary(meta),
+        Spacer(1, 1 * mm),
+        tbl,
     ]
 
-    stat_cells = []
-    for label, val, bg, fg in stat_items:
-        cell = [
-            Paragraph(label, ParagraphStyle(
-                f'SL{label}', fontSize=6.5, textColor=fg if bg == NAVY else SLATE,
-                alignment=TA_CENTER, fontName='Helvetica-Bold', leading=8
-            )),
-            Paragraph(f'<b>{val}</b>', ParagraphStyle(
-                f'SV{label}', fontSize=20, textColor=fg,
-                alignment=TA_CENTER, fontName='Helvetica-Bold', leading=24
-            )),
-        ]
-        stat_cells.append(cell)
+    if not rows:
+        story.append(Spacer(1, 8 * mm))
+        story.append(Paragraph(
+            '<i>Tidak ada data aset yang sesuai dengan filter yang dipilih.</i>',
+            ParagraphStyle('e', fontName=FONT, fontSize=9,
+                           textColor=GRAY, alignment=TA_CENTER)))
 
-    stat_col_w = W / 5
-    stat_tbl = Table([stat_cells], colWidths=[stat_col_w] * 5, rowHeights=[18*mm])
-    stat_style = [
-        ('VALIGN',        (0,0), (-1,-1), 'MIDDLE'),
-        ('ALIGN',         (0,0), (-1,-1), 'CENTER'),
-        ('LEFTPADDING',   (0,0), (-1,-1), 4),
-        ('RIGHTPADDING',  (0,0), (-1,-1), 4),
-        ('TOPPADDING',    (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-        ('ROUNDEDCORNERS', [4]),
-    ]
-    for i, (_, _, bg, _) in enumerate(stat_items):
-        stat_style.append(('BACKGROUND', (i,0), (i,0), bg))
-        stat_style.append(('BOX', (i,0), (i,0),
-                           0.5, BORDER_KRITIS if bg == COL_KRITIS else
-                                BORDER_TERBATAS if bg == COL_TERBATAS else
-                                BORDER_MINOR if bg == COL_MINOR else
-                                colors.HexColor('#cbd5e1')))
-    stat_tbl.setStyle(TableStyle(stat_style))
-    story.append(stat_tbl)
-    story.append(Spacer(1, 4*mm))
+    doc.build(story,
+        onFirstPage=lambda c, d: make_header(c, d, meta, logo1_src, logo2_src),
+        onLaterPages=lambda c, d: make_header(c, d, meta, logo1_src, logo2_src))
 
-    # ── 3. Tabel data ─────────────────────────────────────────────────────────
-
-    # Lebar kolom (total = W)
-    # NO | KODE | NAMA ASET | OPD | KLAS | OPS | DATA | FIN | UMUM | KTRGT | IIV
-    CW = [
-        8*mm,   # no
-        22*mm,  # kode
-        55*mm,  # nama
-        48*mm,  # opd
-        28*mm,  # klasifikasi
-        14*mm,  # ops
-        14*mm,  # data
-        14*mm,  # fin
-        14*mm,  # umum
-        16*mm,  # ketergt
-        18*mm,  # nilai iiv
-    ]
-    # Sesuaikan sisa lebar ke nama aset & opd
-    used = sum(CW)
-    diff = W - used
-    CW[2] += diff / 2
-    CW[3] += diff / 2
-
-    th = styles['th']
-    headers = [
-        Paragraph('No', th),
-        Paragraph('Kode Aset', th),
-        Paragraph('Nama Aset', th),
-        Paragraph('OPD', th),
-        Paragraph('Klasifikasi', th),
-        Paragraph('Ops', th),
-        Paragraph('Data', th),
-        Paragraph('Fin', th),
-        Paragraph('Umum', th),
-        Paragraph('Ketergt.', th),
-        Paragraph('Nilai IIV', th),
-    ]
-
-    tbl_data = [headers]
-
-    for r in rows:
-        val_iiv = str(r.get('nilai_iiv', '—')).upper()
-        row_cells = [
-            Paragraph(str(r.get('no', '')), styles['center']),
-            Paragraph(str(r.get('kode_aset', '-')), styles['kode']),
-            Paragraph(
-                f"<b>{r.get('nama_aset','-')}</b>"
-                + (f"<br/><font size='6' color='#94a3b8'>{r.get('sub_klasifikasi','')}</font>"
-                   if r.get('sub_klasifikasi') else ''),
-                styles['normal']
-            ),
-            Paragraph(str(r.get('opd', '-')), styles['normal']),
-            Paragraph(str(r.get('klasifikasi', '-')), styles['center']),
-        ]
-        # 5 dimensi — tampilkan huruf K/T/M dengan warna
-        for dim_key in ['dampak_operasional', 'dampak_data_informasi', 'dampak_finansial',
-                        'dampak_umum', 'dampak_ketergantungan']:
-            val_dim = str(r.get(dim_key, '—')).upper()
-            short   = iiv_short(val_dim)
-            color   = iiv_txt(val_dim).hexval() if hasattr(iiv_txt(val_dim), 'hexval') else '#000000'
-            # Konversi color object ke hex string
-            txt_color = iiv_txt(val_dim)
-            hex_color = '#{:02X}{:02X}{:02X}'.format(
-                int(txt_color.red * 255),
-                int(txt_color.green * 255),
-                int(txt_color.blue * 255),
-            )
-            row_cells.append(Paragraph(
-                f'<font color="{hex_color}"><b>{short}</b></font>',
-                styles['center']
-            ))
-        # Nilai IIV final
-        row_cells.append(Paragraph(
-            f'<b>{val_iiv if val_iiv != "—" else "Belum"}</b>',
-            ParagraphStyle(
-                f'IivCell{r.get("no",0)}',
-                fontSize=7, fontName='Helvetica-Bold',
-                alignment=TA_CENTER,
-                textColor=iiv_txt(val_iiv),
-            )
-        ))
-        tbl_data.append(row_cells)
-
-    main_tbl = Table(tbl_data, colWidths=CW, repeatRows=1)
-
-    tbl_style = [
-        # Header row
-        ('BACKGROUND',    (0,0), (-1,0), NAVY),
-        ('TEXTCOLOR',     (0,0), (-1,0), WHITE),
-        ('FONTNAME',      (0,0), (-1,0), 'Helvetica-Bold'),
-        ('FONTSIZE',      (0,0), (-1,0), 7),
-        ('ALIGN',         (0,0), (-1,0), 'CENTER'),
-        ('VALIGN',        (0,0), (-1,0), 'MIDDLE'),
-        ('ROWBACKGROUNDS',(0,1), (-1,-1), [ROW_NORMAL, ROW_ALT]),
-        # Grid
-        ('GRID',          (0,0), (-1,-1), 0.4, colors.HexColor('#e2e8f0')),
-        ('LINEBELOW',     (0,0), (-1,0), 1,   NAVY_LIGHT),
-        # Padding
-        ('TOPPADDING',    (0,0), (-1,-1), 3),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
-        ('LEFTPADDING',   (0,0), (-1,-1), 4),
-        ('RIGHTPADDING',  (0,0), (-1,-1), 4),
-        # Vertikal align
-        ('VALIGN',        (0,1), (-1,-1), 'MIDDLE'),
-        # Kolom center: No, dimensi, IIV
-        ('ALIGN', (0,1), (0,-1), 'CENTER'),
-        ('ALIGN', (5,1), (-1,-1), 'CENTER'),
-    ]
-
-    # Warna background kolom nilai_iiv per baris
-    for i, r in enumerate(rows, start=1):
-        val = str(r.get('nilai_iiv', '')).upper()
-        bg = iiv_bg(val)
-        if bg != ROW_NORMAL:
-            tbl_style.append(('BACKGROUND', (10, i), (10, i), bg))
-
-    main_tbl.setStyle(TableStyle(tbl_style))
-    story.append(main_tbl)
-
-    # ── 4. Keterangan legend ──────────────────────────────────────────────────
-
-    story.append(Spacer(1, 5*mm))
-    legend_style = ParagraphStyle('Legend', fontSize=6.5, textColor=SLATE, leading=9)
-    legend_text = (
-        '<b>Keterangan Kolom:</b> '
-        '<b>Ops</b>=Dampak Operasional | '
-        '<b>Data</b>=Dampak Data/Informasi | '
-        '<b>Fin</b>=Dampak Finansial | '
-        '<b>Umum</b>=Dampak Umum/Sosial | '
-        '<b>Ketergt.</b>=Dampak Ketergantungan'
-        '<br/>'
-        '<b>Nilai:</b> '
-        '<font color="#dc2626"><b>K=KRITIS</b></font> (Gangguan skala nasional, pemulihan &gt;24 jam) | '
-        '<font color="#ea580c"><b>T=TERBATAS</b></font> (Gangguan lingkup provinsi, &lt;24 jam) | '
-        '<font color="#16a34a"><b>M=MINOR</b></font> (Gangguan sangat kecil / tidak berdampak)'
-        '<br/>'
-        '<b>Nilai IIV Final</b> = nilai tertinggi dari ke-5 dimensi. '
-        'Satu dimensi KRITIS sudah cukup menjadikan aset tersebut <font color="#dc2626"><b>KRITIS</b></font>.'
-    )
-    story.append(Paragraph(legend_text, legend_style))
-
-    # ── 5. Footer (via onFirstPage / onLaterPages) ────────────────────────────
-
-    def add_footer(canvas, doc):
-        canvas.saveState()
-        canvas.setFont('Helvetica', 6.5)
-        canvas.setFillColor(SLATE_LIGHT)
-
-        footer_y = 8 * mm
-        canvas.drawString(MARGIN, footer_y,
-                          'PERISAI — Pemerintah Provinsi Bali — Rahasia / Terbatas')
-        page_str = f'Halaman {doc.page}'
-        canvas.drawRightString(PAGE[0] - MARGIN, footer_y, page_str)
-
-        canvas.setStrokeColor(colors.HexColor('#e2e8f0'))
-        canvas.setLineWidth(0.5)
-        canvas.line(MARGIN, footer_y + 4*mm, PAGE[0] - MARGIN, footer_y + 4*mm)
-        canvas.restoreState()
-
-    doc.build(story, onFirstPage=add_footer, onLaterPages=add_footer)
-
-
-# ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        sys.stderr.write("Usage: echo '<json>' | python3 generate_iiv_pdf.py /tmp/output.pdf\n")
+        print('Usage: python3 generate_iiv_pdf.py <output_path>', file=sys.stderr)
         sys.exit(1)
-
-    output_path = sys.argv[1]
-
     try:
-        raw = sys.stdin.read()
-        if not raw.strip():
-            sys.stderr.write("ERROR: Tidak ada data JSON dari stdin.\n")
-            sys.exit(1)
-        payload = json.loads(raw)
+        payload = json.loads(sys.stdin.read())
     except json.JSONDecodeError as e:
-        sys.stderr.write(f"ERROR: JSON tidak valid — {e}\n")
+        print(f'JSON parse error: {e}', file=sys.stderr)
         sys.exit(1)
 
-    try:
-        build_pdf(payload, output_path)
-        sys.stdout.write(f"OK: {output_path}\n")
-    except Exception as e:
-        import traceback
-        sys.stderr.write(f"ERROR: Gagal generate PDF — {e}\n")
-        sys.stderr.write(traceback.format_exc())
-        sys.exit(1)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    public_dir = os.path.join(script_dir, '..', 'public', 'images')
+
+    meta       = payload.get('meta', {})
+    logo1_path = meta.get('logo1_path') or os.path.join(public_dir, 'logobaliprovcsirt.png')
+    logo2_path = meta.get('logo2_path') or os.path.join(public_dir, 'tlp', 'tlp_teaser_amber_strict.jpg')
+
+    build_pdf(sys.argv[1], meta, payload.get('rows', []), logo1_path, logo2_path)
+    print(f'PDF generated: {sys.argv[1]}', file=sys.stderr)

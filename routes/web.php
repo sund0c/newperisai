@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\KlasifikasiAsetController;
 use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\AssetDetailController;
 use App\Http\Controllers\Admin\AssetCriticalityController;
+use App\Http\Controllers\Admin\AssetIivController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\DashboardController;
@@ -180,20 +181,11 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             Route::put('/{assetId}',             [AssetCriticalityController::class, 'update'])->name('update');
             Route::get('/export-pdf',            [AssetCriticalityController::class, 'exportPdf'])->name('export-pdf');
         });
-    });
 
-    Route::prefix('asset-iiv')->name('admin.asset-iiv.')->group(function () {
-
-        // Halaman daftar aset + penilaian IIV
-        Route::get('/', [App\Http\Controllers\Admin\AssetIivController::class, 'index'])
-            ->name('index');
-
-        // Simpan / update penilaian IIV untuk satu aset (AJAX POST)
-        Route::post('/upsert/{asset}', [App\Http\Controllers\Admin\AssetIivController::class, 'upsert'])
-            ->name('upsert');
-
-        // Export PDF
-        Route::get('/export-pdf', [App\Http\Controllers\Admin\AssetIivController::class, 'exportPdf'])
-            ->name('export-pdf');
+        Route::prefix('asset-iiv')->name('asset-iiv.')->group(function () {
+            Route::get('/',                 [AssetIivController::class, 'index'])->name('index');
+            Route::put('/{asset}',          [AssetIivController::class, 'update'])->name('update');
+            Route::get('/export-pdf',       [AssetIivController::class, 'exportPdf'])->name('export-pdf');
+        });
     });
 });

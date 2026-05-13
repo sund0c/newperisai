@@ -35,19 +35,22 @@ class AssetIiv extends Model
 
     // ── Konstanta nilai ──────────────────────────────────────────
 
+    const TIDAK_VITAL = 1;
+    const VITAL       = 2;
+
+    // Nilai dimensi
     const MINOR    = 1;
     const TERBATAS = 2;
     const KRITIS   = 3;
 
     /**
-     * Label untuk setiap nilai numerik.
+     * Label untuk nilai IIV final.
      */
     public static function labelMap(): array
     {
         return [
-            self::MINOR    => 'MINOR',
-            self::TERBATAS => 'TERBATAS',
-            self::KRITIS   => 'KRITIS',
+            self::VITAL       => 'VITAL',
+            self::TIDAK_VITAL => 'TIDAK VITAL',
         ];
     }
 
@@ -152,10 +155,10 @@ class AssetIiv extends Model
 
     /**
      * Hitung nilai IIV berdasarkan ke-5 dimensi.
-     * Logika: max(5 dimensi)
-     *   → Ada satu KRITIS (3)   = KRITIS
-     *   → Ada satu TERBATAS (2) = TERBATAS
-     *   → Semua MINOR (1)       = MINOR
+     *
+     * VITAL     = ada minimal 1 dimensi KRITIS (3)
+     *             ATAU minimal 3 dimensi TERBATAS (2)
+     * TIDAK VITAL = selain kondisi di atas
      */
     public static function computeNilaiIiv(
         int $operasional,
@@ -164,7 +167,16 @@ class AssetIiv extends Model
         int $umum,
         int $ketergantungan
     ): int {
-        return max($operasional, $dataInformasi, $finansial, $umum, $ketergantungan);
+        $dims = [$operasional, $dataInformasi, $finansial, $umum, $ketergantungan];
+
+        $adaKritis       = in_array(self::KRITIS, $dims);
+        $jumlahTerbatas  = count(array_filter($dims, fn($v) => $v === self::TERBATAS));
+
+        if ($adaKritis || $jumlahTerbatas >= 3) {
+            return self::VITAL;
+        }
+
+        return self::TIDAK_VITAL;
     }
 
     // ── Accessors ────────────────────────────────────────────────
@@ -177,9 +189,8 @@ class AssetIiv extends Model
     public function getNilaiIivBadgeClassAttribute(): string
     {
         return match ($this->nilai_iiv) {
-            self::KRITIS   => 'badge-kritis',
-            self::TERBATAS => 'badge-terbatas',
-            default        => 'badge-minor',
+            self::VITAL => 'badge-vital',
+            default     => 'badge-tidak-vital',
         };
     }
 
