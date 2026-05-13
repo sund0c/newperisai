@@ -21,7 +21,7 @@ class AssetIiv extends Model
         'dampak_umum',
         'dampak_ketergantungan',
         'nilai_iiv',
-        'assessed_by',
+        'assessed_by',  // unsignedBigInteger — FK ke users.id
     ];
 
     protected $casts = [

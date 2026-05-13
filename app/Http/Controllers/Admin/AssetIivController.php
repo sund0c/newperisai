@@ -25,12 +25,8 @@ class AssetIivController extends Controller
         $isAdmin = $user->hasRole(['Super Admin', 'Admin']);
 
         // Base query: aset sesuai tahun konteks
-        $query = Asset::with([
-            'iiv',
-            'opd',
-            'klasifikasiAset',
-            'subKlasifikasiAset',
-        ])
+        // Relasi disesuaikan dengan nama yang ada di model Asset
+        $query = Asset::with(['iiv', 'opd', 'subKlasifikasi.klasifikasi'])
             ->where('tahunaktif_id', $tahunContext->id);
 
         // OPD user hanya lihat aset milik OPD-nya
@@ -43,11 +39,15 @@ class AssetIivController extends Controller
             $query->where('opd_id', $request->opd_id);
         }
 
-        // Filter: nilai IIV
+        // Filter: nilai IIV (termasuk unassessed)
         if ($request->filled('nilai_iiv')) {
-            $query->whereHas('iiv', function ($q) use ($request) {
-                $q->where('nilai_iiv', $request->nilai_iiv);
-            });
+            if ($request->nilai_iiv === 'unassessed') {
+                $query->whereDoesntHave('iiv');
+            } else {
+                $query->whereHas('iiv', function ($q) use ($request) {
+                    $q->where('nilai_iiv', $request->nilai_iiv);
+                });
+            }
         }
 
         // Filter: search nama/kode

@@ -78,8 +78,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('nilai_iiv')
                 ->comment('Nilai IIV final: max(5 dimensi)');
 
-            // Audit trail
-            $table->uuid('assessed_by')->nullable();
+            // Audit trail — tipe harus cocok dengan users.id (unsignedBigInteger)
+            $table->unsignedBigInteger('assessed_by')->nullable();
             $table->foreign('assessed_by')
                 ->references('id')
                 ->on('users')
