@@ -124,8 +124,8 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
     desc = (
         'Penilaian Kritikalitas Aset dilakukan berdasarkan aspek Confidentiality (C), Integrity (I), '
         'dan Availability (A). Nilai kritikalitas ditentukan dari nilai tertinggi di antara ketiga aspek tersebut. '
-        'Aset dengan kritikalitas Tinggi atau Sedang akan dilanjutkan ke proses Manajemen Risiko. '
-        'Pemilik Aset bertanggung jawab atas keakuratan penilaian ini.'
+        'Aset dengan kritikalitas TINGGI (T) atau SEDANG (S) akan dilanjutkan ke proses Manajemen Risiko. Di bawah itu bernilai RENDAH (R). '
+        'Pemilik Aset bertanggung jawab atas keakuratan penilaian ini dan lanjut melakukan manajemen risiko keamanan.'
     )
     canvas_obj.setFont(FONT, FS_DESC)
     canvas_obj.setFillColor(GRAY)

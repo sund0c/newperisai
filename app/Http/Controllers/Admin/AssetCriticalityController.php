@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
+
 
 class AssetCriticalityController extends Controller
 {
@@ -29,7 +31,7 @@ class AssetCriticalityController extends Controller
             'subKlasifikasi.klasifikasi',
             'criticality',
         ])
-            ->where('TahunAktif_id', $tahunId);
+            ->where('tahunaktif_id', $tahunId);
 
         // Filter: search
         if ($search = $request->search) {
@@ -76,11 +78,11 @@ class AssetCriticalityController extends Controller
         $assets = $query->paginate(20)->withQueryString();
 
         // ── Stats ─────────────────────────────────────────────
-        $totalAset = Asset::where('TahunAktif_id', $tahunId)->count();
+        $totalAset = Asset::where('tahunaktif_id', $tahunId)->count();
 
         $critBase = AssetCriticality::whereHas(
             'asset',
-            fn($q) => $q->where('TahunAktif_id', $tahunId)
+            fn($q) => $q->where('tahunaktif_id', $tahunId)
         );
 
         $totalTinggi  = (clone $critBase)->where('kritikalitas', 3)->count();
@@ -165,7 +167,7 @@ class AssetCriticalityController extends Controller
             ?? TahunAktif::getActive();
 
         $query = Asset::with(['opd', 'subKlasifikasi.klasifikasi', 'criticality'])
-            ->where('TahunAktif_id', $tahunContext?->id);
+            ->where('tahunaktif_id', $tahunContext?->id);
 
         if ($opdId = $request->opd_id) {
             $query->where('opd_id', $opdId);
@@ -244,5 +246,64 @@ class AssetCriticalityController extends Controller
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ])->deleteFileAfterSend(true);
+    }
+
+    public function bulkUpdate(Request $request): RedirectResponse
+    {
+
+        $validated = $request->validate([
+            'asset_ids'       => ['required', 'array', 'min:1'],
+            'asset_ids.*'     => ['required', 'exists:assets,id'],
+            'confidentiality' => ['required', 'integer', 'in:1,2,3'],
+            'integrity'       => ['required', 'integer', 'in:1,2,3'],
+            'availability'    => ['required', 'integer', 'in:1,2,3'],
+        ]);
+
+
+        $c   = (int) $validated['confidentiality'];
+        $i   = (int) $validated['integrity'];
+        $a   = (int) $validated['availability'];
+
+        $kritikalitas = AssetCriticality::computeKritikalitas($c, $i, $a);
+
+        // Konsisten dengan index() dan exportPdf()
+        $tahunContext  = TahunAktif::find(session('tahun_context'))
+            ?? TahunAktif::getActive();
+        $activeTahunId = $tahunContext?->id;
+
+
+
+        abort_if(!$activeTahunId, 403, 'Tahun aktif tidak ditemukan.');
+
+        $updated = 0;
+
+        DB::transaction(function () use ($validated, $c, $i, $a, $kritikalitas, $activeTahunId, &$updated) {
+            foreach ($validated['asset_ids'] as $assetId) {
+                $asset = Asset::find($assetId);
+
+                // CRUD guard — pakai casing tahunaktif_id sesuai index()
+                if (!$asset || (string) $asset->tahunaktif_id !== (string) $activeTahunId) {
+                    continue;
+                }
+
+                AssetCriticality::updateOrCreate(
+                    ['asset_id' => $assetId],
+                    [
+                        'confidentiality' => $c,
+                        'integrity'       => $i,
+                        'availability'    => $a,
+                        'kritikalitas'    => $kritikalitas,
+                        'assessed_by'     => Auth::id(),
+                    ]
+                );
+
+                $updated++;
+            }
+        });
+
+
+        $levelLabel = AssetCriticality::$LEVEL_LABELS[$kritikalitas];
+
+        return back()->with('success', "Berhasil menyimpan penilaian CIA (<strong>{$levelLabel}</strong>) untuk <strong>{$updated}</strong> aset.");
     }
 }

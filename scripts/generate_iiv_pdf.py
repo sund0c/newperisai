@@ -125,9 +125,9 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
     desc = (
         'Penilaian Infrastruktur Informasi Vital (IIV) dilakukan berdasarkan 5 dimensi dampak: '
         'Operasional, Data/Informasi, Finansial, Umum/Sosial, dan Ketergantungan. '
-        'Aset dinyatakan VITAL apabila terdapat minimal 1 dimensi bernilai KRITIS, '
-        'atau minimal 3 dimensi bernilai TERBATAS. '
-        'Pemilik Aset bertanggung jawab atas keakuratan penilaian ini.'
+        'Aset dinyatakan VITAL apabila terdapat minimal 1 dimensi bernilai KRITIS (K), '
+        'atau minimal 3 dimensi bernilai TERBATAS (T), di bawah itu MINOR (M). '
+        'Pemilik Aset bertanggung jawab atas keakuratan penilaian ini. Khusus untuk aset VITAL, wajib dilaporkan ke Badan Siber dan Sandi Negara (BSSN) untuk ditetapkan.'
     )
     canvas_obj.setFont(FONT, FS_DESC)
     canvas_obj.setFillColor(GRAY)

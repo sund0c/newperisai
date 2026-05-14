@@ -177,12 +177,14 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             ->name('assets.detail.export-pdf');
 
         Route::prefix('asset-criticality')->name('asset-criticality.')->group(function () {
+            Route::post('/bulk-update', [AssetCriticalityController::class, 'bulkUpdate'])->name('bulk-update');
             Route::get('/',                      [AssetCriticalityController::class, 'index'])->name('index');
             Route::put('/{assetId}',             [AssetCriticalityController::class, 'update'])->name('update');
             Route::get('/export-pdf',            [AssetCriticalityController::class, 'exportPdf'])->name('export-pdf');
         });
 
         Route::prefix('asset-iiv')->name('asset-iiv.')->group(function () {
+            Route::post('/bulk-update', [AssetIivController::class, 'bulkUpdate'])->name('bulk-update');
             Route::get('/',                 [AssetIivController::class, 'index'])->name('index');
             Route::put('/{asset}',          [AssetIivController::class, 'update'])->name('update');
             Route::get('/export-pdf',       [AssetIivController::class, 'exportPdf'])->name('export-pdf');

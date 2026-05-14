@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
 
 class AssetIivController extends Controller
 {
@@ -259,5 +260,64 @@ class AssetIivController extends Controller
             'Content-Type'        => 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $filename . '"',
         ])->deleteFileAfterSend(true);
+    }
+
+    public function bulkUpdate(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'asset_ids'               => ['required', 'array', 'min:1'],
+            'asset_ids.*'             => ['required', 'exists:assets,id'],
+            'dampak_operasional'      => ['required', 'in:1,2,3'],
+            'dampak_data_informasi'   => ['required', 'in:1,2,3'],
+            'dampak_finansial'        => ['required', 'in:1,2,3'],
+            'dampak_umum'             => ['required', 'in:1,2,3'],
+            'dampak_ketergantungan'   => ['required', 'in:1,2,3'],
+        ]);
+
+        $dims = [
+            'dampak_operasional'    => (int) $validated['dampak_operasional'],
+            'dampak_data_informasi' => (int) $validated['dampak_data_informasi'],
+            'dampak_finansial'      => (int) $validated['dampak_finansial'],
+            'dampak_umum'           => (int) $validated['dampak_umum'],
+            'dampak_ketergantungan' => (int) $validated['dampak_ketergantungan'],
+        ];
+
+        // nilai_iiv = nilai tertinggi dari 5 dimensi (logika sama dengan update individual)
+        $nilaiIIV = max(array_values($dims));
+
+        $tahunContext  = TahunAktif::find(session('tahun_context'))
+            ?? TahunAktif::getActive();
+        $activeTahunId = $tahunContext?->id;
+
+        abort_if(!$activeTahunId, 403, 'Tahun aktif tidak ditemukan.');
+
+        $updated = 0;
+
+        DB::transaction(function () use ($validated, $dims, $nilaiIIV, $activeTahunId, &$updated) {
+            foreach ($validated['asset_ids'] as $assetId) {
+                $asset = Asset::find($assetId);
+
+                if (!$asset || (string) $asset->tahunaktif_id !== (string) $activeTahunId) {
+                    continue;
+                }
+
+                // Sesuaikan nama model dengan yang ada di project (AssetIIV / AssetVital / dll)
+                AssetIIV::updateOrCreate(
+                    ['asset_id' => $assetId],
+                    array_merge($dims, [
+                        'nilai_iiv'   => $nilaiIIV,
+                        'assessed_by' => Auth::id(),
+                    ])
+                );
+
+                $updated++;
+            }
+        });
+
+        $label = $nilaiIIV >= 2 ? 'VITAL' : 'TIDAK VITAL';
+
+        return redirect()
+            ->route('admin.asset-iiv.index', request()->only(['search', 'opd_id', 'nilai_iiv', 'sort', 'direction']))
+            ->with('success', "Berhasil menyimpan penilaian IIV (<strong>{$label}</strong>) untuk <strong>{$updated}</strong> aset.");
     }
 }
