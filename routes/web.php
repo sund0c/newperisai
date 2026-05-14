@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\AssetController;
 use App\Http\Controllers\Admin\AssetDetailController;
 use App\Http\Controllers\Admin\AssetCriticalityController;
 use App\Http\Controllers\Admin\AssetIivController;
+use App\Http\Controllers\Admin\SeVersionController;
+use App\Http\Controllers\Admin\SeIndikatorController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\DashboardController;
@@ -188,6 +190,21 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             Route::get('/',                 [AssetIivController::class, 'index'])->name('index');
             Route::put('/{asset}',          [AssetIivController::class, 'update'])->name('update');
             Route::get('/export-pdf',       [AssetIivController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('master-se')->name('master-se.')->group(function () {
+            // ─── Versi ────────────────────────────────────────────────────
+            Route::get('/',                            [SeVersionController::class, 'index'])->name('index');
+            Route::post('/store-version',              [SeVersionController::class, 'storeVersion'])->name('store-version');
+            Route::get('/{seVersion}',                 [SeVersionController::class, 'show'])->name('show');
+            Route::patch('/{seVersion}/activate',      [SeVersionController::class, 'activate'])->name('activate');
+            Route::patch('/{seVersion}/deactivate',    [SeVersionController::class, 'deactivate'])->name('deactivate');
+            Route::delete('/{seVersion}',              [SeVersionController::class, 'destroy'])->name('destroy');
+
+            // ─── Indikator (nested di bawah versi) ────────────────────────
+            Route::post('/{seVersion}/indikator',                          [SeIndikatorController::class, 'store'])->name('indikator.store');
+            Route::put('/{seVersion}/indikator/{indikator}',               [SeIndikatorController::class, 'update'])->name('indikator.update');
+            Route::delete('/{seVersion}/indikator/{indikator}',            [SeIndikatorController::class, 'destroy'])->name('indikator.destroy');
         });
     });
 });
