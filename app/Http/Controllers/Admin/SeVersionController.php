@@ -14,7 +14,7 @@ class SeVersionController extends Controller
     // ─── Index ────────────────────────────────────────────────────
     public function index()
     {
-        $versions = SeVersion::withCount(['indikators', 'penilaians'])
+        $versions = SeVersion::withCount(['indikators'])
             ->orderByDesc('created_at')
             ->paginate(15);
 
@@ -49,7 +49,6 @@ class SeVersionController extends Controller
     public function show(SeVersion $seVersion)
     {
         $seVersion->load('indikators', 'createdBy', 'activatedBy');
-        $seVersion->loadCount('penilaians');
         return view('admin.master-se.show', compact('seVersion'));
     }
 
@@ -59,9 +58,6 @@ class SeVersionController extends Controller
         if ($seVersion->is_active) {
             return back()->with('error', 'Versi yang sedang aktif tidak dapat diedit.');
         }
-        if ($seVersion->penilaians()->count() > 0) {
-            return back()->with('error', 'Versi yang sudah digunakan untuk penilaian tidak dapat diedit.');
-        }
 
         $seVersion->load('indikators');
         return view('admin.master-se.edit', compact('seVersion'));
@@ -70,7 +66,7 @@ class SeVersionController extends Controller
     // ─── Update indikator ─────────────────────────────────────────
     public function update(Request $request, SeVersion $seVersion)
     {
-        if ($seVersion->is_active || $seVersion->penilaians()->count() > 0) {
+        if ($seVersion->is_active) {
             return back()->with('error', 'Versi tidak dapat diubah.');
         }
 
@@ -164,10 +160,6 @@ class SeVersionController extends Controller
         if ($seVersion->is_active) {
             return back()->with('error', 'Versi yang sedang aktif tidak dapat dihapus. Aktifkan versi lain terlebih dahulu.');
         }
-        if ($seVersion->penilaians()->count() > 0) {
-            return back()->with('error', 'Versi yang sudah digunakan untuk penilaian tidak dapat dihapus.');
-        }
-
         // Cek apakah setelah dihapus masih ada versi aktif
         $adaAktifLain = SeVersion::where('id', '!=', $seVersion->id)->where('is_active', true)->exists();
         if (!$adaAktifLain) {

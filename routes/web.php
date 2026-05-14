@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\AssetCriticalityController;
 use App\Http\Controllers\Admin\AssetIivController;
 use App\Http\Controllers\Admin\SeVersionController;
 use App\Http\Controllers\Admin\SeIndikatorController;
+use App\Http\Controllers\Admin\AssetSeController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\DashboardController;
@@ -205,6 +206,13 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             Route::post('/{seVersion}/indikator',                          [SeIndikatorController::class, 'store'])->name('indikator.store');
             Route::put('/{seVersion}/indikator/{indikator}',               [SeIndikatorController::class, 'update'])->name('indikator.update');
             Route::delete('/{seVersion}/indikator/{indikator}',            [SeIndikatorController::class, 'destroy'])->name('indikator.destroy');
+        });
+
+        Route::prefix('asset-se')->name('asset-se.')->group(function () {
+            Route::get('/',                         [AssetSeController::class, 'index'])->name('index');
+            Route::put('/{asset}',                  [AssetSeController::class, 'update'])->name('update');
+            Route::post('/bulk-update',             [AssetSeController::class, 'bulkUpdate'])->name('bulk-update');
+            Route::get('/export-pdf',               [AssetSeController::class, 'exportPdf'])->name('export-pdf');
         });
     });
 });

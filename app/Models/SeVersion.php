@@ -35,10 +35,6 @@ class SeVersion extends Model
         return $this->hasMany(SeIndikator::class, 'se_version_id')->orderBy('urutan');
     }
 
-    public function penilaians(): HasMany
-    {
-        return $this->hasMany(SePenilaian::class, 'se_version_id');
-    }
 
     public function createdBy(): BelongsTo
     {
@@ -85,10 +81,6 @@ class SeVersion extends Model
         return $this->indikators()->count();
     }
 
-    public function getPenilaianCountAttribute(): int
-    {
-        return $this->penilaians()->count();
-    }
 
     /**
      * Versi bisa diaktifkan hanya jika memiliki indikator.
@@ -100,10 +92,5 @@ class SeVersion extends Model
     }
 
     /**
-     * Versi yang sudah punya penilaian tidak boleh dihapus permanent.
      */
-    public function canBeDeleted(): bool
-    {
-        return $this->penilaians()->count() === 0;
-    }
 }

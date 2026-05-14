@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\AssetCriticality;
+use App\Models\AssetSePenilaian;
 
 class Asset extends Model
 {
@@ -94,5 +95,10 @@ class Asset extends Model
     public function iiv(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(\App\Models\AssetIiv::class, 'asset_id');
+    }
+
+    public function sePenilaian(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\AssetSePenilaian::class, 'asset_id');
     }
 }

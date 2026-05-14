@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-PERISAI — Infrastruktur Informasi Vital (IIV) PDF Generator
-Same structure as generate_criticality_pdf.py
-Columns: NO | KODE ASET | NAMA ASET | SUB KLASIFIKASI | OPD | OPS | DATA | FIN | UMUM | KETERGT. | IIV
+PERISAI — Kategorisasi Sistem Elektronik (SE) PDF Generator
+Meniru struktur generate_iiv_pdf.py
+Columns: NO | KODE ASET | NAMA ASET | SUB KLASIFIKASI | OPD | TOTAL NILAI | KATEGORI SE
 """
 
 import sys
@@ -45,12 +45,11 @@ FS_FOOTER  = 7
 FONT      = 'Helvetica'
 FONT_BOLD = 'Helvetica-Bold'
 
-# Nilai dimensi
-DIM_LABELS = {3: 'KRITIS', 2: 'TERBATAS', 1: 'MINOR'}
-DIM_SHORT  = {3: 'K', 2: 'T', 1: 'M'}
-
-# Nilai IIV final
-IIV_LABELS = {2: 'VITAL', 1: 'TIDAK VITAL'}
+SE_LABELS = {
+    'STRATEGIS': 'STRATEGIS',
+    'TINGGI':    'TINGGI',
+    'RENDAH':    'RENDAH',
+}
 
 
 def load_image_no_bg(path):
@@ -113,10 +112,11 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
     # H2
     canvas_obj.setFillColor(BLACK)
     canvas_obj.setFont(FONT_BOLD, FS_H2)
-    title_str = f"INFRASTRUKTUR INFORMASI VITAL (IIV) :: Tahun {meta.get('tahun', '')}"
+    versi = meta.get('versi_se', '-')
+    title_str = f"KATEGORISASI SE:: Tahun {meta.get('tahun', '')}"
     canvas_obj.drawString(tx, PAGE_H - 14 * mm, title_str)
 
-    # H3 — nama OPD jika filter OPD dipilih, atau Pemprov Bali (semua OPD)
+    # H3
     canvas_obj.setFont(FONT_BOLD, FS_H3)
     opd = meta.get('opd', '')
     if opd and opd != 'Semua OPD':
@@ -127,11 +127,12 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
 
     # Description
     desc = (
-        'Penilaian Infrastruktur Informasi Vital (IIV) dilakukan berdasarkan 5 dimensi dampak: '
-        'Operasional, Data/Informasi, Finansial, Umum/Sosial, dan Ketergantungan. '
-        'Aset dinyatakan VITAL apabila terdapat minimal 1 dimensi bernilai KRITIS (K), '
-        'atau minimal 3 dimensi bernilai TERBATAS (T), di bawah itu MINOR (M). '
-        'Pemilik Aset bertanggung jawab atas keakuratan penilaian ini. Khusus untuk aset VITAL, wajib dilaporkan ke Badan Siber dan Sandi Negara (BSSN) untuk ditetapkan.'
+        'Kategorisasi Sistem Elektronik (SE) dilakukan berdasarkan 10 indikator penilaian '
+        'dengan pilihan jawaban A (skor 5), B (skor 2), atau C (skor 1). '
+        'Total skor di atas 35 dikategorikan STRATEGIS, total skor 16 s/d 34 dikategorikan TINGGI, '
+        'di bawah itu dikategorikan RENDAH. Kategori STRATEGIS wajib memenuhi standard ISO 27001. TINGGI wajib memenuhi standard BSSN/SMKI Pemprov Bali.'
+        'Penilaian ini hanya berlaku untuk aset klasifikasi Perangkat Lunak.'
+        'Pemilik Aset bertanggung jawab atas keakuratan penilaian ini.'
     )
     canvas_obj.setFont(FONT, FS_DESC)
     canvas_obj.setFillColor(GRAY)
@@ -210,12 +211,13 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
 
 
 def build_filter_summary(meta):
-    iiv_filter = meta.get('nilai_iiv', 'Semua')
     parts = (
-        f"<b>Nilai IIV:</b> {iiv_filter}  |  "
+        f"<b>Kategori SE:</b> {meta.get('kategori_se', 'Semua')}  |  "
+        f"<b>Versi SE:</b> {meta.get('versi_se', '-')}  |  "
         f"<b>Total Aset:</b> {meta.get('total', 0)}  |  "
-        f"<b>Vital:</b> {meta.get('vital', 0)}  |  "
-        f"<b>Tidak Vital:</b> {meta.get('tidak_vital', 0)}  |  "
+        f"<b>Strategis:</b> {meta.get('strategis', 0)}  |  "
+        f"<b>Tinggi:</b> {meta.get('tinggi', 0)}  |  "
+        f"<b>Rendah:</b> {meta.get('rendah', 0)}  |  "
         f"<b>Belum Dinilai:</b> {meta.get('belum', 0)}"
     )
     return Paragraph(parts, ParagraphStyle('fb',
@@ -232,21 +234,17 @@ def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
     doc = SimpleDocTemplate(output_path, pagesize=landscape(A4),
         leftMargin=MARGIN, rightMargin=MARGIN,
         topMargin=40 * mm, bottomMargin=13 * mm,
-        title=f"PERISAI IIV {meta.get('tahun', '')}",
+        title=f"PERISAI SE {meta.get('tahun', '')}",
         author='PERISAI - Pemprov Bali')
 
     col_widths = [
         10 * mm,   # NO
         22 * mm,   # KODE ASET
-        60 * mm,   # NAMA ASET
-        38 * mm,   # SUB KLASIFIKASI
-        55 * mm,   # OPD
-        14 * mm,   # OPS
-        14 * mm,   # DATA
-        14 * mm,   # FIN
-        14 * mm,   # UMUM
-        16 * mm,   # KETERGT.
-        22 * mm,   # IIV
+        70 * mm,   # NAMA ASET
+        50 * mm,   # KLAS / SUB KLAS
+        70 * mm,   # OPD
+        20 * mm,   # TOTAL NILAI
+        30 * mm,   # KATEGORI SE
     ]
 
     hs = ParagraphStyle('th', fontName=FONT_BOLD, fontSize=FS_TH,
@@ -257,29 +255,18 @@ def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
         Paragraph('NO', hs),
         Paragraph('KODE ASET', hs),
         Paragraph('NAMA ASET', hs),
-        Paragraph('SUB\nKLASIFIKASI', hs),
+        Paragraph('SUB KLAS / KLAS', hs),
         Paragraph('OPD', hs),
-        Paragraph('OPS', hs),
-        Paragraph('DATA', hs),
-        Paragraph('FIN', hs),
-        Paragraph('UMUM', hs),
-        Paragraph('KETERGT.', hs),
-        Paragraph('IIV', hs),
+        Paragraph('SKOR', hs),
+        Paragraph('KATEGORI SE', hs),
     ]]
 
     for row in rows:
-        ops_val  = row.get('dampak_operasional')
-        data_val = row.get('dampak_data_informasi')
-        fin_val  = row.get('dampak_finansial')
-        umum_val = row.get('dampak_umum')
-        ktrg_val = row.get('dampak_ketergantungan')
-        iiv_val  = row.get('nilai_iiv')
+        total_nilai = row.get('total_nilai')
+        kategori    = row.get('kategori_se')
 
-        def dim_short(v):
-            try:
-                return DIM_SHORT.get(int(v), '-')
-            except (TypeError, ValueError):
-                return '-'
+        total_str = f"{total_nilai}" if total_nilai is not None else '-'
+        kat_str   = SE_LABELS.get(kategori, 'Belum dinilai') if kategori else 'Belum dinilai'
 
         table_data.append([
             cell(str(row['no']), align=TA_CENTER),
@@ -287,13 +274,8 @@ def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
             nama_cell(row.get('nama_aset', ''), row.get('keterangan', '')),
             klas_cell(row.get('klasifikasi', '-'), row.get('sub_klasifikasi', '-')),
             cell(row.get('opd', '-')),
-            cell(dim_short(ops_val),  align=TA_CENTER, bold=ops_val == 3),
-            cell(dim_short(data_val), align=TA_CENTER, bold=data_val == 3),
-            cell(dim_short(fin_val),  align=TA_CENTER, bold=fin_val == 3),
-            cell(dim_short(umum_val), align=TA_CENTER, bold=umum_val == 3),
-            cell(dim_short(ktrg_val), align=TA_CENTER, bold=ktrg_val == 3),
-            cell(IIV_LABELS.get(iiv_val, 'Belum dinilai') if iiv_val else 'Belum dinilai',
-                 bold=bool(iiv_val), align=TA_CENTER),
+            cell(total_str, align=TA_CENTER, bold=total_nilai is not None),
+            cell(kat_str, bold=bool(kategori), align=TA_CENTER),
         ])
 
     tbl = Table(table_data, colWidths=col_widths, repeatRows=1)
@@ -335,7 +317,7 @@ def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        print('Usage: python3 generate_iiv_pdf.py <output_path>', file=sys.stderr)
+        print('Usage: python3 generate_se_pdf.py <output_path>', file=sys.stderr)
         sys.exit(1)
     try:
         payload = json.loads(sys.stdin.read())

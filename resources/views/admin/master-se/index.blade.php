@@ -191,25 +191,16 @@
                                         </form>
 
                                         {{-- Hapus --}}
-                                        @if ($version->penilaians_count === 0)
-                                            <form action="{{ route('admin.master-se.destroy', $version) }}" method="POST"
-                                                onsubmit="return confirm('Hapus versi {{ $version->kode }}? Tindakan ini tidak dapat dibatalkan.')">
-                                                @csrf @method('DELETE')
-                                                <button type="submit"
-                                                    class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                           bg-red-50 text-red-600 hover:bg-red-100
-                                                           border border-red-200 transition-colors">
-                                                    Hapus
-                                                </button>
-                                            </form>
-                                        @else
-                                            <span title="Versi sudah digunakan untuk penilaian"
+                                        <form action="{{ route('admin.master-se.destroy', $version) }}" method="POST"
+                                            onsubmit="return confirm('Hapus versi {{ $version->kode }}? Tindakan ini tidak dapat dibatalkan.')">
+                                            @csrf @method('DELETE')
+                                            <button type="submit"
                                                 class="px-3 py-1.5 rounded-lg text-xs font-semibold
-                                                       bg-gray-50 text-gray-300 border border-gray-200
-                                                       cursor-not-allowed select-none">
+                                                       bg-red-50 text-red-600 hover:bg-red-100
+                                                       border border-red-200 transition-colors">
                                                 Hapus
-                                            </span>
-                                        @endif
+                                            </button>
+                                        </form>
                                     @endif
 
                                 </div>

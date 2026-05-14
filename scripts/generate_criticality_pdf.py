@@ -115,9 +115,13 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
         title_str = f"KRITIKALITAS ASET :: Tahun {meta.get('tahun', '')}"
     canvas_obj.drawString(tx, PAGE_H - 14 * mm, title_str)
 
-    # H3
+    # H3 — nama OPD jika filter OPD dipilih, atau Pemprov Bali (semua OPD)
     canvas_obj.setFont(FONT_BOLD, FS_H3)
-    pemilik = meta.get('pemilik_aset', 'PEMERINTAH PROVINSI BALI')
+    opd = meta.get('opd', '')
+    if opd and opd != 'Semua OPD':
+        pemilik = opd
+    else:
+        pemilik = 'PEMERINTAH PROVINSI BALI (Semua OPD)'
     canvas_obj.drawString(tx, PAGE_H - 20 * mm, f"Pemilik Aset: {pemilik}")
 
     # Description
@@ -206,7 +210,6 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
 def build_filter_summary(meta):
     kritikalitas = meta.get('kritikalitas', 'Semua')
     parts = (
-        f"<b>OPD:</b> {meta.get('opd', 'Semua OPD')}  |  "
         f"<b>Klasifikasi:</b> {meta.get('klasifikasi', 'Semua')}  |  "
         f"<b>Kritikalitas:</b> {kritikalitas}  |  "
         f"<b>Total Aset:</b> {meta.get('total', 0)}"
