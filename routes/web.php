@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\AssetIivController;
 use App\Http\Controllers\Admin\SeVersionController;
 use App\Http\Controllers\Admin\SeIndikatorController;
 use App\Http\Controllers\Admin\AssetSeController;
+use App\Http\Controllers\Admin\RopaActivityController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\DashboardController;
@@ -213,6 +214,18 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             Route::put('/{asset}',                  [AssetSeController::class, 'update'])->name('update');
             Route::post('/bulk-update',             [AssetSeController::class, 'bulkUpdate'])->name('bulk-update');
             Route::get('/export-pdf',               [AssetSeController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        Route::prefix('ropa')->name('ropa.')->group(function () {
+            Route::get('/',                     [RopaActivityController::class, 'index'])->name('index');
+            Route::get('/create',               [RopaActivityController::class, 'create'])->name('create');
+            Route::post('/',                    [RopaActivityController::class, 'store'])->name('store');
+            Route::get('/{ropaActivity}',       [RopaActivityController::class, 'show'])->name('show');
+            Route::get('/{ropaActivity}/edit',  [RopaActivityController::class, 'edit'])->name('edit');
+            Route::put('/{ropaActivity}',       [RopaActivityController::class, 'update'])->name('update');
+            Route::delete('/{ropaActivity}',    [RopaActivityController::class, 'destroy'])->name('destroy');
+            Route::get('/export-pdf',              [RopaActivityController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/{ropaActivity}/pdf',      [RopaActivityController::class, 'exportDetailPdf'])->name('detail-pdf');
         });
     });
 });
