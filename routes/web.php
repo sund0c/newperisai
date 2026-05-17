@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AssetSeController;
 use App\Http\Controllers\Admin\RopaActivityController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
+use App\Http\Controllers\Admin\DpiaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PrivacyController;
@@ -219,13 +220,23 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
         Route::prefix('ropa')->name('ropa.')->group(function () {
             Route::get('/',                     [RopaActivityController::class, 'index'])->name('index');
             Route::get('/create',               [RopaActivityController::class, 'create'])->name('create');
+            Route::get('/export-pdf',           [RopaActivityController::class, 'exportPdf'])->name('export-pdf');  // ← naik ke sini
             Route::post('/',                    [RopaActivityController::class, 'store'])->name('store');
+            Route::get('/{ropaActivity}/pdf',   [RopaActivityController::class, 'exportDetailPdf'])->name('detail-pdf');  // ← naik ke sini
             Route::get('/{ropaActivity}',       [RopaActivityController::class, 'show'])->name('show');
             Route::get('/{ropaActivity}/edit',  [RopaActivityController::class, 'edit'])->name('edit');
             Route::put('/{ropaActivity}',       [RopaActivityController::class, 'update'])->name('update');
             Route::delete('/{ropaActivity}',    [RopaActivityController::class, 'destroy'])->name('destroy');
-            Route::get('/export-pdf',              [RopaActivityController::class, 'exportPdf'])->name('export-pdf');
-            Route::get('/{ropaActivity}/pdf',      [RopaActivityController::class, 'exportDetailPdf'])->name('detail-pdf');
+        });
+
+        Route::prefix('dpia')->name('dpia.')->group(function () {
+            Route::get('/',                 [DpiaController::class, 'index'])->name('index');
+            Route::get('/create',           [DpiaController::class, 'create'])->name('create');
+            Route::post('/',                [DpiaController::class, 'store'])->name('store');
+            Route::get('/{dpia}',           [DpiaController::class, 'edit'])->name('edit');
+            Route::put('/{dpia}',           [DpiaController::class, 'update'])->name('update');
+            Route::delete('/{dpia}',        [DpiaController::class, 'destroy'])->name('destroy');
+            Route::get('/{dpia}/pdf',       [DpiaController::class, 'exportDetailPdf'])->name('detail-pdf');
         });
     });
 });

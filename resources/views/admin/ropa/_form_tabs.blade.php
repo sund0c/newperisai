@@ -1,28 +1,28 @@
 {{-- Shared tab JS & helpers — di-include dari create dan edit --}}
 @push('scripts')
-<script>
-function switchTab(key) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-    document.querySelectorAll('.tab-btn').forEach(b => {
-        b.classList.remove('text-indigo-600','border-indigo-600');
-        b.classList.add('text-gray-500','border-transparent');
-    });
-    document.getElementById('tab-' + key).classList.remove('hidden');
-    const btn = document.getElementById('tab-btn-' + key);
-    btn.classList.add('text-indigo-600','border-indigo-600');
-    btn.classList.remove('text-gray-500','border-transparent');
-}
+    <script>
+        function switchTab(key) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('text-indigo-600', 'border-indigo-600');
+                b.classList.add('text-gray-500', 'border-transparent');
+            });
+            document.getElementById('tab-' + key).classList.remove('hidden');
+            const btn = document.getElementById('tab-btn-' + key);
+            btn.classList.add('text-indigo-600', 'border-indigo-600');
+            btn.classList.remove('text-gray-500', 'border-transparent');
+        }
 
-// ── Asset rows ──────────────────────────────────────────────
-const assetOptions = `{!! $assets->map(fn($a) => '<option value="'.$a->id.'">'.$a->kode_aset.' — '.addslashes($a->nama_aset).'</option>')->implode('') !!}`;
-const peranAsetOptions = `{!! collect(\App\Models\RopaAsset::PERAN_LABELS)->map(fn($l,$v) => '<option value="'.$v.'">'.$l.'</option>')->implode('') !!}`;
+        // ── Asset rows ──────────────────────────────────────────────
+        const assetOptions = `{!! $assets->map(fn($a) => '<option value="' . $a->id . '">' . $a->kode_aset . ' — ' . addslashes($a->nama_aset) . '</option>')->implode('') !!}`;
+        const peranAsetOptions = `{!! collect(\App\Models\RopaAsset::PERAN_LABELS)->map(fn($l, $v) => '<option value="' . $v . '">' . $l . '</option>')->implode('') !!}`;
 
-function addAssetRow() {
-    const container = document.getElementById('assets-container');
-    const idx = container.querySelectorAll('.asset-row').length;
-    const div = document.createElement('div');
-    div.className = 'asset-row flex flex-wrap items-center gap-2';
-    div.innerHTML = `
+        function addAssetRow() {
+            const container = document.getElementById('assets-container');
+            const idx = container.querySelectorAll('.asset-row').length;
+            const div = document.createElement('div');
+            div.className = 'asset-row flex flex-wrap items-center gap-2';
+            div.innerHTML = `
         <select name="assets[${idx}][asset_instance_id]"
             class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <option value="">-- Pilih dari inventaris aset (opsional) --</option>${assetOptions}
@@ -41,20 +41,20 @@ function addAssetRow() {
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
         </button>`;
-    container.appendChild(div);
-}
+            container.appendChild(div);
+        }
 
-// ── Recipient rows ──────────────────────────────────────────
-const peranRecipientOptions = `{!! collect(\App\Models\RopaRecipient::PERAN_LABELS)->map(fn($l,$v) => '<option value="'.$v.'">'.$l.'</option>')->implode('') !!}`;
+        // ── Recipient rows ──────────────────────────────────────────
+        const peranRecipientOptions = `{!! collect(\App\Models\RopaRecipient::PERAN_LABELS)->map(fn($l, $v) => '<option value="' . $v . '">' . $l . '</option>')->implode('') !!}`;
 
-function addRecipientRow() {
-    const container = document.getElementById('recipients-container');
-    const noMsg = document.getElementById('no-recipient-msg');
-    if (noMsg) noMsg.remove();
-    const idx = container.querySelectorAll('.recipient-row').length;
-    const div = document.createElement('div');
-    div.className = "recipient-row bg-gray-50 rounded-xl border border-gray-200 p-4";;
-    div.innerHTML = `
+        function addRecipientRow() {
+            const container = document.getElementById('recipients-container');
+            const noMsg = document.getElementById('no-recipient-msg');
+            if (noMsg) noMsg.remove();
+            const idx = container.querySelectorAll('.recipient-row').length;
+            const div = document.createElement('div');
+            div.className = "recipient-row bg-gray-50 rounded-xl border border-gray-200 p-4";;
+            div.innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
                 <label class="block text-xs font-medium text-gray-500 mb-1">Profil Penerima</label>
@@ -106,17 +106,36 @@ function addRecipientRow() {
             <button type="button" onclick="this.closest('.recipient-row').remove()"
                 class="text-xs text-red-500 hover:text-red-700 font-medium">Hapus penerima ini</button>
         </div>`;
-    container.appendChild(div);
-}
+            container.appendChild(div);
+        }
 
-function togglePeranField(select) {
-    const isEksternal = select.value === 'eksternal';
-    select.closest('.recipient-row').querySelectorAll('.peran-field')
-        .forEach(f => f.classList.toggle('hidden', !isEksternal));
-}
+        function togglePeranField(select) {
+            const isEksternal = select.value === 'eksternal';
+            select.closest('.recipient-row').querySelectorAll('.peran-field')
+                .forEach(f => f.classList.toggle('hidden', !isEksternal));
+        }
 
-// restore tab dari hash URL
-const hashTab = window.location.hash?.replace('#','');
-if (hashTab && document.getElementById('tab-' + hashTab)) switchTab(hashTab);
-</script>
+        // restore tab dari hash URL
+        const hashTab = window.location.hash?.replace('#', '');
+        if (hashTab && document.getElementById('tab-' + hashTab)) switchTab(hashTab);
+
+        // ── Auto-sync indikator data_spesifik dari checkbox data spesifik ──
+        function syncDataSpesifikIndicator() {
+            const dataSpesifikChecks = document.querySelectorAll('input[name="data_spesifik[]"]:checked');
+            const indikatorCb = document.getElementById('indikator_data_spesifik');
+            if (!indikatorCb) return;
+            const hasSpesifik = dataSpesifikChecks.length > 0;
+            indikatorCb.checked = hasSpesifik;
+            // Prevent manual toggle
+            indikatorCb.onclick = e => e.preventDefault();
+        }
+
+        // Attach listener ke semua checkbox data spesifik
+        document.querySelectorAll('input[name="data_spesifik[]"]').forEach(cb => {
+            cb.addEventListener('change', syncDataSpesifikIndicator);
+        });
+
+        // Run on load
+        syncDataSpesifikIndicator();
+    </script>
 @endpush

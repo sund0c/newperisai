@@ -76,6 +76,11 @@ class RopaActivity extends Model
         return $this->hasMany(RopaSubjectRight::class, 'ropa_activity_id');
     }
 
+    public function riskIndicators(): HasMany
+    {
+        return $this->hasMany(RopaRiskIndicator::class, 'ropa_activity_id');
+    }
+
     public function assets(): HasMany
     {
         return $this->hasMany(RopaAsset::class, 'ropa_activity_id');
@@ -115,5 +120,14 @@ class RopaActivity extends Model
     {
         $tahunAktif = TahunAktif::where('is_active', true)->value('id');
         return (string) $this->tahunaktif_id === (string) $tahunAktif;
+    }
+
+    /**
+     * DPIA diperlukan jika ada minimal 1 indikator risiko tinggi tercentang.
+     * Berdasarkan Pasal 34 ayat 2 UU PDP.
+     */
+    public function requiresDpia(): bool
+    {
+        return $this->riskIndicators()->exists();
     }
 }

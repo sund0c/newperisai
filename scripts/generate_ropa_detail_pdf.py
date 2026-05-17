@@ -362,15 +362,38 @@ def build_pdf(output_path, meta, activity, logo1_path, logo2_path):
     # ── VI. Hak Subjek & Asesmen Risiko
     story.append(section_title('VI. Hak Subjek Data & Asesmen Risiko'))
 
+    INDIKATOR_LABELS = {
+        'keputusan_otomatis': 'Pengambilan keputusan otomatis berdampak hukum signifikan',
+        'data_spesifik':      'Pemrosesan data pribadi spesifik',
+        'skala_besar':        'Pemrosesan skala besar (> 1.000 subjek)',
+        'evaluasi_penskoran': 'Evaluasi, penskoran, atau pemantauan sistematis',
+        'pencocokan_data':    'Pencocokan atau penggabungan kelompok data',
+        'teknologi_baru':     'Penggunaan teknologi baru dalam pemrosesan',
+        'membatasi_hak':      'Pemrosesan yang membatasi hak subjek data',
+    }
+
     hak_list = [
         HAK_LABELS.get(int(h['pasal']), str(h['pasal']))
         for h in activity.get('subject_rights', [])
     ]
 
-    story.append(info_table([
+    indikator_list = [
+        INDIKATOR_LABELS.get(i['indikator'], i['indikator'])
+        for i in activity.get('risk_indicators', [])
+    ]
+
+    dpia_required = len(indikator_list) > 0
+
+    rows_risiko = [
         ('Hak Subjek yang Berlaku', '\n'.join(hak_list) if hak_list else '-'),
-        ('Narasi Asesmen Risiko',   activity.get('narasi_risiko', '-')),
-    ]))
+    ]
+    if indikator_list:
+        rows_risiko.append(('Indikator Risiko Tinggi (DPIA Diperlukan)', '\n'.join(indikator_list)))
+    else:
+        rows_risiko.append(('DPIA Diperlukan', 'Tidak — tidak ada indikator risiko tinggi yang terpenuhi'))
+    rows_risiko.append(('Narasi Asesmen Risiko', activity.get('narasi_risiko', '-')))
+
+    story.append(info_table(rows_risiko))
 
     doc.build(story,
         onFirstPage=lambda c, d: make_header(c, d, meta, logo1_src, logo2_src),

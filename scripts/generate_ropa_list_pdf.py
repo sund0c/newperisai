@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 PERISAI — RoPA List PDF Generator (Landscape A4)
-Columns: NO | KODE | NAMA AKTIVITAS | OPD | PENANGGUNG JAWAB | DASAR PEMROSESAN | RISIKO | STATUS
+Columns: NO | KODE | NAMA AKTIVITAS | OPD | PENANGGUNG JAWAB | DASAR PEMROSESAN | DPIA
 """
 
 import sys, json, os, io
@@ -24,7 +24,7 @@ GRAY  = colors.HexColor('#555555')
 LGRAY = colors.HexColor('#aaaaaa')
 
 PAGE_W, PAGE_H = landscape(A4)
-MARGIN = 12 * mm
+MARGIN = 15 * mm
 
 FONT      = 'Helvetica'
 FONT_BOLD = 'Helvetica-Bold'
@@ -38,18 +38,6 @@ FS_TH      = 7.5
 FS_TD      = 7.5
 FS_TD_SM   = 6
 FS_FOOTER  = 7
-
-RISIKO_COLORS = {
-    'tinggi': colors.HexColor('#C53030'),
-    'sedang': colors.HexColor('#B7791F'),
-    'rendah': colors.HexColor('#276749'),
-}
-
-STATUS_COLORS = {
-    'final':  colors.HexColor('#276749'),
-    'review': colors.HexColor('#185FA5'),
-    'draft':  colors.HexColor('#B7791F'),
-}
 
 
 def load_image_no_bg(path):
@@ -69,34 +57,18 @@ def cell(text, size=FS_TD, bold=False, align=TA_LEFT, color=BLACK):
     return Paragraph(str(text) if text else '-',
         ParagraphStyle('c', fontName=FONT_BOLD if bold else FONT,
             fontSize=size, textColor=color,
-            leading=size*1.25, alignment=align, wordWrap='CJK'))
-
-
-def risiko_cell(val):
-    label = (val or 'rendah').capitalize()
-    col   = RISIKO_COLORS.get(val, GRAY)
-    return Paragraph(f"<b>{label}</b>",
-        ParagraphStyle('r', fontName=FONT_BOLD, fontSize=FS_TD,
-            textColor=col, leading=FS_TD*1.25, alignment=TA_CENTER))
-
-
-def status_cell(val):
-    labels = {'final': 'Final', 'review': 'Review', 'draft': 'Draft'}
-    label  = labels.get(val, val or '-')
-    col    = STATUS_COLORS.get(val, GRAY)
-    return Paragraph(f"<b>{label}</b>",
-        ParagraphStyle('s', fontName=FONT_BOLD, fontSize=FS_TD,
-            textColor=col, leading=FS_TD*1.25, alignment=TA_CENTER))
+            leading=size*1.3, alignment=align, wordWrap='CJK'))
 
 
 def dasar_cell(items):
     DASAR_SHORT = {
-        'consent':              'Consent',
-        'contractual':          'Contractual',
-        'legal_obligation':     'Legal Obligation',
-        'vital_interests':      'Vital Interests',
-        'public_interests':     'Public Interests',
-        'legitimate_interests': 'Legit. Interests',
+        'consent':                  'Consent',
+        'contractual':              'Contractual',
+        'legal_obligation':         'Legal Obligation',
+        'vital_interests':          'Vital Interests',
+        'public_interests':         'Public Interests',
+        'legitimate_interests':     'Legit. Interests',
+        'keseimbangan_kepentingan': 'Keseimbangan',
     }
     if not items:
         return cell('-', align=TA_CENTER)
@@ -104,6 +76,18 @@ def dasar_cell(items):
     return Paragraph('<br/>'.join(labels),
         ParagraphStyle('d', fontName=FONT, fontSize=FS_TD_SM,
             textColor=BLACK, leading=FS_TD_SM*1.3, wordWrap='CJK'))
+
+
+def dpia_cell(required):
+    if required:
+        return Paragraph('<b>Diperlukan</b>',
+            ParagraphStyle('dp', fontName=FONT_BOLD, fontSize=FS_TD,
+                textColor=colors.HexColor('#C53030'),
+                leading=FS_TD*1.3, alignment=TA_CENTER))
+    return Paragraph('Tidak',
+        ParagraphStyle('dp', fontName=FONT, fontSize=FS_TD,
+            textColor=colors.HexColor('#276749'),
+            leading=FS_TD*1.3, alignment=TA_CENTER))
 
 
 def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
@@ -124,8 +108,12 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
         f"RECORD OF PROCESSING ACTIVITIES (RoPA) :: Tahun {meta.get('tahun','')}")
 
     canvas_obj.setFont(FONT_BOLD, FS_H3)
-    canvas_obj.drawString(tx, PAGE_H - 19*mm,
-        f"Pemprov Bali  \u00b7  {meta.get('opd', 'Semua OPD')}")
+    opd_val = meta.get('opd', '')
+    if opd_val and opd_val.lower() not in ('semua opd', ''):
+        subtitle = f"PEMERINTAH PROVINSI BALI  \u00b7  {opd_val}"
+    else:
+        subtitle = "PEMERINTAH PROVINSI BALI"
+    canvas_obj.drawString(tx, PAGE_H - 19*mm, subtitle)
 
     desc = (
         'Dokumen ini merupakan catatan aktivitas pemrosesan data pribadi yang disusun '
@@ -158,35 +146,28 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
     logo2_x = logo1_x + logo_w + logo_gap
     logo_y  = bar_y + (bar_h - logo_h) / 2
 
-    def draw_logo_placeholder(x, y, w, h, label):
+    if isinstance(logo1_src, str) and not os.path.exists(logo1_src):
         canvas_obj.setFillColor(WHITE)
         canvas_obj.setStrokeColor(LGRAY)
         canvas_obj.setLineWidth(0.5)
-        canvas_obj.rect(x, y, w, h, fill=1, stroke=1)
+        canvas_obj.rect(logo1_x, logo_y, logo_w, logo_h, fill=1, stroke=1)
         canvas_obj.setFillColor(GRAY)
         canvas_obj.setFont(FONT_BOLD, 5)
-        canvas_obj.drawCentredString(x+w/2, y+h/2, label)
-
-    if isinstance(logo1_src, str) and not os.path.exists(logo1_src):
-        draw_logo_placeholder(logo1_x, logo_y, logo_w, logo_h, 'BALIPROV')
+        canvas_obj.drawCentredString(logo1_x+logo_w/2, logo_y+logo_h/2, 'BALIPROV')
     else:
         canvas_obj.drawImage(logo1_src, logo1_x, logo_y,
             width=logo_w, height=logo_h, preserveAspectRatio=True, anchor='c')
 
     if isinstance(logo2_src, str) and not os.path.exists(logo2_src):
-        badge_h = logo_h/2 - 1
-        cx2 = logo2_x + logo_w/2
+        badge_h = logo_h/2-1; cx2 = logo2_x+logo_w/2
         canvas_obj.setFillColor(colors.HexColor('#dddddd'))
-        canvas_obj.setStrokeColor(BLACK)
-        canvas_obj.setLineWidth(0.8)
+        canvas_obj.setStrokeColor(BLACK); canvas_obj.setLineWidth(0.8)
         canvas_obj.rect(logo2_x, logo_y+badge_h+2, logo_w, badge_h, fill=1, stroke=1)
-        canvas_obj.setFillColor(BLACK)
-        canvas_obj.setFont(FONT_BOLD, 6)
+        canvas_obj.setFillColor(BLACK); canvas_obj.setFont(FONT_BOLD, 6)
         canvas_obj.drawCentredString(cx2, logo_y+badge_h+badge_h/2+1, 'TLP:AMBER')
         canvas_obj.setFillColor(BLACK)
         canvas_obj.rect(logo2_x, logo_y, logo_w, badge_h, fill=1, stroke=1)
-        canvas_obj.setFillColor(WHITE)
-        canvas_obj.setFont(FONT_BOLD, 6)
+        canvas_obj.setFillColor(WHITE); canvas_obj.setFont(FONT_BOLD, 6)
         canvas_obj.drawCentredString(cx2, logo_y+badge_h/2-2, '+STRICT')
     else:
         canvas_obj.drawImage(logo2_src, logo2_x, logo_y,
@@ -201,15 +182,9 @@ def make_header(canvas_obj, doc, meta, logo1_src, logo2_src):
 
 
 def build_filter_summary(meta):
-    stats = meta.get('stats', {})
     parts = (
-        f"<b>OPD:</b> {meta.get('opd','Semua OPD')}  |  "
-        f"<b>Status:</b> {meta.get('status_label','Semua')}  |  "
-        f"<b>Risiko:</b> {meta.get('risiko_label','Semua')}  |  "
-        f"<b>Total:</b> {stats.get('total',0)}  |  "
-        f"<b>Final:</b> {stats.get('final',0)}  "
-        f"<b>Review:</b> {stats.get('review',0)}  "
-        f"<b>Draft:</b> {stats.get('draft',0)}"
+        f"<b>OPD:</b> {meta.get('opd', 'Semua OPD')}  |  "
+        f"<b>Total Aktivitas:</b> {meta.get('total', 0)}"
     )
     return Paragraph(parts, ParagraphStyle('fb', fontName=FONT,
         fontSize=FS_SUMMARY, textColor=BLACK, leading=FS_SUMMARY*1.2))
@@ -227,15 +202,13 @@ def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
         author='PERISAI - Pemprov Bali')
 
     col_widths = [
-        8*mm,   # NO
-        22*mm,  # KODE
-        75*mm,  # NAMA AKTIVITAS
-        55*mm,  # OPD
-        55*mm,  # PENANGGUNG JAWAB
-        38*mm,  # DASAR PEMROSESAN
-        20*mm,  # RISIKO
-        18*mm,  # STATUS
-    ]
+        10*mm,   # NO
+        25*mm,   # KODE
+        102*mm,  # NAMA AKTIVITAS
+        55*mm,   # OPD
+        55*mm,   # PENANGGUNG JAWAB
+        20*mm,   # DPIA
+    ]  # total = 267mm = 297mm - 2*15mm
 
     hs = ParagraphStyle('th', fontName=FONT_BOLD, fontSize=FS_TH,
         textColor=BLACK, alignment=TA_CENTER,
@@ -247,9 +220,7 @@ def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
         Paragraph('NAMA AKTIVITAS', hs),
         Paragraph('OPD', hs),
         Paragraph('PENANGGUNG\nJAWAB', hs),
-        Paragraph('DASAR\nPEMROSESAN', hs),
-        Paragraph('RISIKO', hs),
-        Paragraph('STATUS', hs),
+        Paragraph('DPIA', hs),
     ]]
 
     for row in rows:
@@ -259,21 +230,18 @@ def build_pdf(output_path, meta, rows, logo1_path, logo2_path):
             cell(row['nama_aktivitas']),
             cell(row['opd']),
             cell(row['penanggung_jawab']),
-            dasar_cell(row.get('dasar_pemrosesan', [])),
-            risiko_cell(row.get('kategori_risiko')),
-            status_cell(row.get('status')),
+            dpia_cell(row.get('dpia_required', False)),
         ])
 
     tbl = Table(table_data, colWidths=col_widths, repeatRows=1)
     tbl.setStyle(TableStyle([
         ('BACKGROUND',    (0,0), (-1,0),  WHITE),
         ('FONTNAME',      (0,0), (-1,0),  FONT_BOLD),
-        ('FONTSIZE',      (0,0), (-1,0),  FS_TH),
         ('ALIGN',         (0,0), (-1,0),  'CENTER'),
         ('VALIGN',        (0,0), (-1,-1), 'TOP'),
         ('BACKGROUND',    (0,1), (-1,-1), WHITE),
         ('GRID',          (0,0), (-1,-1), 0.75, BLACK),
-        ('BOX',           (0,0), (-1,-1), 1.0,  BLACK),
+        ('BOX',           (0,0), (-1,-1), 0.75, BLACK),
         ('TOPPADDING',    (0,0), (-1,-1), 2),
         ('BOTTOMPADDING', (0,0), (-1,-1), 2),
         ('LEFTPADDING',   (0,0), (-1,-1), 3),

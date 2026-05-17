@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\RopaActivity;
 use App\Models\RopaSubjectRight;
+use App\Models\RopaRiskIndicator;
 use App\Models\RopaAsset;
 use App\Models\Opd;
 use App\Models\Asset;
@@ -24,7 +25,7 @@ class RopaActivityController extends Controller
         $tahunContext = TahunAktif::find(session('tahun_context'))
             ?? TahunAktif::where('is_active', true)->firstOrFail();
 
-        $query = RopaActivity::with('opd')->forTahun($tahunContext->id);
+        $query = RopaActivity::with(['opd', 'riskIndicators'])->forTahun($tahunContext->id);
 
         if (auth()->user()->hasRole('Admin OPD')) {
             $query->forOpd(auth()->user()->opd_id);
@@ -40,7 +41,7 @@ class RopaActivityController extends Controller
 
         $total = RopaActivity::forTahun($tahunContext->id)
             ->when(auth()->user()->hasRole('Admin OPD'), fn($q) =>
-            $q->forOpd(auth()->user()->opd_id))
+                $q->forOpd(auth()->user()->opd_id))
             ->count();
 
         $opds = Opd::orderBy('namaopd')->get();
@@ -109,12 +110,8 @@ class RopaActivityController extends Controller
     public function edit(RopaActivity $ropaActivity)
     {
         $ropaActivity->load([
-            'opd',
-            'legalBases',
-            'personalDataTypes',
-            'recipients',
-            'subjectRights',
-            'assets.asset',
+            'opd', 'legalBases', 'personalDataTypes',
+            'recipients', 'subjectRights', 'riskIndicators', 'assets.asset',
         ]);
 
         $opds       = Opd::orderBy('namaopd')->get();
@@ -191,7 +188,7 @@ class RopaActivityController extends Controller
         $user    = auth()->user();
         $isAdmin = $user->hasRole(['Super Admin', 'admin']);
 
-        $query = RopaActivity::with(['opd', 'legalBases'])->forTahun($tahunContext->id);
+        $query = RopaActivity::with(['opd', 'legalBases', 'riskIndicators'])->forTahun($tahunContext->id);
 
         if (!$isAdmin) $query->forOpd($user->opd_id);
         if ($request->filled('opd_id')) $query->forOpd($request->opd_id);
@@ -215,6 +212,7 @@ class RopaActivityController extends Controller
             'opd'              => $a->opd?->namaopd ?? '-',
             'penanggung_jawab' => $a->penanggung_jawab,
             'dasar_pemrosesan' => $a->legalBases->pluck('dasar_pemrosesan')->toArray(),
+            'dpia_required'    => $a->riskIndicators->isNotEmpty(),
         ])->toArray();
 
         return $this->runPythonPdf(
@@ -232,12 +230,8 @@ class RopaActivityController extends Controller
             ?? TahunAktif::where('is_active', true)->firstOrFail();
 
         $ropaActivity->load([
-            'opd',
-            'legalBases',
-            'personalDataTypes',
-            'recipients',
-            'subjectRights',
-            'assets.asset',
+            'opd', 'legalBases', 'personalDataTypes',
+            'recipients', 'subjectRights', 'riskIndicators', 'assets.asset',
         ]);
 
         $meta = [
@@ -282,6 +276,9 @@ class RopaActivityController extends Controller
             ])->toArray(),
             'subject_rights'        => $ropaActivity->subjectRights->map(fn($h) => [
                 'pasal' => $h->pasal,
+            ])->toArray(),
+            'risk_indicators'        => $ropaActivity->riskIndicators->map(fn($i) => [
+                'indikator' => $i->indikator,
             ])->toArray(),
             'assets'                => $ropaActivity->assets->map(fn($a) => [
                 'nama'       => $a->nama,
@@ -335,6 +332,20 @@ class RopaActivityController extends Controller
             ]);
         }
 
+        // Risk indicators
+        $activity->riskIndicators()->delete();
+        foreach ($request->input('indikator_risiko', []) as $indikator) {
+            // data_spesifik dikontrol otomatis dari tab Data Pribadi — skip jika ada
+            if ($indikator === 'data_spesifik') continue;
+            $activity->riskIndicators()->create(['indikator' => $indikator]);
+        }
+        // Otomatis: jika ada data spesifik tercentang → indikator data_spesifik aktif
+        $hasDataSpesifik = $activity->personalDataTypes()
+            ->where('is_spesifik', true)->exists();
+        if ($hasDataSpesifik) {
+            $activity->riskIndicators()->firstOrCreate(['indikator' => 'data_spesifik']);
+        }
+
         // Recipients
         if ($request->has('recipients')) {
             $activity->recipients()->delete();
@@ -369,6 +380,7 @@ class RopaActivityController extends Controller
             'recipients.*.peran'           => 'nullable|in:pengendali,pengendali_bersama,prosesor',
             'assets.*.asset_instance_id'   => 'nullable|exists:assets,id',
             'assets.*.peran_aset'          => 'nullable|in:primer,pendukung,penyimpanan,transmisi',
+            'indikator_risiko.*'           => 'in:keputusan_otomatis,data_spesifik,skala_besar,evaluasi_penskoran,pencocokan_data,teknologi_baru,membatasi_hak',
         ]);
     }
 
@@ -395,10 +407,10 @@ class RopaActivityController extends Controller
     {
         return Asset::with('subKlasifikasi.klasifikasi')
             ->whereHas('subKlasifikasi.klasifikasi', fn($q) =>
-            $q->where('klasifikasiaset', 'Data & Informasi')
-                ->orWhere('klasifikasiaset', 'Perangkat Lunak'))
+                $q->where('klasifikasiaset', 'Data & Informasi')
+                  ->orWhere('klasifikasiaset', 'Perangkat Lunak'))
             ->when(auth()->user()->hasRole('Admin OPD'), fn($q) =>
-            $q->where('opd_id', auth()->user()->opd_id))
+                $q->where('opd_id', auth()->user()->opd_id))
             ->orderBy('nama_aset')
             ->get();
     }
@@ -409,8 +421,7 @@ class RopaActivityController extends Controller
 
         $process = new Process(
             ['python3', $script, $tmpPdf],
-            null,
-            null,
+            null, null,
             json_encode($payload, JSON_UNESCAPED_UNICODE),
             60
         );

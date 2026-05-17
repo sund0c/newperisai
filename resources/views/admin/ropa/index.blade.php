@@ -124,6 +124,7 @@
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">OPD</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penanggung
                         Jawab</th>
+                    <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">DPIA</th>
                     <th class="px-4 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-16">
                         Cetak</th>
                 </tr>
@@ -154,6 +155,23 @@
                         <td class="px-6 py-3">
                             <span class="text-xs text-gray-600">{{ $activity->penanggung_jawab }}</span>
                         </td>
+                        {{-- DPIA badge --}}
+                        <td class="px-4 py-3 text-center">
+                            @if ($activity->riskIndicators->isNotEmpty())
+                                <span
+                                    class="inline-flex items-center rounded-full px-2.5 py-0.5
+                                    text-xs font-semibold bg-red-100 text-red-700"
+                                    title="{{ $activity->riskIndicators->count() }} indikator terpenuhi">
+                                    Diperlukan
+                                </span>
+                            @else
+                                <span
+                                    class="inline-flex items-center rounded-full px-2.5 py-0.5
+                                    text-xs font-medium bg-green-100 text-green-700">
+                                    Tidak
+                                </span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3 text-center">
                             <a href="{{ route('admin.ropa.detail-pdf', $activity) }}" target="_blank"
                                 class="inline-flex items-center justify-center w-7 h-7 rounded-lg
@@ -169,7 +187,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-sm text-gray-400">
+                        <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-400">
                             <div class="flex flex-col items-center gap-2">
                                 <svg class="h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
