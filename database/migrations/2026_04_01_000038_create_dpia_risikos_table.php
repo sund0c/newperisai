@@ -13,15 +13,21 @@ return new class extends Migration
             $table->uuid('dpia_id');
             $table->foreign('dpia_id')->references('id')->on('dpias')->cascadeOnDelete();
 
+            // C.2 — satu ancaman utama
             $table->text('ancaman');
             $table->enum('likelihood', ['Rendah', 'Sedang', 'Tinggi']);
             $table->enum('dampak',     ['Rendah', 'Sedang', 'Tinggi']);
             $table->enum('level',      ['Rendah', 'Sedang', 'Tinggi']);
-            $table->text('rencana_mitigasi')->nullable();
-            $table->integer('urutan')->default(0);
-            $table->timestamps();
+            // Mitigasi merujuk ke RoPA Bab IV
+            $table->string('referensi_mitigasi')->nullable(); // e.g. "RoPA-0001 Bab IV Pengamanan Data"
 
-            $table->index('dpia_id');
+            // C.3 — evaluasi residual per kategori kontrol
+            $table->text('residual_technical')->nullable();
+            $table->text('residual_privacy')->nullable();
+            $table->text('residual_organizational')->nullable();
+
+            $table->timestamps();
+            $table->unique('dpia_id'); // 1 risiko per DPIA
         });
     }
 

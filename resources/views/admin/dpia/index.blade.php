@@ -75,16 +75,27 @@
                     dari total <strong class="text-gray-700">{{ $dpias->total() }}</strong> dokumen
                 </p>
             </div>
-            @if ($tahunContext?->is_active)
-                <a href="{{ route('admin.dpia.create') }}"
-                    class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700
-                           px-3 py-1.5 text-sm font-semibold text-white transition-colors shadow-sm">
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="document.getElementById('modalExportPDF').classList.remove('hidden')"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50
+                           px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                     </svg>
-                    Tambah Data
-                </a>
-            @endif
+                    Export PDF
+                </button>
+                @if ($tahunContext?->is_active)
+                    <a href="{{ route('admin.dpia.create') }}"
+                        class="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 hover:bg-blue-700
+                               px-3 py-1.5 text-sm font-semibold text-white transition-colors shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Tambah Data
+                    </a>
+                @endif
+            </div>
         </div>
 
         <table class="min-w-full divide-y divide-gray-200 text-sm">
@@ -177,4 +188,59 @@
         @endif
     </div>
 
+
+    {{-- MODAL EXPORT PDF --}}
+    <div id="modalExportPDF"
+        class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+        onclick="if(event.target===this) this.classList.add('hidden')">
+        <div class="bg-white rounded-2xl border border-gray-300 shadow-2xl w-full max-w-md">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200 rounded-t-2xl flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-800">Export PDF — DPIA</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Pilih filter data yang akan diekspor</p>
+                </div>
+                <button onclick="document.getElementById('modalExportPDF').classList.add('hidden')"
+                    class="w-7 h-7 flex items-center justify-center rounded-lg bg-white border border-gray-200
+                           text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <form action="{{ route('admin.dpia.export-pdf') }}" method="GET" target="_blank" class="px-6 py-5 space-y-4">
+                @if (auth()->user()->hasRole(['admin']))
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">OPD</label>
+                        <select name="opd_id"
+                            class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                                   focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            <option value="">Semua OPD</option>
+                            @foreach ($opds as $opd)
+                                <option value="{{ $opd->id }}">{{ $opd->namaopd }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+                <div class="flex items-center justify-end gap-3 pt-1">
+                    <button type="button" onclick="document.getElementById('modalExportPDF').classList.add('hidden')"
+                        class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="inline-flex items-center gap-1.5 rounded-lg border border-red-300 bg-red-50
+                               px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors">
+                        Export PDF
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+@push('scripts')
+<script>
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('modalExportPDF').classList.add('hidden');
+});
+</script>
+@endpush
 @endsection

@@ -232,6 +232,7 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
         Route::prefix('dpia')->name('dpia.')->group(function () {
             Route::get('/',                 [DpiaController::class, 'index'])->name('index');
             Route::get('/create',           [DpiaController::class, 'create'])->name('create');
+            Route::get('/export-pdf',       [DpiaController::class, 'exportPdf'])->name('export-pdf');
             Route::post('/',                [DpiaController::class, 'store'])->name('store');
             Route::get('/{dpia}',           [DpiaController::class, 'edit'])->name('edit');
             Route::put('/{dpia}',           [DpiaController::class, 'update'])->name('update');

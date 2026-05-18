@@ -29,8 +29,9 @@ class RopaActivity extends Model
         'metode_non_elektronik',
         'referensi_dasar_hukum',
         'masa_retensi',
-        'langkah_teknis',
-        'langkah_organisasi',
+        'technical_security_controls',
+        'privacy_governance_controls',
+        'organizational_governance_controls',
         'proses_sebelumnya',
         'proses_setelahnya',
         'catatan',
@@ -40,8 +41,11 @@ class RopaActivity extends Model
     ];
 
     protected $casts = [
-        'metode_elektronik'     => 'boolean',
-        'metode_non_elektronik' => 'boolean',
+        'metode_elektronik'                  => 'boolean',
+        'metode_non_elektronik'              => 'boolean',
+        'technical_security_controls'        => 'array',
+        'privacy_governance_controls'        => 'array',
+        'organizational_governance_controls' => 'array',
     ];
 
     // ── Relasi ──────────────────────────────────────────────────
@@ -79,6 +83,11 @@ class RopaActivity extends Model
     public function riskIndicators(): HasMany
     {
         return $this->hasMany(RopaRiskIndicator::class, 'ropa_activity_id');
+    }
+
+    public function dpia(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Models\Dpia::class, 'ropa_activity_id');
     }
 
     public function assets(): HasMany

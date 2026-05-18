@@ -18,11 +18,12 @@ class DpiaRisiko extends Model
         'likelihood',
         'dampak',
         'level',
-        'rencana_mitigasi',
-        'urutan',
+        'referensi_mitigasi',
+        'residual_technical',
+        'residual_privacy',
+        'residual_organizational',
     ];
 
-    // Level dihitung otomatis dari likelihood x dampak
     public const LEVEL_MATRIX = [
         'Tinggi' => ['Rendah' => 'Sedang', 'Sedang' => 'Tinggi', 'Tinggi' => 'Tinggi'],
         'Sedang' => ['Rendah' => 'Rendah', 'Sedang' => 'Sedang', 'Tinggi' => 'Tinggi'],

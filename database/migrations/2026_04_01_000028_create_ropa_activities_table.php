@@ -29,13 +29,14 @@ return new class extends Migration
             $table->text('referensi_dasar_hukum')->nullable();
             $table->text('masa_retensi')->nullable();
 
-            $table->text('langkah_teknis')->nullable();
-            $table->text('langkah_organisasi')->nullable();
+            // Pengamanan — disimpan sebagai JSON array
+            $table->json('technical_security_controls')->nullable();
+            $table->json('privacy_governance_controls')->nullable();
+            $table->json('organizational_governance_controls')->nullable();
 
             $table->text('proses_sebelumnya')->nullable();
             $table->text('proses_setelahnya')->nullable();
             $table->text('catatan')->nullable();
-
             $table->text('narasi_risiko')->nullable();
 
             $table->uuid('created_by')->nullable();

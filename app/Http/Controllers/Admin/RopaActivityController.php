@@ -41,7 +41,7 @@ class RopaActivityController extends Controller
 
         $total = RopaActivity::forTahun($tahunContext->id)
             ->when(auth()->user()->hasRole('Admin OPD'), fn($q) =>
-                $q->forOpd(auth()->user()->opd_id))
+            $q->forOpd(auth()->user()->opd_id))
             ->count();
 
         $opds = Opd::orderBy('namaopd')->get();
@@ -84,8 +84,9 @@ class RopaActivityController extends Controller
                 'metode_non_elektronik' => $request->boolean('metode_non_elektronik'),
                 'referensi_dasar_hukum' => $request->referensi_dasar_hukum,
                 'masa_retensi'          => $request->masa_retensi,
-                'langkah_teknis'        => $request->langkah_teknis,
-                'langkah_organisasi'    => $request->langkah_organisasi,
+                'technical_security_controls'       => array_values(array_filter($request->input('technical_security_controls', []))),
+                'privacy_governance_controls'        => array_values(array_filter($request->input('privacy_governance_controls', []))),
+                'organizational_governance_controls' => array_values(array_filter($request->input('organizational_governance_controls', []))),
                 'proses_sebelumnya'     => $request->proses_sebelumnya,
                 'proses_setelahnya'     => $request->proses_setelahnya,
                 'catatan'               => $request->catatan,
@@ -110,8 +111,13 @@ class RopaActivityController extends Controller
     public function edit(RopaActivity $ropaActivity)
     {
         $ropaActivity->load([
-            'opd', 'legalBases', 'personalDataTypes',
-            'recipients', 'subjectRights', 'riskIndicators', 'assets.asset',
+            'opd',
+            'legalBases',
+            'personalDataTypes',
+            'recipients',
+            'subjectRights',
+            'riskIndicators',
+            'assets.asset',
         ]);
 
         $opds       = Opd::orderBy('namaopd')->get();
@@ -146,8 +152,9 @@ class RopaActivityController extends Controller
                 'metode_non_elektronik' => $request->boolean('metode_non_elektronik'),
                 'referensi_dasar_hukum' => $request->referensi_dasar_hukum,
                 'masa_retensi'          => $request->masa_retensi,
-                'langkah_teknis'        => $request->langkah_teknis,
-                'langkah_organisasi'    => $request->langkah_organisasi,
+                'technical_security_controls'       => array_values(array_filter($request->input('technical_security_controls', []))),
+                'privacy_governance_controls'        => array_values(array_filter($request->input('privacy_governance_controls', []))),
+                'organizational_governance_controls' => array_values(array_filter($request->input('organizational_governance_controls', []))),
                 'proses_sebelumnya'     => $request->proses_sebelumnya,
                 'proses_setelahnya'     => $request->proses_setelahnya,
                 'catatan'               => $request->catatan,
@@ -230,8 +237,13 @@ class RopaActivityController extends Controller
             ?? TahunAktif::where('is_active', true)->firstOrFail();
 
         $ropaActivity->load([
-            'opd', 'legalBases', 'personalDataTypes',
-            'recipients', 'subjectRights', 'riskIndicators', 'assets.asset',
+            'opd',
+            'legalBases',
+            'personalDataTypes',
+            'recipients',
+            'subjectRights',
+            'riskIndicators',
+            'assets.asset',
         ]);
 
         $meta = [
@@ -253,8 +265,9 @@ class RopaActivityController extends Controller
             'metode_non_elektronik' => $ropaActivity->metode_non_elektronik,
             'referensi_dasar_hukum' => $ropaActivity->referensi_dasar_hukum,
             'masa_retensi'          => $ropaActivity->masa_retensi,
-            'langkah_teknis'        => $ropaActivity->langkah_teknis,
-            'langkah_organisasi'    => $ropaActivity->langkah_organisasi,
+            'technical_security_controls'       => $ropaActivity->technical_security_controls,
+            'privacy_governance_controls'        => $ropaActivity->privacy_governance_controls,
+            'organizational_governance_controls' => $ropaActivity->organizational_governance_controls,
             'proses_sebelumnya'     => $ropaActivity->proses_sebelumnya,
             'proses_setelahnya'     => $ropaActivity->proses_setelahnya,
             'catatan'               => $ropaActivity->catatan,
@@ -407,10 +420,10 @@ class RopaActivityController extends Controller
     {
         return Asset::with('subKlasifikasi.klasifikasi')
             ->whereHas('subKlasifikasi.klasifikasi', fn($q) =>
-                $q->where('klasifikasiaset', 'Data & Informasi')
-                  ->orWhere('klasifikasiaset', 'Perangkat Lunak'))
+            $q->where('klasifikasiaset', 'Data & Informasi')
+                ->orWhere('klasifikasiaset', 'Perangkat Lunak'))
             ->when(auth()->user()->hasRole('Admin OPD'), fn($q) =>
-                $q->where('opd_id', auth()->user()->opd_id))
+            $q->where('opd_id', auth()->user()->opd_id))
             ->orderBy('nama_aset')
             ->get();
     }
@@ -421,7 +434,8 @@ class RopaActivityController extends Controller
 
         $process = new Process(
             ['python3', $script, $tmpPdf],
-            null, null,
+            null,
+            null,
             json_encode($payload, JSON_UNESCAPED_UNICODE),
             60
         );

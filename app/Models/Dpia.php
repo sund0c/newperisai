@@ -66,10 +66,9 @@ class Dpia extends Model
             ->orderBy('urutan');
     }
 
-    public function risikos(): HasMany
+    public function risiko(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasMany(DpiaRisiko::class, 'dpia_id')
-            ->orderBy('urutan');
+        return $this->hasOne(DpiaRisiko::class, 'dpia_id');
     }
 
     // ── Helpers ─────────────────────────────────────────────────

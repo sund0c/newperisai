@@ -41,7 +41,7 @@ class DpiaController extends Controller
         $dpias = $query->orderBy('kode')->paginate(15)->withQueryString();
         $total = Dpia::where('tahunaktif_id', $tahunContext->id)
             ->when(auth()->user()->hasRole('opd'), fn($q) =>
-                $q->where('opd_id', auth()->user()->opd_id))
+            $q->where('opd_id', auth()->user()->opd_id))
             ->count();
 
         $opds = Opd::orderBy('namaopd')->get();
@@ -131,9 +131,16 @@ class DpiaController extends Controller
 
     public function edit(Dpia $dpia)
     {
+        // Selalu sync threshold dari RoPA terkini saat buka halaman edit
+        $dpia->load('ropaActivity.riskIndicators');
+        $dpia->syncThresholdsFromRopa();
+
         $dpia->load([
-            'opd', 'ropaActivity.riskIndicators',
-            'thresholds', 'tim', 'risikos',
+            'opd',
+            'ropaActivity.riskIndicators',
+            'thresholds',
+            'tim',
+            'risiko',
         ]);
 
         $isEditable = $dpia->isEditable();
@@ -171,6 +178,10 @@ class DpiaController extends Controller
                 'updated_by'             => auth()->id(),
             ]);
 
+            // Re-sync threshold dari RoPA — jika RoPA diubah, DPIA ikut update
+            $dpia->load('ropaActivity.riskIndicators');
+            $dpia->syncThresholdsFromRopa();
+
             // Update keterangan threshold — terpenuhi tidak bisa diubah manual
             foreach ($request->input('threshold_keterangan', []) as $indikator => $ket) {
                 $dpia->thresholds()->where('indikator', $indikator)
@@ -201,11 +212,58 @@ class DpiaController extends Controller
             ->with('success', "DPIA {$kode} berhasil dihapus.");
     }
 
+
+    // ── EXPORT PDF LIST ──────────────────────────────────────────
+
+    public function exportPdf(Request $request)
+    {
+        $tahunContext = TahunAktif::find(session('tahun_context'))
+            ?? TahunAktif::where('is_active', true)->firstOrFail();
+
+        $query = Dpia::with(['opd', 'ropaActivity', 'risiko'])
+            ->where('tahunaktif_id', $tahunContext->id);
+
+        if (auth()->user()->hasRole('opd')) {
+            $query->where('opd_id', auth()->user()->opd_id);
+        }
+        if ($request->filled('opd_id')) {
+            $query->where('opd_id', $request->opd_id);
+        }
+
+        $dpias = $query->orderBy('kode')->get();
+
+        $meta = [
+            'tahun'        => $tahunContext->tahun,
+            'opd'          => $request->filled('opd_id')
+                ? (Opd::find($request->opd_id)?->namaopd ?? 'Semua OPD')
+                : 'Semua OPD',
+            'total'        => $dpias->count(),
+            'generated_at' => now()->locale('id')->translatedFormat('l, d F Y H:i') . ' WITA',
+        ];
+
+        $rows = $dpias->values()->map(fn($d, $i) => [
+            'no'             => $i + 1,
+            'kode'           => $d->kode,
+            'ropa_kode'      => $d->ropaActivity?->kode ?? '-',
+            'nama_aktivitas' => $d->nama_aktivitas,
+            'opd'            => $d->opd?->namaopd ?? '-',
+            'tanggal'        => $d->tanggal_penyusunan?->format('d/m/Y') ?? '-',
+            'level_risiko'   => $d->risiko?->level ?? '-',
+            'versi'          => $d->versi ?? '1.0',
+        ])->toArray();
+
+        return $this->runPythonPdf(
+            base_path('scripts/generate_dpia_list_pdf.py'),
+            ['meta' => $meta, 'rows' => $rows],
+            'PERISAI_DPIA_' . $tahunContext->tahun . '_' . now()->format('Ymd_His') . '.pdf'
+        );
+    }
+
     // ── EXPORT PDF DETAIL ────────────────────────────────────────
 
     public function exportDetailPdf(Dpia $dpia)
     {
-        $dpia->load(['opd', 'ropaActivity', 'thresholds', 'tim', 'risikos']);
+        $dpia->load(['opd', 'ropaActivity', 'thresholds', 'tim', 'risiko']);
 
         $meta = [
             'tahun'        => $dpia->tahunAktif?->tahun ?? '-',
@@ -233,21 +291,25 @@ class DpiaController extends Controller
                     'terpenuhi'  => $t->terpenuhi,
                     'keterangan' => $t->keterangan ?? '-',
                 ])->toArray(),
-                'tim_terlibat' => $dpia->tim->map(fn($t) =>
+                'tim_terlibat' => $dpia->tim->map(
+                    fn($t) =>
                     $t->nama_anggota . ' — ' . $t->peran
                 )->toArray(),
-                'risiko' => $dpia->risikos->map(fn($r) => [
-                    'ancaman'    => $r->ancaman,
-                    'likelihood' => $r->likelihood,
-                    'dampak'     => $r->dampak,
-                    'level'      => $r->level,
-                    'mitigasi'   => $r->rencana_mitigasi,
-                ])->toArray(),
+                'risiko' => $dpia->risiko ? [
+                    'ancaman'                  => $dpia->risiko->ancaman,
+                    'likelihood'               => $dpia->risiko->likelihood,
+                    'dampak'                   => $dpia->risiko->dampak,
+                    'level'                    => $dpia->risiko->level,
+                    'referensi_mitigasi'       => $dpia->risiko->referensi_mitigasi,
+                    'residual_technical'       => $dpia->risiko->residual_technical,
+                    'residual_privacy'         => $dpia->risiko->residual_privacy,
+                    'residual_organizational'  => $dpia->risiko->residual_organizational,
+                ] : null,
             ],
         ];
 
         return $this->runPythonPdf(
-            base_path('scripts/generate_dpia_v3_pdf.py'),
+            base_path('scripts/generate_dpia_detail_pdf.py'),
             $payload,
             'PERISAI_' . $dpia->kode . '_' . now()->format('Ymd_His') . '.pdf'
         );
@@ -268,21 +330,22 @@ class DpiaController extends Controller
             ]);
         }
 
-        // Risiko
-        $dpia->risikos()->delete();
-        foreach ($request->input('risiko', []) as $i => $row) {
-            if (empty($row['ancaman'])) continue;
-            $likelihood = $row['likelihood'] ?? 'Sedang';
-            $dampak     = $row['dampak'] ?? 'Sedang';
-            $dpia->risikos()->create([
-                'ancaman'          => $row['ancaman'],
-                'likelihood'       => $likelihood,
-                'dampak'           => $dampak,
-                'level'            => DpiaRisiko::computeLevel($likelihood, $dampak),
-                'rencana_mitigasi' => $row['rencana_mitigasi'] ?? null,
-                'urutan'           => $i,
-            ]);
-        }
+        // Risiko — satu per DPIA
+        $likelihood = $request->input('risiko_likelihood', 'Sedang');
+        $dampak     = $request->input('risiko_dampak', 'Sedang');
+        $dpia->risiko()->updateOrCreate(
+            ['dpia_id' => $dpia->id],
+            [
+                'ancaman'                 => $request->input('risiko_ancaman', ''),
+                'likelihood'              => $likelihood,
+                'dampak'                  => $dampak,
+                'level'                   => DpiaRisiko::computeLevel($likelihood, $dampak),
+                'referensi_mitigasi'      => 'Sesuai ' . ($dpia->ropaActivity?->kode ?? 'RoPA') . ' Bab IV Pengamanan Data',
+                'residual_technical'      => $request->input('residual_technical'),
+                'residual_privacy'        => $request->input('residual_privacy'),
+                'residual_organizational' => $request->input('residual_organizational'),
+            ]
+        );
     }
 
     private function authorizeActiveYear(): void
@@ -302,7 +365,8 @@ class DpiaController extends Controller
 
         $process = new Process(
             ['python3', $script, $tmpPdf],
-            null, null,
+            null,
+            null,
             json_encode($payload, JSON_UNESCAPED_UNICODE),
             60
         );

@@ -195,6 +195,20 @@ def bullet_list(items, size=FS_TD):
     ]
 
 
+def numbered_list(text, size=FS_TD):
+    """Parse teks bernomor (1. ... 2. ...) menjadi list paragraf."""
+    if not text or text.strip() == '-':
+        return [p('-')]
+    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+    result = []
+    for line in lines:
+        result.append(Paragraph(line,
+            ParagraphStyle('nl', fontName=FONT, fontSize=size,
+                textColor=BLACK, leading=size*1.45, leftIndent=4,
+                wordWrap='CJK')))
+    return result if result else [p('-')]
+
+
 def recipients_table(recipients):
     if not recipients:
         return [p('Tidak ada penerima data yang terdaftar.', color=GRAY)]
@@ -204,19 +218,23 @@ def recipients_table(recipients):
         textColor=BLACK, alignment=TA_CENTER, leading=FS_TH * 1.3)
 
     col_w = [
-        CONTENT_W * 0.22,  # profil
-        CONTENT_W * 0.12,  # tipe
-        CONTENT_W * 0.14,  # peran
-        CONTENT_W * 0.26,  # tujuan
-        CONTENT_W * 0.26,  # mekanisme
+        CONTENT_W * 0.18,  # profil
+        CONTENT_W * 0.09,  # tipe
+        CONTENT_W * 0.12,  # peran
+        CONTENT_W * 0.14,  # kontak/pic
+        CONTENT_W * 0.20,  # tujuan
+        CONTENT_W * 0.14,  # mekanisme
+        CONTENT_W * 0.13,  # jenis data dikirim
     ]
 
     data = [[
         Paragraph('PENERIMA', hs),
         Paragraph('TIPE', hs),
         Paragraph('PERAN', hs),
+        Paragraph('KONTAK / PIC', hs),
         Paragraph('TUJUAN PENGIRIMAN', hs),
         Paragraph('MEKANISME', hs),
+        Paragraph('JENIS DATA', hs),
     ]]
 
     PERAN_LABELS = {
@@ -226,12 +244,15 @@ def recipients_table(recipients):
     }
 
     for r in recipients:
+        is_ext = r.get('tipe') == 'eksternal'
         data.append([
             p(r.get('profil_penerima', '-')),
             p(r.get('tipe', '-').capitalize(), align=TA_CENTER),
-            p(PERAN_LABELS.get(r.get('peran', ''), '-') if r.get('tipe') == 'eksternal' else '\u2014', align=TA_CENTER),
+            p(PERAN_LABELS.get(r.get('peran', ''), '\u2014') if is_ext else '\u2014', align=TA_CENTER),
+            p(r.get('kontak_pic', '\u2014') if is_ext else '\u2014'),
             p(r.get('tujuan_pengiriman', '-')),
             p(r.get('mekanisme_pengiriman', '-')),
+            p(r.get('jenis_data_dikirim', '-')),
         ])
 
     tbl = Table(data, colWidths=col_w, repeatRows=1)
@@ -346,10 +367,31 @@ def build_pdf(output_path, meta, activity, logo1_path, logo2_path):
     # ── IV. Pengamanan — selalu mulai di halaman baru
     story.append(PageBreak())
     story.append(section_title('IV. Pengamanan Data'))
-    story.append(info_table([
-        ('Langkah Teknis',     activity.get('langkah_teknis', '-')),
-        ('Langkah Organisasi', activity.get('langkah_organisasi', '-')),
-    ]))
+
+    def render_controls(label, items):
+        """Render sub-seksi kontrol dengan numbered list dari array."""
+        story.append(p(label, bold=True, size=FS_TD))
+        if not items:
+            story.append(p('—', size=FS_TD, color=GRAY))
+        else:
+            for i, item in enumerate(items, 1):
+                if item and str(item).strip():
+                    story.append(Paragraph(f"{i}.  {item}",
+                        ParagraphStyle('ci', fontName=FONT, fontSize=FS_TD,
+                            textColor=BLACK, leading=FS_TD*1.45,
+                            leftIndent=4, wordWrap='CJK')))
+        story.append(Spacer(1, 3*mm))
+
+    tsc = activity.get('technical_security_controls') or []
+    pgc = activity.get('privacy_governance_controls') or []
+    ogc = activity.get('organizational_governance_controls') or []
+    if isinstance(tsc, str): tsc = [tsc] if tsc else []
+    if isinstance(pgc, str): pgc = [pgc] if pgc else []
+    if isinstance(ogc, str): ogc = [ogc] if ogc else []
+
+    render_controls('Technical Security Controls', tsc)
+    render_controls('Privacy Governance Controls', pgc)
+    render_controls('Organizational Governance Controls', ogc)
 
     story.append(Spacer(1, 4*mm))
 

@@ -157,24 +157,73 @@
                 </div>
 
                 <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-xs font-medium text-gray-600">C.2 Identifikasi Ancaman & Rencana Mitigasi</label>
-                        <button type="button" onclick="addRisikoRow()"
-                            class="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Tambah Risiko
-                        </button>
+                    <label class="block text-xs font-medium text-gray-600 mb-3">C.2 Identifikasi Ancaman & Rencana Mitigasi</label>
+                    <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Deskripsi Ancaman Utama</label>
+                            <textarea name="risiko_ancaman" rows="3"
+                                placeholder="Contoh: Keterbukaan identitas pelapor kerentanan kepada pihak tidak berwenang, yang berpotensi membahayakan keselamatan fisik pelapor."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ old('risiko_ancaman') }}</textarea>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Likelihood</label>
+                                <select name="risiko_likelihood" id="risikoLikelihood" onchange="updateDpiaLevel()"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    @foreach (['Rendah','Sedang','Tinggi'] as $v)
+                                        <option value="{{ $v }}" {{ old('risiko_likelihood', 'Sedang') === $v ? 'selected' : '' }}>{{ $v }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Dampak</label>
+                                <select name="risiko_dampak" id="risikoDAmpak" onchange="updateDpiaLevel()"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    @foreach (['Rendah','Sedang','Tinggi'] as $v)
+                                        <option value="{{ $v }}" {{ old('risiko_dampak', 'Tinggi') === $v ? 'selected' : '' }}>{{ $v }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Level Risiko</label>
+                                <div id="dpiaLevelBadge"
+                                    class="px-3 py-2 rounded-lg text-xs font-semibold text-center bg-red-100 text-red-700">
+                                    Tinggi
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Rencana Mitigasi</label>
+                            <p class="text-xs text-gray-600 px-3 py-2 bg-gray-100 rounded-lg border border-gray-200">
+                                Sesuai <strong id="mitigasiRopaKode">RoPA yang dipilih</strong> Bab IV Pengamanan Data
+                            </p>
+                        </div>
                     </div>
-                    <div id="risikoContainer" class="space-y-3"></div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1.5">C.3 Evaluasi Risiko Residual</label>
-                    <textarea name="evaluasi_residual" rows="3"
-                        placeholder="Jelaskan risiko yang tersisa setelah semua rencana mitigasi diterapkan dan keputusan penerimaan risikonya..."
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ old('evaluasi_residual') }}</textarea>
+                    <label class="block text-xs font-medium text-gray-600 mb-3">C.3 Evaluasi Risiko Residual</label>
+                    <p class="text-xs text-gray-400 mb-3">Jelaskan risiko yang tersisa setelah kontrol diterapkan, per kategori pengamanan.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Technical Security Controls</label>
+                            <textarea name="residual_technical" rows="2"
+                                placeholder="Contoh: Risiko residual rendah — enkripsi dan RBAC sudah diterapkan, namun zero-day vulnerability tidak dapat sepenuhnya dieliminasi."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ old('residual_technical') }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Privacy Governance Controls</label>
+                            <textarea name="residual_privacy" rows="2"
+                                placeholder="Contoh: Risiko residual sedang — kebijakan Responsible Disclosure sudah ada, namun kepatuhan pelapor eksternal tidak dapat dipaksakan sepenuhnya."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ old('residual_privacy') }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Organizational Governance Controls</label>
+                            <textarea name="residual_organizational" rows="2"
+                                placeholder="Contoh: Risiko residual rendah — NDA dan SOP sudah diterapkan, human error dikelola melalui pelatihan berkala."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ old('residual_organizational') }}</textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -215,9 +264,35 @@ const ROPA_INDICATORS  = @json($ropaList->mapWithKeys(fn($r) => [
     $r->id => $r->riskIndicators->pluck('indikator')->toArray()
 ]));
 
+const LEVEL_MATRIX = {
+    'Tinggi': {'Rendah':'Sedang','Sedang':'Tinggi','Tinggi':'Tinggi'},
+    'Sedang': {'Rendah':'Rendah','Sedang':'Sedang','Tinggi':'Tinggi'},
+    'Rendah': {'Rendah':'Rendah','Sedang':'Rendah','Tinggi':'Sedang'},
+};
+const LEVEL_CLASS = {
+    'Tinggi': 'bg-red-100 text-red-700',
+    'Sedang': 'bg-yellow-100 text-yellow-700',
+    'Rendah': 'bg-green-100 text-green-700',
+};
+
+function updateDpiaLevel() {
+    const likelihood = document.getElementById('risikoLikelihood')?.value || 'Sedang';
+    const dampak     = document.getElementById('risikoDAmpak')?.value || 'Sedang';
+    const level      = LEVEL_MATRIX[likelihood]?.[dampak] ?? 'Sedang';
+    const badge      = document.getElementById('dpiaLevelBadge');
+    if (badge) {
+        badge.textContent = level;
+        badge.className = 'px-3 py-2 rounded-lg text-xs font-semibold text-center ' + LEVEL_CLASS[level];
+    }
+}
+document.addEventListener('DOMContentLoaded', updateDpiaLevel);
+
 function fillFromRopa(select) {
     const opt = select.options[select.selectedIndex];
     document.getElementById('namaAktivitas').value = opt.dataset.nama ?? '';
+    // Update referensi mitigasi
+    const kodeEl = document.getElementById('mitigasiRopaKode');
+    if (kodeEl) kodeEl.textContent = opt.dataset.kode || 'RoPA yang dipilih';
     renderThresholds(select.value);
 }
 
@@ -273,84 +348,7 @@ function addTimRow() {
     container.appendChild(div);
 }
 
-// Risiko rows
-const LEVEL_MATRIX = {
-    'Tinggi': {'Rendah':'Sedang','Sedang':'Tinggi','Tinggi':'Tinggi'},
-    'Sedang': {'Rendah':'Rendah','Sedang':'Sedang','Tinggi':'Tinggi'},
-    'Rendah': {'Rendah':'Rendah','Sedang':'Rendah','Tinggi':'Sedang'},
-};
-const LEVEL_CLASS = {
-    'Tinggi': 'bg-red-100 text-red-700',
-    'Sedang': 'bg-yellow-100 text-yellow-700',
-    'Rendah': 'bg-green-100 text-green-700',
-};
 
-function addRisikoRow(data = {}) {
-    const container = document.getElementById('risikoContainer');
-    const idx = container.querySelectorAll('.risiko-row').length;
-    const div = document.createElement('div');
-    div.className = 'risiko-row bg-gray-50 rounded-xl border border-gray-200 p-3';
-
-    const likelihoods = ['Rendah','Sedang','Tinggi'];
-    const dampaks     = ['Rendah','Sedang','Tinggi'];
-
-    const likeOpts = likelihoods.map(v =>
-        `<option value="${v}" ${data.likelihood===v?'selected':''}>${v}</option>`).join('');
-    const dampOpts = dampaks.map(v =>
-        `<option value="${v}" ${data.dampak===v?'selected':''}>${v}</option>`).join('');
-
-    div.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div class="md:col-span-2">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Ancaman / Sumber Risiko</label>
-                <input type="text" name="risiko[${idx}][ancaman]"
-                    value="${data.ancaman||''}"
-                    placeholder="Contoh: Keterbukaan identitas pelapor ke pihak tidak berwenang"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Likelihood</label>
-                <select name="risiko[${idx}][likelihood]" onchange="updateLevel(this)"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    ${likeOpts}
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Dampak</label>
-                <select name="risiko[${idx}][dampak]" onchange="updateLevel(this)"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    ${dampOpts}
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Level Risiko</label>
-                <div class="level-badge px-3 py-2 rounded-lg text-xs font-semibold text-center ${LEVEL_CLASS[data.level||'Sedang']}">
-                    ${data.level||'Sedang'}
-                </div>
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Rencana Mitigasi</label>
-                <textarea name="risiko[${idx}][rencana_mitigasi]" rows="2"
-                    placeholder="Jelaskan rencana kontrol atau tindakan mitigasi untuk mengurangi risiko ini..."
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">${data.mitigasi||''}</textarea>
-            </div>
-        </div>
-        <div class="mt-2 flex justify-end">
-            <button type="button" onclick="this.closest('.risiko-row').remove()"
-                class="text-xs text-red-500 hover:text-red-700 font-medium">Hapus risiko ini</button>
-        </div>`;
-    container.appendChild(div);
-}
-
-function updateLevel(select) {
-    const row = select.closest('.risiko-row');
-    const likelihood = row.querySelector('select[name*="[likelihood]"]').value;
-    const dampak     = row.querySelector('select[name*="[dampak]"]').value;
-    const level      = LEVEL_MATRIX[likelihood]?.[dampak] ?? 'Sedang';
-    const badge      = row.querySelector('.level-badge');
-    badge.textContent = level;
-    badge.className = `level-badge px-3 py-2 rounded-lg text-xs font-semibold text-center ${LEVEL_CLASS[level]}`;
-}
 
 // Init jika old data
 @if (old('ropa_activity_id'))

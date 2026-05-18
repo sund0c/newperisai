@@ -231,84 +231,83 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-50' : '' }}">{{ old('kriteria_risiko', $dpia->kriteria_risiko) }}</textarea>
                 </div>
                 <div class="mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <label class="block text-xs font-medium text-gray-600">C.2 Identifikasi Ancaman & Rencana Mitigasi</label>
-                        @if ($isEditable)
-                        <button type="button" onclick="addRisikoRow()"
-                            class="inline-flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                            </svg>
-                            Tambah Risiko
-                        </button>
-                        @endif
-                    </div>
-                    <div id="risikoContainer" class="space-y-3">
-                        @foreach ($dpia->risikos as $risiko)
-                        <div class="risiko-row bg-gray-50 rounded-xl border border-gray-200 p-3">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <div class="md:col-span-2">
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Ancaman</label>
-                                    <input type="text" name="risiko[{{ $loop->index }}][ancaman]"
-                                        value="{{ $risiko->ancaman }}" {{ !$isEditable ? 'readonly' : '' }}
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-white' : '' }}">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Likelihood</label>
-                                    <select name="risiko[{{ $loop->index }}][likelihood]"
-                                        {{ !$isEditable ? 'disabled' : '' }}
-                                        onchange="updateLevel(this)"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        @foreach (['Rendah','Sedang','Tinggi'] as $v)
-                                            <option value="{{ $v }}" {{ $risiko->likelihood === $v ? 'selected' : '' }}>{{ $v }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Dampak</label>
-                                    <select name="risiko[{{ $loop->index }}][dampak]"
-                                        {{ !$isEditable ? 'disabled' : '' }}
-                                        onchange="updateLevel(this)"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                        @foreach (['Rendah','Sedang','Tinggi'] as $v)
-                                            <option value="{{ $v }}" {{ $risiko->dampak === $v ? 'selected' : '' }}>{{ $v }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Level Risiko</label>
-                                    @php
-                                        $lvlClass = match($risiko->level) {
-                                            'Tinggi' => 'bg-red-100 text-red-700',
-                                            'Sedang' => 'bg-yellow-100 text-yellow-700',
-                                            default  => 'bg-green-100 text-green-700',
-                                        };
-                                    @endphp
-                                    <div class="level-badge px-3 py-2 rounded-lg text-xs font-semibold text-center {{ $lvlClass }}">
-                                        {{ $risiko->level }}
-                                    </div>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-xs font-medium text-gray-500 mb-1">Rencana Mitigasi</label>
-                                    <textarea name="risiko[{{ $loop->index }}][rencana_mitigasi]" rows="2"
-                                        {{ !$isEditable ? 'readonly' : '' }}
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-white' : '' }}">{{ $risiko->rencana_mitigasi }}</textarea>
-                                </div>
-                            </div>
-                            @if ($isEditable)
-                            <div class="mt-2 flex justify-end">
-                                <button type="button" onclick="this.closest('.risiko-row').remove()"
-                                    class="text-xs text-red-500 hover:text-red-700 font-medium">Hapus risiko ini</button>
-                            </div>
-                            @endif
+                    <label class="block text-xs font-medium text-gray-600 mb-3">C.2 Identifikasi Ancaman & Rencana Mitigasi</label>
+                    <div class="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Deskripsi Ancaman Utama</label>
+                            <textarea name="risiko_ancaman" rows="3" {{ !$isEditable ? 'readonly' : '' }}
+                                placeholder="Deskripsi ancaman utama terhadap hak subjek data pribadi..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-white' : '' }}">{{ old('risiko_ancaman', $dpia->risiko?->ancaman) }}</textarea>
                         </div>
-                        @endforeach
+                        <div class="grid grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Likelihood</label>
+                                <select name="risiko_likelihood" id="risikoLikelihood" onchange="updateDpiaLevel()"
+                                    {{ !$isEditable ? 'disabled' : '' }}
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    @foreach (['Rendah','Sedang','Tinggi'] as $v)
+                                        <option value="{{ $v }}" {{ old('risiko_likelihood', $dpia->risiko?->likelihood ?? 'Sedang') === $v ? 'selected' : '' }}>{{ $v }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Dampak</label>
+                                <select name="risiko_dampak" id="risikoDAmpak" onchange="updateDpiaLevel()"
+                                    {{ !$isEditable ? 'disabled' : '' }}
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    @foreach (['Rendah','Sedang','Tinggi'] as $v)
+                                        <option value="{{ $v }}" {{ old('risiko_dampak', $dpia->risiko?->dampak ?? 'Tinggi') === $v ? 'selected' : '' }}>{{ $v }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1">Level Risiko</label>
+                                @php
+                                    $currentLevel = $dpia->risiko?->level ?? 'Tinggi';
+                                    $lvlClass = match($currentLevel) {
+                                        'Tinggi' => 'bg-red-100 text-red-700',
+                                        'Sedang' => 'bg-yellow-100 text-yellow-700',
+                                        default  => 'bg-green-100 text-green-700',
+                                    };
+                                @endphp
+                                <div id="dpiaLevelBadge"
+                                    class="px-3 py-2 rounded-lg text-xs font-semibold text-center {{ $lvlClass }}">
+                                    {{ $currentLevel }}
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Rencana Mitigasi</label>
+                            <p class="text-xs text-gray-600 px-3 py-2 bg-gray-100 rounded-lg border border-gray-200">
+                                Sesuai <strong>{{ $dpia->ropaActivity?->kode ?? 'RoPA' }}</strong> Bab IV Pengamanan Data
+                            </p>
+                        </div>
                     </div>
                 </div>
+
                 <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1.5">C.3 Evaluasi Risiko Residual</label>
-                    <textarea name="evaluasi_residual" rows="3" {{ !$isEditable ? 'readonly' : '' }}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-50' : '' }}">{{ old('evaluasi_residual', $dpia->evaluasi_residual) }}</textarea>
+                    <label class="block text-xs font-medium text-gray-600 mb-3">C.3 Evaluasi Risiko Residual</label>
+                    <p class="text-xs text-gray-400 mb-3">Jelaskan risiko yang tersisa setelah kontrol diterapkan, per kategori pengamanan.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Technical Security Controls</label>
+                            <textarea name="residual_technical" rows="2" {{ !$isEditable ? 'readonly' : '' }}
+                                placeholder="Risiko residual pada aspek kontrol teknis..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-50' : '' }}">{{ old('residual_technical', $dpia->risiko?->residual_technical) }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Privacy Governance Controls</label>
+                            <textarea name="residual_privacy" rows="2" {{ !$isEditable ? 'readonly' : '' }}
+                                placeholder="Risiko residual pada aspek tata kelola privasi..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-50' : '' }}">{{ old('residual_privacy', $dpia->risiko?->residual_privacy) }}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Organizational Governance Controls</label>
+                            <textarea name="residual_organizational" rows="2" {{ !$isEditable ? 'readonly' : '' }}
+                                placeholder="Risiko residual pada aspek tata kelola organisasi..."
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 {{ !$isEditable ? 'bg-gray-50' : '' }}">{{ old('residual_organizational', $dpia->risiko?->residual_organizational) }}</textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -396,6 +395,18 @@ const LEVEL_CLASS = {
     'Rendah': 'bg-green-100 text-green-700',
 };
 
+function updateDpiaLevel() {
+    const likelihood = document.getElementById('risikoLikelihood')?.value || 'Sedang';
+    const dampak     = document.getElementById('risikoDAmpak')?.value || 'Sedang';
+    const level      = LEVEL_MATRIX[likelihood]?.[dampak] ?? 'Sedang';
+    const badge      = document.getElementById('dpiaLevelBadge');
+    if (badge) {
+        badge.textContent = level;
+        badge.className = 'px-3 py-2 rounded-lg text-xs font-semibold text-center ' + LEVEL_CLASS[level];
+    }
+}
+document.addEventListener('DOMContentLoaded', updateDpiaLevel);
+
 function addTimRow() {
     const container = document.getElementById('timContainer');
     const idx = container.querySelectorAll('.tim-row').length;
@@ -416,45 +427,6 @@ function addTimRow() {
     container.appendChild(div);
 }
 
-function addRisikoRow() {
-    const container = document.getElementById('risikoContainer');
-    const idx = container.querySelectorAll('.risiko-row').length;
-    const div = document.createElement('div');
-    div.className = 'risiko-row bg-gray-50 rounded-xl border border-gray-200 p-3';
-    const opts = ['Rendah','Sedang','Tinggi'].map(v => `<option>${v}</option>`).join('');
-    div.innerHTML = `
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <div class="md:col-span-2">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Ancaman</label>
-                <input type="text" name="risiko[${idx}][ancaman]" placeholder="Deskripsi ancaman..."
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Likelihood</label>
-                <select name="risiko[${idx}][likelihood]" onchange="updateLevel(this)"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">${opts}</select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Dampak</label>
-                <select name="risiko[${idx}][dampak]" onchange="updateLevel(this)"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">${opts}</select>
-            </div>
-            <div>
-                <label class="block text-xs font-medium text-gray-500 mb-1">Level Risiko</label>
-                <div class="level-badge px-3 py-2 rounded-lg text-xs font-semibold text-center bg-yellow-100 text-yellow-700">Sedang</div>
-            </div>
-            <div class="md:col-span-2">
-                <label class="block text-xs font-medium text-gray-500 mb-1">Rencana Mitigasi</label>
-                <textarea name="risiko[${idx}][rencana_mitigasi]" rows="2" placeholder="Rencana mitigasi..."
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-            </div>
-        </div>
-        <div class="mt-2 flex justify-end">
-            <button type="button" onclick="this.closest('.risiko-row').remove()"
-                class="text-xs text-red-500 hover:text-red-700 font-medium">Hapus risiko ini</button>
-        </div>`;
-    container.appendChild(div);
-}
 
 function updateLevel(select) {
     const row = select.closest('.risiko-row');
