@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AssetSeController;
 use App\Http\Controllers\Admin\RopaActivityController;
 use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
+use App\Http\Controllers\Admin\KerawananController;
 use App\Http\Controllers\Admin\DpiaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
@@ -238,6 +239,28 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             Route::put('/{dpia}',           [DpiaController::class, 'update'])->name('update');
             Route::delete('/{dpia}',        [DpiaController::class, 'destroy'])->name('destroy');
             Route::get('/{dpia}/pdf',       [DpiaController::class, 'exportDetailPdf'])->name('detail-pdf');
+        });
+
+        Route::prefix('master-kerawanan')->name('master-kerawanan.')->group(function () {
+
+            // Halaman utama — daftar kelas aset
+            Route::get('/', [KerawananController::class, 'index'])->name('index');
+
+            // -- VERSI SET (harus sebelum route parameter lain) --
+            Route::post('/set/create-version',          [KerawananController::class, 'createVersion'])->name('set.create-version');
+            Route::post('/set/{set}/publish',           [KerawananController::class, 'publishVersion'])->name('set.publish');
+            Route::delete('/set/{set}/draft',           [KerawananController::class, 'deleteDraft'])->name('set.delete-draft');
+            Route::get('/set/{set}/history',            [KerawananController::class, 'showVersion'])->name('set.history');
+
+            // -- ITEM KERAWANAN --
+            Route::post('/set/{set}/items',             [KerawananController::class, 'storeItem'])->name('item.store');
+            Route::put('/items/{item}',                 [KerawananController::class, 'updateItem'])->name('item.update');
+            Route::delete('/items/{item}',              [KerawananController::class, 'destroyItem'])->name('item.destroy');
+            Route::post('/set/{set}/items/reorder',     [KerawananController::class, 'reorderItems'])->name('item.reorder');
+
+            // -- NAVIGASI KELAS & SUB-KELAS (parameter routes di bawah static routes) --
+            Route::get('/{assetClass}',                 [KerawananController::class, 'showClass'])->name('class.show');
+            Route::get('/{assetClass}/{assetSubclass}', [KerawananController::class, 'showSubclass'])->name('subclass.show');
         });
     });
 });
