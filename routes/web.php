@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\TahunAktifController;
 use App\Http\Controllers\Admin\TahunContextController;
 use App\Http\Controllers\Admin\KerawananController;
 use App\Http\Controllers\Admin\DpiaController;
+use App\Http\Controllers\Admin\RiskRegisterController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PrivacyController;
@@ -261,6 +262,35 @@ Route::middleware(['auth', 'verified', '2fa', 'account.deletion', 'password.expi
             // -- NAVIGASI KELAS & SUB-KELAS (parameter routes di bawah static routes) --
             Route::get('/{assetClass}',                 [KerawananController::class, 'showClass'])->name('class.show');
             Route::get('/{assetClass}/{assetSubclass}', [KerawananController::class, 'showSubclass'])->name('subclass.show');
+        });
+
+
+        Route::prefix('risk-register')->name('risk-register.')->group(function () {
+
+            // List
+            Route::get('/', [RiskRegisterController::class, 'index'])->name('index');
+
+            // Create & Store
+            Route::get('/create', [RiskRegisterController::class, 'create'])->name('create');
+            Route::post('/', [RiskRegisterController::class, 'store'])->name('store');
+
+            // API endpoint — harus SEBELUM /{riskRegister}
+            Route::get('/api/master-kerawanan', [RiskRegisterController::class, 'getMasterKerawanan'])
+                ->name('api.master-kerawanan');
+
+            // Show, Edit, Update (header)
+            Route::get('/{riskRegister}', [RiskRegisterController::class, 'show'])->name('show');
+            Route::get('/{riskRegister}/edit', [RiskRegisterController::class, 'edit'])->name('edit');
+            Route::patch('/{riskRegister}', [RiskRegisterController::class, 'update'])->name('update');
+
+            // Finalize & Revisi
+            Route::post('/{riskRegister}/finalize', [RiskRegisterController::class, 'finalize'])->name('finalize');
+            Route::post('/{riskRegister}/revisi', [RiskRegisterController::class, 'revisi'])->name('revisi');
+
+            // Items CRUD
+            Route::post('/{riskRegister}/items', [RiskRegisterController::class, 'storeItem'])->name('items.store');
+            Route::patch('/{riskRegister}/items/{item}', [RiskRegisterController::class, 'updateItem'])->name('items.update');
+            Route::delete('/{riskRegister}/items/{item}', [RiskRegisterController::class, 'destroyItem'])->name('items.destroy');
         });
     });
 });
