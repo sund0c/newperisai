@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\AssetClass;
-use App\Models\AssetSubclass;
+
 use App\Models\VulnerabilitySet;
 use App\Models\VulnerabilityItem;
 use Illuminate\Http\Request;
@@ -14,42 +13,76 @@ use Illuminate\Support\Str;
 class KerawananController extends Controller
 {
     // =========================================================================
-    // INDEX — Daftar Kelas Aset (halaman utama Master Kerawanan)
+    // INDEX — Daftar Kelas Aset
     // =========================================================================
     public function index()
     {
-        $assetClasses = AssetClass::with([
-            'subclasses',
-            'activeVulnerabilitySet.items',
-        ])
-            ->where('is_active', true)
-            ->orderBy('urutan')
+        $klasifikasiAsets = DB::table('klasifikasi_asets')
+            ->whereNull('deleted_at')
+            ->orderBy('kodeklas')
             ->get();
 
-        return view('admin.master-kerawanan.index', compact('assetClasses'));
+        // Attach active vulnerability set count per kelas
+        foreach ($klasifikasiAsets as $klas) {
+            $activeSet = VulnerabilitySet::where('scope_type', 'global_class')
+                ->where('scope_id', $klas->id)
+                ->where('is_active', true)
+                ->withCount(['items'])
+                ->first();
+            $klas->activeSet    = $activeSet;
+            $klas->subklasCount = DB::table('sub_klasifikasi_asets')
+                ->where('klasifikasi_aset_id', $klas->id)
+                ->whereNull('deleted_at')
+                ->count();
+        }
+
+        return view('admin.master-kerawanan.index', compact('klasifikasiAsets'));
     }
 
     // =========================================================================
-    // SHOW CLASS — Daftar sub-kelas + kerawanan global kelas ini
+    // SHOW CLASS — Detail kelas aset + sub-kelas + kerawanan global
     // =========================================================================
-    public function showClass(AssetClass $assetClass)
+    public function showClass(string $klasId)
     {
-        $assetClass->load([
-            'subclasses' => fn($q) => $q->orderBy('urutan'),
-            'vulnerabilitySets' => fn($q) => $q->orderByDesc('created_at'),
-        ]);
+        $klas = DB::table('klasifikasi_asets')->where('id', $klasId)->first();
+        abort_if(!$klas, 404);
 
-        $activeSet = $assetClass->activeVulnerabilitySet()->with('items')->first();
-        $allVersions = $assetClass->vulnerabilitySets()
+        $subklasifikasiAsets = DB::table('sub_klasifikasi_asets')
+            ->where('klasifikasi_aset_id', $klasId)
+            ->whereNull('deleted_at')
+            ->get();
+
+        // Attach active set info per sub-klas
+        foreach ($subklasifikasiAsets as $sub) {
+            $subActiveSet = VulnerabilitySet::where('scope_type', 'subclass')
+                ->where('scope_id', $sub->id)
+                ->where('is_active', true)
+                ->first();
+            $sub->activeSet  = $subActiveSet;
+            $sub->itemCount  = $subActiveSet ? $subActiveSet->items()->count() : 0;
+        }
+
+        $activeSet   = VulnerabilitySet::where('scope_type', 'global_class')
+            ->where('scope_id', $klasId)
+            ->where('is_active', true)
+            ->with('items')
+            ->first();
+
+        $allVersions = VulnerabilitySet::where('scope_type', 'global_class')
+            ->where('scope_id', $klasId)
             ->published()
             ->orderByDesc('created_at')
             ->get();
-        $draftSet = $assetClass->vulnerabilitySets()
-            ->where('published_at', null)
+
+        $draftSet    = VulnerabilitySet::where('scope_type', 'global_class')
+            ->where('scope_id', $klasId)
+            ->whereNull('published_at')
+            ->with('items')
             ->first();
 
         return view('admin.master-kerawanan.show-class', compact(
-            'assetClass',
+            'klas',
+            'subklasifikasiAsets',
             'activeSet',
             'allVersions',
             'draftSet'
@@ -59,23 +92,42 @@ class KerawananController extends Controller
     // =========================================================================
     // SHOW SUBCLASS — Kerawanan spesifik sub-kelas
     // =========================================================================
-    public function showSubclass(AssetClass $assetClass, AssetSubclass $assetSubclass)
+    public function showSubclass(string $klasId, string $subklasId)
     {
-        abort_if($assetSubclass->asset_class_id !== $assetClass->id, 404);
+        $klas    = DB::table('klasifikasi_asets')->where('id', $klasId)->first();
+        $subklas = DB::table('sub_klasifikasi_asets')
+            ->where('id', $subklasId)
+            ->where('klasifikasi_aset_id', $klasId)
+            ->first();
+        abort_if(!$klas || !$subklas, 404);
 
-        $activeGlobalSet = $assetClass->activeVulnerabilitySet()->with('items')->first();
-        $activeSet       = $assetSubclass->activeVulnerabilitySet()->with('items')->first();
-        $allVersions     = $assetSubclass->vulnerabilitySets()
+        $activeGlobalSet = VulnerabilitySet::where('scope_type', 'global_class')
+            ->where('scope_id', $klasId)
+            ->where('is_active', true)
+            ->with('items')
+            ->first();
+
+        $activeSet  = VulnerabilitySet::where('scope_type', 'subclass')
+            ->where('scope_id', $subklasId)
+            ->where('is_active', true)
+            ->with('items')
+            ->first();
+
+        $allVersions = VulnerabilitySet::where('scope_type', 'subclass')
+            ->where('scope_id', $subklasId)
             ->published()
             ->orderByDesc('created_at')
             ->get();
-        $draftSet        = $assetSubclass->vulnerabilitySets()
-            ->where('published_at', null)
+
+        $draftSet   = VulnerabilitySet::where('scope_type', 'subclass')
+            ->where('scope_id', $subklasId)
+            ->whereNull('published_at')
+            ->with('items')
             ->first();
 
         return view('admin.master-kerawanan.show-subclass', compact(
-            'assetClass',
-            'assetSubclass',
+            'klas',
+            'subklas',
             'activeGlobalSet',
             'activeSet',
             'allVersions',
@@ -84,7 +136,7 @@ class KerawananController extends Controller
     }
 
     // =========================================================================
-    // BUAT VERSI BARU (DRAFT) — Clone dari versi aktif, atau kosong jika belum ada
+    // BUAT VERSI BARU (DRAFT)
     // =========================================================================
     public function createVersion(Request $request)
     {
@@ -96,7 +148,6 @@ class KerawananController extends Controller
         $scopeType = $request->scope_type;
         $scopeId   = $request->scope_id;
 
-        // Cek tidak ada draft yang sedang aktif
         $existingDraft = VulnerabilitySet::where('scope_type', $scopeType)
             ->where('scope_id', $scopeId)
             ->whereNull('published_at')
@@ -108,8 +159,7 @@ class KerawananController extends Controller
 
         $newVersi = VulnerabilitySet::nextVersion($scopeType, $scopeId);
 
-        DB::transaction(function () use ($scopeType, $scopeId, $newVersi, $request) {
-            // Buat set baru (draft)
+        DB::transaction(function () use ($scopeType, $scopeId, $newVersi) {
             $newSet = VulnerabilitySet::create([
                 'scope_type'        => $scopeType,
                 'scope_id'          => $scopeId,
@@ -120,7 +170,6 @@ class KerawananController extends Controller
                 'published_at'      => null,
             ]);
 
-            // Clone items dari versi aktif sebelumnya
             $activeSet = VulnerabilitySet::where('scope_type', $scopeType)
                 ->where('scope_id', $scopeId)
                 ->where('is_active', true)
@@ -133,7 +182,9 @@ class KerawananController extends Controller
                         'set_id'           => $newSet->id,
                         'nomor_urut'       => $item->nomor_urut,
                         'deskripsi'        => $item->deskripsi,
-                        'kontrol_tipikal' => $item->kontrol_tipikal,
+                        'ancaman_tipikal'  => $item->ancaman_tipikal,
+                        'dampak_tipikal'   => $item->dampak_tipikal,
+                        'kontrol_tipikal'  => $item->kontrol_tipikal,
                         'mitigasi_tipikal' => $item->mitigasi_tipikal,
                         'catatan_platform' => $item->catatan_platform,
                     ]);
@@ -141,11 +192,11 @@ class KerawananController extends Controller
             }
         });
 
-        return back()->with('success', "Draft versi {$newVersi} berhasil dibuat. Silakan edit item kerawanan sebelum dipublish.");
+        return back()->with('success', "Draft versi {$newVersi} berhasil dibuat. Silakan edit item sebelum dipublish.");
     }
 
     // =========================================================================
-    // PUBLISH DRAFT — Set draft menjadi versi aktif
+    // PUBLISH DRAFT
     // =========================================================================
     public function publishVersion(Request $request, VulnerabilitySet $set)
     {
@@ -157,13 +208,11 @@ class KerawananController extends Controller
         abort_if($set->items()->count() === 0, 422, 'Tidak dapat mempublish versi tanpa item kerawanan.');
 
         DB::transaction(function () use ($set, $request) {
-            // Non-aktifkan versi sebelumnya
             VulnerabilitySet::where('scope_type', $set->scope_type)
                 ->where('scope_id', $set->scope_id)
                 ->where('is_active', true)
                 ->update(['is_active' => false]);
 
-            // Publish versi baru
             $set->update([
                 'is_active'         => true,
                 'catatan_perubahan' => $request->catatan_perubahan,
@@ -176,28 +225,28 @@ class KerawananController extends Controller
     }
 
     // =========================================================================
-    // HAPUS DRAFT — Hanya draft (belum published) yang bisa dihapus
+    // HAPUS DRAFT
     // =========================================================================
     public function deleteDraft(VulnerabilitySet $set)
     {
         abort_if($set->isPublished(), 403, 'Versi yang sudah dipublish tidak dapat dihapus.');
-
         $set->items()->delete();
         $set->delete();
-
         return back()->with('success', 'Draft versi berhasil dihapus.');
     }
 
     // =========================================================================
-    // CRUD ITEM — Tambah item ke draft set
+    // STORE ITEM
     // =========================================================================
     public function storeItem(Request $request, VulnerabilitySet $set)
     {
         abort_if($set->isPublished(), 403, 'Set sudah dipublish, tidak dapat menambah item.');
 
         $validated = $request->validate([
-            'deskripsi'        => 'required|string|max:1000',
-            'kontrol_tipikal' => 'nullable|string|max:2000',
+            'deskripsi'        => 'required|string|max:2000',
+            'ancaman_tipikal'  => 'nullable|string|max:2000',
+            'dampak_tipikal'   => 'nullable|string|max:2000',
+            'kontrol_tipikal'  => 'nullable|string|max:2000',
             'mitigasi_tipikal' => 'nullable|string|max:2000',
             'catatan_platform' => 'nullable|string|max:1000',
         ]);
@@ -220,14 +269,15 @@ class KerawananController extends Controller
         abort_if($item->set->isPublished(), 403, 'Set sudah dipublish, item tidak dapat diubah.');
 
         $validated = $request->validate([
-            'deskripsi'        => 'required|string|max:1000',
-            'kontrol_tipikal' => 'nullable|string|max:2000',
+            'deskripsi'        => 'required|string|max:2000',
+            'ancaman_tipikal'  => 'nullable|string|max:2000',
+            'dampak_tipikal'   => 'nullable|string|max:2000',
+            'kontrol_tipikal'  => 'nullable|string|max:2000',
             'mitigasi_tipikal' => 'nullable|string|max:2000',
             'catatan_platform' => 'nullable|string|max:1000',
         ]);
 
         $item->update($validated);
-
         return back()->with('success', 'Item kerawanan berhasil diperbarui.');
     }
 
@@ -241,7 +291,7 @@ class KerawananController extends Controller
         $set = $item->set;
         $item->delete();
 
-        // Re-number urutan
+        // Re-number
         $set->items()->orderBy('nomor_urut')->get()->each(function ($i, $idx) {
             $i->update(['nomor_urut' => $idx + 1]);
         });
@@ -250,7 +300,7 @@ class KerawananController extends Controller
     }
 
     // =========================================================================
-    // REORDER ITEMS (via drag-and-drop, AJAX)
+    // REORDER ITEMS (AJAX)
     // =========================================================================
     public function reorderItems(Request $request, VulnerabilitySet $set)
     {
@@ -273,18 +323,22 @@ class KerawananController extends Controller
     }
 
     // =========================================================================
-    // LIHAT VERSI HISTORIS (read-only)
+    // LIHAT VERSI HISTORIS
     // =========================================================================
     public function showVersion(VulnerabilitySet $set)
     {
         $set->load('items', 'createdBy', 'publishedBy');
 
         if ($set->scope_type === 'global_class') {
-            $scope = AssetClass::find($set->scope_id);
-            return view('admin.master-kerawanan.show-version', compact('set', 'scope'));
+            $scope = DB::table('klasifikasi_asets')->where('id', $set->scope_id)->first();
+            $scopeParent = null;
+        } else {
+            $scope = DB::table('sub_klasifikasi_asets')->where('id', $set->scope_id)->first();
+            $scopeParent = $scope
+                ? DB::table('klasifikasi_asets')->where('id', $scope->klasifikasi_aset_id)->first()
+                : null;
         }
 
-        $scope = AssetSubclass::with('assetClass')->find($set->scope_id);
-        return view('admin.master-kerawanan.show-version', compact('set', 'scope'));
+        return view('admin.master-kerawanan.show-version', compact('set', 'scope', 'scopeParent'));
     }
 }
