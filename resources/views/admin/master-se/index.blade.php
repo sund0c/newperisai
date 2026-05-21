@@ -67,19 +67,29 @@
             <table class="w-full text-sm">
                 <thead class="border-b border-gray-100">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-8">#
+                        <th
+                            class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-[10%]">
+                            #
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Kode
+                        <th
+                            class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-[15%]">
+                            Kode
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Nama
+                        <th
+                            class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-[25%]">
+                            Nama
                         </th>
-                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        <th
+                            class="px-6 py-3 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider w-[5%]">
                             Indikator</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Status
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-[5%]">
+                            Status
                         </th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Dibuat
+                        <th
+                            class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider w-[20%]">
+                            Dibuat
                         </th>
-                        <th class="px-6 py-3 w-48"></th>
+                        <th class="px-6 py-3 w-[10%]"></th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -87,31 +97,36 @@
                         <tr class="hover:bg-gray-50 transition-colors {{ $version->is_active ? 'bg-blue-50/30' : '' }}">
 
                             {{-- No --}}
-                            <td class="px-6 py-3 text-xs text-gray-400">{{ $versions->firstItem() + $loop->index }}</td>
+                            <td class="px-6 py-3 text-xs font-mono text-gray-800">
+                                {{ $versions->firstItem() + $loop->index }}</td>
 
                             {{-- Kode --}}
                             <td class="px-6 py-3">
-                                <span
-                                    class="font-mono text-sm font-bold {{ $version->is_active ? 'text-blue-600' : 'text-gray-700' }}">
+                                <a href="{{ route('admin.master-se.show', $version) }}"
+                                    class="px-3 px-3 py-1.5 rounded-lg text-xs font-semibold
+           bg-indigo-50 text-indigo-600
+           border border-indigo-200 transition-colors">
                                     {{ $version->kode }}
-                                </span>
+                                </a>
+
+
+
                             </td>
 
                             {{-- Nama --}}
                             <td class="px-6 py-3">
-                                <div class="text-sm text-gray-800">{{ $version->nama }}</div>
+                                <div class="text-xs font-mono text-gray-800">{{ $version->nama }}</div>
                                 @if ($version->deskripsi)
-                                    <div class="text-xs text-gray-400 truncate max-w-xs">{{ $version->deskripsi }}</div>
+                                    <div class="text-xs font-mono text-gray-800 truncate max-w-xs">{{ $version->deskripsi }}
+                                    </div>
                                 @endif
                             </td>
 
                             {{-- Indikator count --}}
                             <td class="px-6 py-3 text-center">
-                                <span
-                                    class="text-sm font-semibold {{ $version->indikators_count === 10 ? 'text-gray-700' : 'text-amber-500' }}">
+                                <span class="text-xs font-mono text-gray-800 font-semibold">
                                     {{ $version->indikators_count }}
                                 </span>
-                                <span class="text-xs text-gray-400">/10</span>
                             </td>
 
                             {{-- Status --}}
@@ -132,7 +147,7 @@
                             </td>
 
                             {{-- Dibuat --}}
-                            <td class="px-6 py-3 text-xs text-gray-400">
+                            <td class="px-6 py-3 ttext-xs font-mono text-gray-800">
                                 {{ $version->created_at->translatedFormat('d M Y, H:i') }}
                             </td>
 
@@ -141,12 +156,12 @@
                                 <div class="flex items-center justify-end gap-2">
 
                                     {{-- Detail --}}
-                                    <a href="{{ route('admin.master-se.show', $version) }}"
+                                    {{-- <a href="{{ route('admin.master-se.show', $version) }}"
                                         class="px-3 py-1.5 rounded-lg text-xs font-semibold
                                                bg-gray-50 text-gray-600 hover:bg-gray-100
                                                border border-gray-200 transition-colors">
                                         Detail
-                                    </a>
+                                    </a> --}}
 
                                     @if ($version->is_active)
                                         {{-- Nonaktifkan: disabled jika dia satu-satunya yang aktif --}}

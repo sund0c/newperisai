@@ -191,13 +191,15 @@
                     <p class="text-sm text-gray-400">Belum ada aset ditemukan.</p>
                 </div>
             @else
-                <table class="w-full min-w-[900px] text-sm">
+                <table class="w-full text-sm">
                     <thead class="border-b border-gray-100 bg-gray-50">
 
                         <tr>
-<th class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
                             <th
-                                class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-36 whitespace-nowrap">
+                                class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[4%]">
+                                #</th>
+                            <th
+                                class="px-3 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[8%] whitespace-nowrap">
                                 @php $isSortKode = $sortBy === 'kode_aset'; @endphp
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'kode_aset', 'direction' => $isSortKode && $direction === 'asc' ? 'desc' : 'asc']) }}"
                                     class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortKode ? 'text-blue-600' : '' }}">
@@ -210,7 +212,7 @@
                                     @endif
                                 </a>
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase w-[27%]">
                                 @php $isSortNama = $sortBy === 'nama_aset'; @endphp
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'nama_aset', 'direction' => $isSortNama && $direction === 'asc' ? 'desc' : 'asc']) }}"
                                     class="inline-flex items-center gap-1 hover:text-gray-700 transition-colors {{ $isSortNama ? 'text-blue-600' : '' }}">
@@ -224,15 +226,15 @@
                                 </a>
                             </th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-44">
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[27%]">
                                 OPD</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-44">
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[19%]">
                                 Klas / Sub Klas</th>
                             <th
-                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-24">
+                                class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-[5%]">
                                 Status</th>
-                            <th class="px-6 py-3 w-36"></th>
+                            <th class="px-6 py-3 w-[10%]"></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -240,39 +242,40 @@
                             @php $isDeleted = $asset->trashed(); @endphp
                             <tr class="hover:bg-gray-50 transition-colors {{ $isDeleted ? 'opacity-50' : '' }}">
 
-                                <td class="px-3 py-3 text-xs text-gray-400">
+                                <td class="px-3 py-3 text-xs text-gray-800 font-mono">
                                     {{ ($assets->currentPage() - 1) * $assets->perPage() + $loop->iteration }}
                                 </td>
 
                                 <td class="px-3 py-3 whitespace-nowrap">
                                     <a href="{{ route('admin.assets.detail', $asset) }}"
                                         class="px-3 py-1.5 rounded-lg text-xs font-semibold
-           bg-indigo-50 text-indigo-600 hover:bg-indigo-100
+           bg-indigo-50 text-indigo-600
            border border-indigo-200 transition-colors">
 
 
-                                        <span
-                                            class="font-mono text-xs font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">
-                                            {{ $asset->kode_aset }}
-                                        </span>
+
+                                        {{ $asset->kode_aset }}
+
                                     </a>
                                 </td>
 
                                 <td class="px-6 py-3 max-w-[200px]">
-                                    <div class="text-xs font-medium text-gray-700">{{ $asset->nama_aset ?? '-' }}</div>
-                                    <div class="text-xs text-gray-400 mt-0.5 line-clamp-2">{{ $asset->keterangan ?? '-' }}
+                                    <div class="text-xs font-medium font-mono text-gray-800">
+                                        {{ $asset->nama_aset ?? '-' }}</div>
+                                    <div class="text-xs text-gray-400 font-mono mt-0.5 line-clamp-2">
+                                        {{ $asset->keterangan ?? '-' }}
                                     </div>
                                 </td>
 
-                                <td class="px-6 py-3 text-xs text-gray-600 max-w-[140px]">
+                                <td class="px-6 py-3 text-xs text-gray-800 font-mono max-w-[140px]">
                                     <span class="line-clamp-2">{{ $asset->opd->namaopd ?? '-' }}</span>
                                 </td>
 
                                 <td class="px-6 py-3">
-                                    <div class="text-xs font-medium text-gray-700">
+                                    <div class="text-xs font-medium text-gray-800 font-mono">
                                         {{ $asset->subKlasifikasi->klasifikasi->klasifikasiaset ?? '-' }}
                                     </div>
-                                    <div class="text-xs text-gray-400 mt-0.5">
+                                    <div class="text-xs text-gray-400 font-mono mt-0.5">
                                         {{ $asset->subKlasifikasi->subklasifikasiaset ?? '-' }}
                                     </div>
                                 </td>
